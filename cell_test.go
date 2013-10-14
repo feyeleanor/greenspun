@@ -56,4 +56,5 @@ func TestCellCdr(t *testing.T) {
 	ConfirmCdr(Cons(0), nil)
 	ConfirmCdr(Cons(0, 1), 1)
 	ConfirmCdr(Cons(0, Cons(1)), Cons(1))
+	ConfirmCdr(Cons(0, Cons(1, 2)), Cons(1, 2))
 }

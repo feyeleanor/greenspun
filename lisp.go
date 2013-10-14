@@ -56,11 +56,17 @@ func Equal(l, o LispPair) (r bool) {
 
 
 func Car(l LispPair) (r interface{}) {
-	return l.Car()
+	if l != nil {
+		r = l.Car()
+	}
+	return
 }
 
 func Cdr(l LispPair) (r interface{}) {
-	return l.Cdr()
+	if l != nil {
+		r = l.Cdr()
+	}
+	return
 }
 
 func Caar(l LispPair) (r interface{}) {

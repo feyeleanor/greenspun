@@ -104,22 +104,6 @@ func (c *Cell) Equal(o interface{}) (r bool) {
 	return
 }
 
-func (c *Cell) Rplaca(i interface{}) {
-	if c == nil {
-		*c = Cell{ Head: i }
-	} else {
-		c.Head = i
-	}
-}
-
-func (c *Cell) Rplacd(next *Cell) {
-	if c == nil {
-		*c = *next
-	} else {
-		c.Tail = next
-	}
-}
-
 func (c *Cell) Each(f interface{}) {
 	switch f := f.(type) {
 	case func(interface{}):

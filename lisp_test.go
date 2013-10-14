@@ -38,8 +38,10 @@ func TestCdr(t *testing.T) {
 	}
 
 	ConfirmCdr(nil, nil)
+	ConfirmCdr(Cons(0), nil)
 	ConfirmCdr(Cons(0, 1), 1)
-	ConfirmCdr(Cons(1), nil)
+	ConfirmCdr(Cons(0, Cons(1)), Cons(1))
+	ConfirmCdr(Cons(0, Cons(1, 2)), Cons(1, 2))
 }
 
 func TestCaar(t *testing.T) {
