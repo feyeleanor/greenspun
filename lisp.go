@@ -25,6 +25,53 @@ func Len(l LispPair) (i int) {
 	return
 }
 
+func IsAtom(v interface{}) bool {
+	if v, ok := v.(LispPair); ok {
+		if _, ok := v.Car().(LispPair); ok {
+			return false
+		}
+		if _, ok := v.Cdr().(LispPair); ok {
+			return false
+		}
+	}
+	return true
+}
+
+func areEqual(l, r interface{}) bool {
+	if l == nil {
+		return r == nil
+	}
+	if l, ok := l.(Equatable); ok {
+		return l.Equal(r)
+	}
+	if r, ok := r.(Equatable); ok {
+		return r.Equal(l)
+	}
+	if l, ok := l.(LispPair); ok {
+		if r, ok := r.(LispPair); ok {
+			defer CatchIteration()
+			Each(l, func(v interface{}) {
+				car := r.Car()
+				r, _ = r.Cdr().(LispPair)
+				if car != nil {
+					if v, ok := v.(Equatable); ok && v.Equal(car) {
+						return
+					}
+					if car, ok := car.(Equatable); ok && car.Equal(v) {
+						return
+					}
+					if v == car {
+						return
+					}
+				}
+				ThrowIteration()
+			})
+			return Len(r) == 0
+		}
+	}
+	return l == r
+}
+
 func Equal(l, o LispPair) (r bool) {
 	if l == nil {
 		r = o == nil
@@ -53,7 +100,6 @@ func Equal(l, o LispPair) (r bool) {
 	}
 	return
 }
-
 
 func Car(l LispPair) (r interface{}) {
 	if l != nil {
