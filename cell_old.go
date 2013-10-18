@@ -9,24 +9,6 @@ type cell struct {
 	Tail		*cell
 }
 
-/*
-	List() uses the cell type to construct a classic Lisp-style Cons list data structure, a chain of value-link pairs.
-*/
-/*
-func List(items... interface{}) (c *cell) {
-	var n *cell
-	for i, v := range items {
-		if i == 0 {
-			c = &cell{ Head: v }
-			n = c
-		} else {
-			n.Tail = &cell{ Head: v }
-			n = n.Tail
-		}
-	}
-	return
-}
-
 func (c *cell) End() (r *cell) {
 	if c != nil {
 		for r = c; r.Tail != nil; r = r.Tail {}
@@ -47,76 +29,6 @@ func (c cell) Offset(i int) (l *cell) {
 		}
 		if n != nil {
 			l = n
-		}
-	}
-	return
-}
-
-func (c *cell) Append(l interface{}) (r *cell) {
-	if c == nil {
-		switch l := l.(type) {
-		case cell:
-			r = &cell{ l.Head, l.Tail }
-		case *cell:
-			r = l
-		default:
-			r = &cell{ Head: l }
-		}
-	} else {
-		r = c
-		switch l := l.(type) {
-		case cell:
-			r.Tail = &cell{ l.Head, l.Tail }
-		case *cell:
-			r.Tail = l
-		default:
-			r.Tail = &cell{ Head: l }
-		}
-	}
-	return
-}
-
-func (c *cell) Prepend(l interface{}) (r *cell) {
-	switch l := l.(type) {
-	case cell:
-		r = &l
-		r.Tail = c
-	case *cell:
-		r = l
-		r.Tail = c
-	default:
-		r = &cell{ Head: l, Tail: c }
-	}
-	return
-}
-
-func (c cell) equal(o cell) (r bool) {
-	defer func() {
-		if x := recover(); x != nil {
-			r = false
-		}
-	}()
-	if v, ok := c.Head.(Equatable); ok {
-		r = v.Equal(o.Head)
-	} else {
-		r = c.Head == o.Head
-	}
-	return
-}
-
-func (c *cell) Equal(o interface{}) (r bool) {
-	if c != nil {
-		switch o := o.(type) {
-		case *cell:
-			r = o != nil && c.equal(*o)
-		case cell:
-			r = c.equal(o)
-		default:
-			r = c.equal(cell{ Head: o })
-		}
-	} else {
-		if o, ok := o.(*cell); ok {
-			r = o == nil
 		}
 	}
 	return

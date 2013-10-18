@@ -3,8 +3,8 @@ package greenspun
 type LispPair interface {
 	Car() interface{}
 	Cdr() interface{}
-	Rplaca(v interface{})
-	Rplacd(v interface{})
+	Rplaca(v interface{}) LispPair
+	Rplacd(v interface{}) LispPair
 }
 
 type Equatable interface {

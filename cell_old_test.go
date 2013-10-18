@@ -26,27 +26,6 @@ func TestcellEnd(t *testing.T) {
 	ConfirmEnd(List(0, 1, 2), 2)
 }
 
-func TestcellEqual(t *testing.T) {
-	ConfirmEqual := func(c, o *cell) {
-		if !c.Equal(o) {
-			t.Fatalf("%v.Equal(%v) should be true", c, o)
-		}
-	}
-	RefuteEqual := func(c, o *cell) {
-		if c.Equal(o) {
-			t.Fatalf("%v.Equal(%v) should be false", c, o)
-		}
-	}
-
-	ConfirmEqual(List(), List())
-	ConfirmEqual(List(1), List(1))
-	ConfirmEqual(List(List(2, 3), 1), List(List(2, 3), 1))
-
-	RefuteEqual(List(), List(1))
-	RefuteEqual(List(), List(List(1)))
-	RefuteEqual(List(1), List(2))
-}
-
 func TestcellOffset(t *testing.T) {
 	ConfirmOffset := func(c *cell, i int, r interface{}) {
 		if x := c.Offset(i); !x.Equal(r) {
@@ -66,53 +45,6 @@ func TestcellOffset(t *testing.T) {
 	ConfirmOffset(c, 3, 3)
 	ConfirmOffset(c, 4, 4)
 	RefuteOffset(c, 5)
-}
-
-func TestcellAppend(t *testing.T) {
-	ConfirmAppend := func(c *cell, v interface{}, r interface{}) {
-		c = c.Append(v)
-		if end := c.End(); !end.Equal(r) {
-			t.Fatalf("%v.Append(%v) should have tail %v but has %v", c, v, r, end)
-		}
-	}
-	ConfirmAppend(nil, 1, 1)
-	ConfirmAppend(nil, 1, List(1))
-	ConfirmAppend(nil, List(1), List(1))
-	ConfirmAppend(List(), 1, 1)
-	ConfirmAppend(List(), 1, List(1))
-	ConfirmAppend(List(), List(1), List(1))
-	ConfirmAppend(List(1), 2, 2)
-	ConfirmAppend(List(1), 2, List(2))
-	ConfirmAppend(List(1), List(2), List(2))
-}
-
-func TestcellPrepend(t *testing.T) {
-	ConfirmPrepend := func(c *cell, v interface{}, r interface{}) {
-		c = c.Prepend(v)
-		if !c.Equal(r) {
-			t.Fatalf("%v.Prepend(%v) should have head %v but has %v", c, v, r, c)
-		}
-	}
-	ConfirmPrepend(nil, 1, 1)
-	ConfirmPrepend(nil, 1, List(1))
-	ConfirmPrepend(nil, List(1), List(1))
-	ConfirmPrepend(List(), 1, 1)
-	ConfirmPrepend(List(), 1, List(1))
-	ConfirmPrepend(List(), List(1), List(1))
-	ConfirmPrepend(List(1), 2, 2)
-	ConfirmPrepend(List(1), 2, List(2))
-	ConfirmPrepend(List(1), List(2), List(2))
-}
-
-func TestcellString(t *testing.T) {
-	ConfirmString := func(c *cell, r string) {
-		if s := c.String(); s != r {
-			t.Fatalf("%v.String() should be %v but is %v", c, r, s)
-		}
-	}
-
-	ConfirmString(List(0, 1, 2), "(0 1 2)")
-	ConfirmString(List(0, List(1, List(2))), "(0 (1 (2)))")
 }
 
 func TestcellEach(t *testing.T) {

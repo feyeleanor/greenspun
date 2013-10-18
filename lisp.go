@@ -29,19 +29,18 @@ func Len(l LispPair) (i int) {
 }
 
 /*
-	We define an atom as any type which doesn't implement the LispPair interface.
-	This means slices, hashes and channels can all be atoms.
+	We define an atom as any type which doesn't implement the LispPair interface or
+	which does implement a LispPair and has a Cdr() which links to another LispPair.
+	This means slices, hashes and channels are by default atoms.
 */
+
+func IsList(v interface{}) (r bool) {
+	_, r = v.(LispPair)
+	return
+}
+
 func IsAtom(v interface{}) bool {
-	if v, ok := v.(LispPair); ok {
-		if _, ok := v.Car().(LispPair); ok {
-			return false
-		}
-		if _, ok := v.Cdr().(LispPair); ok {
-			return false
-		}
-	}
-	return true
+	return !IsList(v)
 }
 
 func areEqual(l, r interface{}) bool {
@@ -79,7 +78,7 @@ func areEqual(l, r interface{}) bool {
 	return l == r
 }
 
-func Equal(l, o LispPair) (r bool) {
+func Equal(l LispPair, o interface{}) (r bool) {
 	if l == nil {
 		r = o == nil
 	} else {
@@ -87,23 +86,25 @@ func Equal(l, o LispPair) (r bool) {
 		not_equal := func() {
 			ThrowIteration()
 		}
-		Each(l, func(v interface{}) {
-			car := o.Car()
-			o, _ = o.Cdr().(LispPair)
-			if car != nil {
-				if v, ok := v.(Equatable); ok && v.Equal(car) {
-					return
+		if o, ok := o.(LispPair); ok {
+			Each(l, func(v interface{}) {
+				car := o.Car()
+				o, _ = o.Cdr().(LispPair)
+				if car != nil {
+					if v, ok := v.(Equatable); ok && v.Equal(car) {
+						return
+					}
+					if car, ok := car.(Equatable); ok && car.Equal(v) {
+						return
+					}
+					if v == car {
+						return
+					}
 				}
-				if car, ok := car.(Equatable); ok && car.Equal(v) {
-					return
-				}
-				if v == car {
-					return
-				}
-			}
-			not_equal()
-		})
-		r = Len(o) == 0
+				not_equal()
+			})
+			r = Len(o) == 0
+		}
 	}
 	return
 }
@@ -168,6 +169,17 @@ func End(l LispPair) (r LispPair) {
 			r = End(cdr)
 		} else {
 			r = l
+		}
+	}
+	return
+}
+
+func Append(l LispPair, v... interface{}) (r LispPair) {
+	if r = End(l); r != nil {
+		for _, v := range v {
+			c := Cons(v, nil)
+			r.Rplacd(c)
+			r = c
 		}
 	}
 	return

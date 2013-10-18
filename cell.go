@@ -16,11 +16,15 @@ func Cons(head, tail interface{}) (c *cell) {
 	return &cell{ head, tail }
 }
 
-func (c cell) String() (r string) {
-	if t, ok := c.Tail.(LispPair); ok {
-		r = fmt.Sprintf("(%v %v)", c.Head, t)
+func (c *cell) String() (r string) {
+	if c == nil {
+		r = "()"
 	} else {
-		r = fmt.Sprintf("(%v . %v)", c.Head, c.Tail)
+		if t, ok := c.Tail.(LispPair); ok {
+			r = fmt.Sprintf("(%v %v)", c.Head, t)
+		} else {
+			r = fmt.Sprintf("(%v . %v)", c.Head, c.Tail)
+		}
 	}
 	return
 }
@@ -61,18 +65,30 @@ func (c cell) Equal(o interface{}) (r bool) {
 	return
 }
 
-func (c cell) Car() (r interface{}) {
-	return c.Head
+func (c *cell) Car() (r interface{}) {
+	if c != nil {
+		r = c.Head
+	}
+	return
 }
 
 func (c *cell) Cdr() (r interface{}) {
-	return c.Tail
+	if c != nil {
+		r = c.Tail
+	}
+	return
 }
 
-func (c *cell) Rplaca(i interface{}) {
-	c.Head = i
+func (c *cell) Rplaca(i interface{}) (r LispPair) {
+	if c != nil {
+		c.Head = i
+	}
+	return
 }
 
-func (c *cell) Rplacd(i interface{}) {
-	c.Tail = i
+func (c *cell) Rplacd(i interface{}) (r LispPair) {
+	if c != nil {
+		c.Tail = i
+	}
+	return
 }

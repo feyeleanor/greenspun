@@ -1,6 +1,7 @@
 package greenspun
 
 import(
+	"fmt"
 	"testing"
 )
 
@@ -32,6 +33,20 @@ func TestIsAtom(t *testing.T) {
 	ConfirmIsAtom(nil, true)
 	ConfirmIsAtom(1, true)
 	ConfirmIsAtom([]int{}, true)
+}
+
+func TestIsList(t *testing.T) {
+	ConfirmIsList := func(v interface{}, r bool) {
+		if a := IsList(v); a != r {
+			t.Fatalf("IsList(%v) should be %v [%T] but is %v [%T]", v, r, r, a, a)
+		}
+	}
+
+	ConfirmIsList(nil, false)
+	ConfirmIsList(1, false)
+	ConfirmIsList([]int{}, false)
+	ConfirmIsList(List(), true)
+	ConfirmIsList(List(0), true)
 }
 
 func TestCar(t *testing.T) {
@@ -128,4 +143,38 @@ func TestEnd(t *testing.T) {
 	ConfirmEnd(Cons(0, nil), Cons(0, nil))
 	ConfirmEnd(Cons(0, 1), Cons(0, 1))
 	ConfirmEnd(List(0, 1, 2), Cons(1, 2))
+}
+
+func TestAppend(t *testing.T) {
+	ConfirmAppend := func(c LispPair, v interface{}, r interface{}) {
+		cs := fmt.Sprintf("%v", c)
+		if x := Append(c, v); !Equal(c, r) {
+			t.Fatalf("%v.Append(%v) should have tail %v but has %v", cs, v, r, x)
+		}
+	}
+
+	ConfirmAppend(List(), 1, 1)
+	ConfirmAppend(List(), 1, List(1))
+	ConfirmAppend(List(), List(1), List(1))
+	ConfirmAppend(List(1), 2, 2)
+	ConfirmAppend(List(1), 2, List(2))
+	ConfirmAppend(List(1), List(2), List(2))
+}
+
+func TestEach(t *testing.T) {
+/*	ConfirmEach := func(v, o LispPair) {
+		if end := End(v); !Equal(end, o) {
+			t.Fatalf("End(%v) should be %v but is %v", v, o, end)
+		}
+	}
+*/
+	t.Fatalf("implement TestEach")
+}
+
+func TestWhile(t *testing.T) {
+	t.Fatalf("implement TestWhile")
+}
+
+func TestUntil(t *testing.T) {
+	t.Fatalf("implement TestUntil")
 }
