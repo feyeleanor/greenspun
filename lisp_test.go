@@ -12,8 +12,8 @@ func TestLen(t *testing.T) {
 	}
 
 	ConfirmLen(nil, 0)
-	ConfirmLen(&Cell{}, 0)
-	ConfirmLen(Cons(nil, nil), 0)
+	ConfirmLen(&cell{}, 1)
+	ConfirmLen(Cons(nil, nil), 1)
 	ConfirmLen(List(), 0)
 	ConfirmLen(Cons(0, nil), 1)
 	ConfirmLen(List(0), 1)
@@ -42,13 +42,12 @@ func TestCar(t *testing.T) {
 	}
 
 	ConfirmCar(nil, nil)
-	ConfirmCar(&Cell{ Head: 0 }, 0)
+	ConfirmCar(&cell{ Head: 0 }, 0)
 	ConfirmCar(Cons(0, nil), 0)
 	ConfirmCar(Cons(1, 0), 1)
 	ConfirmCar(Cons(Cons(1, nil), 0), Cons(1, nil))
 	ConfirmCar(Cons(Cons(1, nil), 0), Cons(1, nil))
 	ConfirmCar(Cons(Cons(2, 1), 0), Cons(2, 1))
-	ConfirmCar(Cons(List(1, nil, nil), 0), Cons(1, nil))
 	ConfirmCar(Cons(List(1, nil, nil), 0), List(1, nil, nil))
 }
 

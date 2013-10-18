@@ -1,66 +1,31 @@
 package greenspun
 
-import (
-	"fmt"
-)
+import "fmt"
 
 /*
-	A Cell is a traditional Lisp dotted pair, storing a data item in the Head, and either a data item or
-	a pointer to a Cell in Tail.
-
-	A number of operations are defined on a Cell which treat a chain of cells connected 
+	A cell is a traditional Lisp dotted pair, storing a data item in the Head, and either a data item or
+	a pointer to another dotted pair in the Tail.
 */
-type Cell struct {
+
+type cell struct {
 	Head		interface{}
 	Tail		interface{}
 }
 
-func Cons(head, tail interface{}) (c *Cell) {
-	return &Cell{ head, tail }
+func Cons(head, tail interface{}) (c *cell) {
+	return &cell{ head, tail }
 }
 
-func List(items... interface{}) (c *Cell) {
-	switch len(items) {
-	case 0:
-	case 1:
-		c = Cons(items[0], nil)
-	case 2:
-		c = Cons(items[0], items[1])
-	default:
-		c = Cons(items[0], List(items[1:]...))
-	}
-	return
-}
-
-func (c *Cell) String() (r string) {
-	if (c == nil) || (c.Head == nil && c.Tail == nil) {
-		r = "()"
+func (c cell) String() (r string) {
+	if t, ok := c.Tail.(LispPair); ok {
+		r = fmt.Sprintf("(%v %v)", c.Head, t)
 	} else {
-		if t, ok := c.Tail.(*Cell); ok {
-			r = fmt.Sprintf("(%v %v)", c.Head, t)
-		} else {
-			r = fmt.Sprintf("(%v . %v)", c.Head, c.Tail)
-		}
+		r = fmt.Sprintf("(%v . %v)", c.Head, c.Tail)
 	}
 	return
 }
 
-func (c *Cell) Len() (i int) {
-	if (c != nil) && (c.Head != nil || c.Tail != nil) {
-		ok := true
-		for n := c; ok; n, ok = n.Tail.(*Cell) {
-			i++
-			c = n
-		}
-		//	if c.Tail is not a *Cell then it's a value and the length of the chain of values should be incremented
-		if c != nil && c.Tail != nil {
-			i++
-		}
-	}
-	return
-}
-
-func (c Cell) equal(o Cell) (r bool) {
+func (c cell) equal(o cell) (r bool) {
 	defer func() {
 		if x := recover(); x != nil {
 			r = false
@@ -71,53 +36,43 @@ func (c Cell) equal(o Cell) (r bool) {
 	} else {
 		r = c.Head == o.Head
 	}
-	if v, ok := c.Tail.(Equatable); ok {
-		r = r && v.Equal(o.Tail)
-	} else {
-		r = r && (c.Tail == o.Tail)
+
+	if r {
+		if v, ok := c.Tail.(Equatable); ok {
+			r = v.Equal(o.Tail)
+		} else {
+			r = c.Tail == o.Tail
+		}
 	}
 	return
 }
 
-func (c *Cell) Equal(o interface{}) (r bool) {
-	if c == nil {
-		return o == nil
-	}
+func (c cell) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case *Cell:
+	case nil:
+		r = false
+	case cell:
+		r = c.equal(o)
+	case *cell:
 		r = o != nil && c.equal(*o)
-	default:
-		r = c.equal(Cell{ Head: o })
+	case LispPair:
+		r = c.equal(cell{ Head: o.Car(), Tail: o.Cdr() })
 	}
 	return
 }
 
-func (c *Cell) Car() (r interface{}) {
-	if c != nil {
-		r = c.Head
-	}
-	return
+func (c cell) Car() (r interface{}) {
+	return c.Head
 }
 
-func (c *Cell) Cdr() (r interface{}) {
-	if c != nil {
-		r = c.Tail
-	}
-	return
+func (c *cell) Cdr() (r interface{}) {
+	return c.Tail
 }
 
-func (c *Cell) Rplaca(i interface{}) {
-	if c == nil {
-		*c = Cell{ Head: i }
-	} else {
-		c.Head = i
-	}
+func (c *cell) Rplaca(i interface{}) {
+	c.Head = i
 }
 
-func (c *Cell) Rplacd(i interface{}) {
-	if c == nil {
-		*c = Cell{ Tail: i }
-	} else {
-		c.Tail = i
-	}
+func (c *cell) Rplacd(i interface{}) {
+	c.Tail = i
 }

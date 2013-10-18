@@ -12,6 +12,9 @@ func CatchIteration() {
 	}
 }
 
+/*
+	A convenience wrapper for calculating the length of a chain of LispPairs.
+*/
 func Len(l LispPair) (i int) {
 	if l != nil {
 		if m, ok := l.(Measureable); ok {
@@ -25,6 +28,10 @@ func Len(l LispPair) (i int) {
 	return
 }
 
+/*
+	We define an atom as any type which doesn't implement the LispPair interface.
+	This means slices, hashes and channels can all be atoms.
+*/
 func IsAtom(v interface{}) bool {
 	if v, ok := v.(LispPair); ok {
 		if _, ok := v.Car().(LispPair); ok {
@@ -245,27 +252,32 @@ func While(l, f interface{}) (i int) {
 		}
 	case LispPair:
 		if l != nil {
+			var r LispPair
+			var ok bool
 			switch f := f.(type) {
 			case func(interface{}) bool:
-				for r, ok := l, true; ok && f(Car(r)); r, ok = r.Cdr().(LispPair) {
+				for r, ok = l, true; ok && f(Car(r)); r, ok = r.Cdr().(LispPair) {
 					i++
 				}
 			case func(int, interface{}) bool:
-				for r, ok := l, true; ok && f(i, r.Car()); r, ok = r.Cdr().(LispPair) {
+				for r, ok = l, true; ok && f(i, r.Car()); r, ok = r.Cdr().(LispPair) {
 					i++
 				}
 			case func(interface{}, interface{}) bool:
-				for r, ok := l, true; ok && f(i, r.Car()); r, ok = r.Cdr().(LispPair) {
+				for r, ok = l, true; ok && f(i, r.Car()); r, ok = r.Cdr().(LispPair) {
 					i++
 				}
 			case Equatable:
-				for r, ok := l, true; ok && f.Equal(r.Car()); r, ok = r.Cdr().(LispPair) {
+				for r, ok = l, true; ok && f.Equal(r.Car()); r, ok = r.Cdr().(LispPair) {
 					i++
 				}
 			case interface{}:
-				for r, ok := l, true; ok && f == r.Car(); r, ok = r.Cdr().(LispPair) {
+				for r, ok = l, true; ok && f == r.Car(); r, ok = r.Cdr().(LispPair) {
 					i++
 				}
+			}
+			if r != nil && r.Cdr() != nil {
+				i++
 			}
 		}
 	}

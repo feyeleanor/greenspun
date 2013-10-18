@@ -5,8 +5,8 @@ import (
 	"reflect"
 )
 
-func TestCellEnd(t *testing.T) {
-	ConfirmEnd := func(c *Cell, r interface{}) {
+func TestcellEnd(t *testing.T) {
+	ConfirmEnd := func(c *cell, r interface{}) {
 		x := c.End()
 		switch {
 		case x == nil:
@@ -15,7 +15,7 @@ func TestCellEnd(t *testing.T) {
 			t.Fatalf("%v.End() should be '%v' but is '%v'", c, r, x.Head)
 		}
 	}
-	RefuteEnd := func(c *Cell) {
+	RefuteEnd := func(c *cell) {
 		if x := c.End(); x != nil {
 			t.Fatalf("%v.End() should be nil but is '%v'", c, x.Head)
 		}
@@ -26,13 +26,13 @@ func TestCellEnd(t *testing.T) {
 	ConfirmEnd(List(0, 1, 2), 2)
 }
 
-func TestCellEqual(t *testing.T) {
-	ConfirmEqual := func(c, o *Cell) {
+func TestcellEqual(t *testing.T) {
+	ConfirmEqual := func(c, o *cell) {
 		if !c.Equal(o) {
 			t.Fatalf("%v.Equal(%v) should be true", c, o)
 		}
 	}
-	RefuteEqual := func(c, o *Cell) {
+	RefuteEqual := func(c, o *cell) {
 		if c.Equal(o) {
 			t.Fatalf("%v.Equal(%v) should be false", c, o)
 		}
@@ -47,13 +47,13 @@ func TestCellEqual(t *testing.T) {
 	RefuteEqual(List(1), List(2))
 }
 
-func TestCellOffset(t *testing.T) {
-	ConfirmOffset := func(c *Cell, i int, r interface{}) {
+func TestcellOffset(t *testing.T) {
+	ConfirmOffset := func(c *cell, i int, r interface{}) {
 		if x := c.Offset(i); !x.Equal(r) {
 			t.Fatalf("%v.Offset(%v) should be '%v' but is '%v'", c, i, r, x.Head)
 		}
 	}
-	RefuteOffset := func(c *Cell, i int) {
+	RefuteOffset := func(c *cell, i int) {
 		if x := c.Offset(i); x != nil {
 			t.Fatalf("%v.Offset(%v) should be nil but is %v of type %v", c, i, x, reflect.TypeOf(x))
 		}
@@ -68,8 +68,8 @@ func TestCellOffset(t *testing.T) {
 	RefuteOffset(c, 5)
 }
 
-func TestCellAppend(t *testing.T) {
-	ConfirmAppend := func(c *Cell, v interface{}, r interface{}) {
+func TestcellAppend(t *testing.T) {
+	ConfirmAppend := func(c *cell, v interface{}, r interface{}) {
 		c = c.Append(v)
 		if end := c.End(); !end.Equal(r) {
 			t.Fatalf("%v.Append(%v) should have tail %v but has %v", c, v, r, end)
@@ -86,8 +86,8 @@ func TestCellAppend(t *testing.T) {
 	ConfirmAppend(List(1), List(2), List(2))
 }
 
-func TestCellPrepend(t *testing.T) {
-	ConfirmPrepend := func(c *Cell, v interface{}, r interface{}) {
+func TestcellPrepend(t *testing.T) {
+	ConfirmPrepend := func(c *cell, v interface{}, r interface{}) {
 		c = c.Prepend(v)
 		if !c.Equal(r) {
 			t.Fatalf("%v.Prepend(%v) should have head %v but has %v", c, v, r, c)
@@ -104,8 +104,8 @@ func TestCellPrepend(t *testing.T) {
 	ConfirmPrepend(List(1), List(2), List(2))
 }
 
-func TestCellString(t *testing.T) {
-	ConfirmString := func(c *Cell, r string) {
+func TestcellString(t *testing.T) {
+	ConfirmString := func(c *cell, r string) {
 		if s := c.String(); s != r {
 			t.Fatalf("%v.String() should be %v but is %v", c, r, s)
 		}
@@ -115,7 +115,7 @@ func TestCellString(t *testing.T) {
 	ConfirmString(List(0, List(1, List(2))), "(0 (1 (2)))")
 }
 
-func TestCellEach(t *testing.T) {
+func TestcellEach(t *testing.T) {
 	list := List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	count := 0
 	list.Each(func(i interface{}) {
@@ -138,9 +138,9 @@ func TestCellEach(t *testing.T) {
 	})
 }
 
-func TestCellWhile(t *testing.T) {
+func TestcellWhile(t *testing.T) {
 	list := List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-	ConfirmLimit := func(c *Cell, l int, f interface{}) {
+	ConfirmLimit := func(c *cell, l int, f interface{}) {
 		if count, _ := c.While(f); count != l {
 			t.Fatalf("%v.While() should have iterated %v times not %v times", c, l, count)
 		}
@@ -165,9 +165,9 @@ func TestCellWhile(t *testing.T) {
 	})
 }
 
-func TestCellUntil(t *testing.T) {
+func TestcellUntil(t *testing.T) {
 	list := List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-	ConfirmLimit := func(c *Cell, l int, f interface{}) {
+	ConfirmLimit := func(c *cell, l int, f interface{}) {
 		if count, _ := c.Until(f); count != l {
 			t.Fatalf("%v.Until() should have iterated %v times not %v times", c, l, count)
 		}
@@ -192,8 +192,8 @@ func TestCellUntil(t *testing.T) {
 	})
 }
 
-func TestCellLen(t *testing.T) {
-	ConfirmLen := func(c *Cell, l int) {
+func TestcellLen(t *testing.T) {
+	ConfirmLen := func(c *cell, l int) {
 		if r := c.Len(); r != l {
 			t.Fatalf("%v.Len() should be %v but is %v", c, l, r)
 		}

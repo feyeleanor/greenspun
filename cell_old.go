@@ -4,37 +4,37 @@ import (
 	"fmt"
 )
 
-type Cell struct {
+type cell struct {
 	Head		interface{}
-	Tail		*Cell
+	Tail		*cell
 }
 
 /*
-	List() uses the Cell type to construct a classic Lisp-style Cons list data structure, a chain of value-link pairs.
+	List() uses the cell type to construct a classic Lisp-style Cons list data structure, a chain of value-link pairs.
 */
 /*
-func List(items... interface{}) (c *Cell) {
-	var n *Cell
+func List(items... interface{}) (c *cell) {
+	var n *cell
 	for i, v := range items {
 		if i == 0 {
-			c = &Cell{ Head: v }
+			c = &cell{ Head: v }
 			n = c
 		} else {
-			n.Tail = &Cell{ Head: v }
+			n.Tail = &cell{ Head: v }
 			n = n.Tail
 		}
 	}
 	return
 }
 
-func (c *Cell) End() (r *Cell) {
+func (c *cell) End() (r *cell) {
 	if c != nil {
 		for r = c; r.Tail != nil; r = r.Tail {}
 	}
 	return
 }
 
-func (c Cell) Offset(i int) (l *Cell) {
+func (c cell) Offset(i int) (l *cell) {
 	switch {
 	case i < 0:
 		break
@@ -52,45 +52,45 @@ func (c Cell) Offset(i int) (l *Cell) {
 	return
 }
 
-func (c *Cell) Append(l interface{}) (r *Cell) {
+func (c *cell) Append(l interface{}) (r *cell) {
 	if c == nil {
 		switch l := l.(type) {
-		case Cell:
-			r = &Cell{ l.Head, l.Tail }
-		case *Cell:
+		case cell:
+			r = &cell{ l.Head, l.Tail }
+		case *cell:
 			r = l
 		default:
-			r = &Cell{ Head: l }
+			r = &cell{ Head: l }
 		}
 	} else {
 		r = c
 		switch l := l.(type) {
-		case Cell:
-			r.Tail = &Cell{ l.Head, l.Tail }
-		case *Cell:
+		case cell:
+			r.Tail = &cell{ l.Head, l.Tail }
+		case *cell:
 			r.Tail = l
 		default:
-			r.Tail = &Cell{ Head: l }
+			r.Tail = &cell{ Head: l }
 		}
 	}
 	return
 }
 
-func (c *Cell) Prepend(l interface{}) (r *Cell) {
+func (c *cell) Prepend(l interface{}) (r *cell) {
 	switch l := l.(type) {
-	case Cell:
+	case cell:
 		r = &l
 		r.Tail = c
-	case *Cell:
+	case *cell:
 		r = l
 		r.Tail = c
 	default:
-		r = &Cell{ Head: l, Tail: c }
+		r = &cell{ Head: l, Tail: c }
 	}
 	return
 }
 
-func (c Cell) equal(o Cell) (r bool) {
+func (c cell) equal(o cell) (r bool) {
 	defer func() {
 		if x := recover(); x != nil {
 			r = false
@@ -104,25 +104,25 @@ func (c Cell) equal(o Cell) (r bool) {
 	return
 }
 
-func (c *Cell) Equal(o interface{}) (r bool) {
+func (c *cell) Equal(o interface{}) (r bool) {
 	if c != nil {
 		switch o := o.(type) {
-		case *Cell:
+		case *cell:
 			r = o != nil && c.equal(*o)
-		case Cell:
+		case cell:
 			r = c.equal(o)
 		default:
-			r = c.equal(Cell{ Head: o })
+			r = c.equal(cell{ Head: o })
 		}
 	} else {
-		if o, ok := o.(*Cell); ok {
+		if o, ok := o.(*cell); ok {
 			r = o == nil
 		}
 	}
 	return
 }
 
-func (c *Cell) Each(f interface{}) {
+func (c *cell) Each(f interface{}) {
 	switch f := f.(type) {
 	case func(interface{}):
 		for k := c; k != nil; k = k.Tail {
@@ -141,7 +141,7 @@ func (c *Cell) Each(f interface{}) {
 	}
 }
 
-func (c *Cell) While(f interface{}) (i int, k *Cell) {
+func (c *cell) While(f interface{}) (i int, k *cell) {
 	switch f := f.(type) {
 	case func(interface{}) bool:
 		for k = c; k != nil; k = k.Tail {
@@ -182,7 +182,7 @@ func (c *Cell) While(f interface{}) (i int, k *Cell) {
 	return
 }
 
-func (c *Cell) Until(f interface{}) (i int, k *Cell) {
+func (c *cell) Until(f interface{}) (i int, k *cell) {
 	switch f := f.(type) {
 	case func(interface{}) bool:
 		for k = c; k != nil; k = k.Tail {
