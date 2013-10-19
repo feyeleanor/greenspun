@@ -19,7 +19,7 @@ func TestcellString(t *testing.T) {
 }
 
 func Testcellequal(t *testing.T) {
-	ConfirmEqual := func(l, r cell, ok bool) {
+	ConfirmEqual := func(l, r *cell, ok bool) {
 		if x := l.equal(r); x != ok {
 			t.Fatalf("%v.equal(%v) should be %v but is %v", l, r, ok, x)
 		}
@@ -28,30 +28,30 @@ func Testcellequal(t *testing.T) {
 		}
 	}
 
-	ConfirmEqual(cell{ nil, nil }, cell{ nil, nil }, true)
-	ConfirmEqual(cell{ 1, nil }, cell{ nil, nil }, false)
-	ConfirmEqual(cell{ nil, 1 }, cell{ nil, nil }, false)
-	ConfirmEqual(cell{ nil, nil }, cell{ 1, nil }, false)
-	ConfirmEqual(cell{ nil, nil }, cell{ nil, 1 }, false)
-	ConfirmEqual(cell{ 1, nil }, cell{ 1, nil }, true)
-	ConfirmEqual(cell{ nil, 1 }, cell{ nil, 1 }, true)
-	ConfirmEqual(cell{ 1, 1 }, cell{ 1, 1 }, true)
+	ConfirmEqual(&cell{ &cell{ 1, 1 }, nil }, &cell{ nil, nil }, false)
+	ConfirmEqual(&cell{ nil, &cell{ 1, 1 } }, &cell{ nil, nil }, false)
+	ConfirmEqual(&cell{ nil, nil }, &cell{ &cell{ 1, 1 }, nil }, false)
+	ConfirmEqual(&cell{ nil, nil }, &cell{ nil, &cell{ 1, 1 } }, false)
+	ConfirmEqual(&cell{ &cell{ 1, 1 }, nil }, &cell{ &cell{ 1, 1 }, nil }, true)
+	ConfirmEqual(&cell{ nil, &cell{ 1, 1 } }, &cell{ nil, &cell{ 1, 1 } }, true)
+	ConfirmEqual(&cell{ &cell{ 1, 1 }, &cell{ 1, 1 } }, &cell{ &cell{ 1, 1 }, &cell{ 1, 1 } }, true)
 
-	ConfirmEqual(cell{ cell{ 1, 1 }, nil }, cell{ nil, nil }, false)
-	ConfirmEqual(cell{ nil, cell{ 1, 1 } }, cell{ nil, nil }, false)
-	ConfirmEqual(cell{ nil, nil }, cell{ cell{ 1, 1 }, nil }, false)
-	ConfirmEqual(cell{ nil, nil }, cell{ nil, cell{ 1, 1 } }, false)
-	ConfirmEqual(cell{ cell{ 1, 1 }, nil }, cell{ cell{ 1, 1 }, nil }, true)
-	ConfirmEqual(cell{ nil, cell{ 1, 1 } }, cell{ nil, cell{ 1, 1 } }, true)
-	ConfirmEqual(cell{ cell{ 1, 1 }, cell{ 1, 1 } }, cell{ cell{ 1, 1 }, cell{ 1, 1 } }, true)
+	ConfirmEqual(Cons(nil, nil), Cons(nil, nil), true)
+	ConfirmEqual(Cons(1, nil), Cons(nil, nil), false)
+	ConfirmEqual(Cons(nil, 1), Cons(nil, nil), false)
+	ConfirmEqual(Cons(nil, nil), Cons(1, nil), false)
+	ConfirmEqual(Cons(nil, nil), Cons(nil, 1), false)
+	ConfirmEqual(Cons(1, nil), Cons(1, nil), true)
+	ConfirmEqual(Cons(nil, 1), Cons(nil, 1), true)
+	ConfirmEqual(Cons(1, 1), Cons(1, 1), true)
 
-	ConfirmEqual(cell{ &cell{ 1, 1 }, nil }, cell{ nil, nil }, false)
-	ConfirmEqual(cell{ nil, &cell{ 1, 1 } }, cell{ nil, nil }, false)
-	ConfirmEqual(cell{ nil, nil }, cell{ &cell{ 1, 1 }, nil }, false)
-	ConfirmEqual(cell{ nil, nil }, cell{ nil, &cell{ 1, 1 } }, false)
-	ConfirmEqual(cell{ &cell{ 1, 1 }, nil }, cell{ &cell{ 1, 1 }, nil }, true)
-	ConfirmEqual(cell{ nil, &cell{ 1, 1 } }, cell{ nil, &cell{ 1, 1 } }, true)
-	ConfirmEqual(cell{ &cell{ 1, 1 }, &cell{ 1, 1 } }, cell{ &cell{ 1, 1 }, &cell{ 1, 1 } }, true)
+	ConfirmEqual(Cons(Cons(1, 1), nil), Cons(nil, nil), false)
+	ConfirmEqual(Cons(nil, Cons(1, 1)), Cons(nil, nil), false)
+	ConfirmEqual(Cons(nil, nil), Cons(Cons(1, 1), nil), false)
+	ConfirmEqual(Cons(nil, nil), Cons(nil, Cons(1, 1)), false)
+	ConfirmEqual(Cons(Cons(1, 1), nil), Cons(Cons(1, 1), nil), true)
+	ConfirmEqual(Cons(nil, Cons(1, 1)), Cons(nil, Cons(1, 1)), true)
+	ConfirmEqual(Cons(Cons(1, 1), Cons(1, 1)), Cons(Cons(1, 1), Cons(1, 1)), true)
 }
 
 func TestcellEqual(t *testing.T) {

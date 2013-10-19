@@ -13,12 +13,12 @@ func TestLen(t *testing.T) {
 	}
 
 	ConfirmLen(nil, 0)
-	ConfirmLen(&cell{}, 1)
-	ConfirmLen(Cons(nil, nil), 1)
+	ConfirmLen(&cell{}, 0)
+	ConfirmLen(Cons(nil, nil), 0)
 	ConfirmLen(List(), 0)
 	ConfirmLen(Cons(0, nil), 1)
 	ConfirmLen(List(0), 1)
-	ConfirmLen(Cons(0, 1), 2)
+	ConfirmLen(Cons(0, 1), 1)
 	ConfirmLen(List(0, 1), 2)
 	ConfirmLen(List(0, 1, 2), 3)
 }
@@ -63,7 +63,7 @@ func TestCar(t *testing.T) {
 	}
 
 	ConfirmCar(nil, nil)
-	ConfirmCar(&cell{ Head: 0 }, 0)
+	ConfirmCar(&cell{ head: 0 }, 0)
 	ConfirmCar(Cons(0, nil), 0)
 	ConfirmCar(Cons(1, 0), 1)
 	ConfirmCar(Cons(Cons(1, nil), 0), Cons(1, nil))
@@ -222,6 +222,22 @@ func TestEach(t *testing.T) {
 	ConfirmEach(list, func(key, i interface{}) {
 		if i.(int) != key.(int) {
 			t.Fatalf("3: Each(%v) element %v erroneously reported as %v", list, key, i)
+		}
+		count++
+	})
+
+	list = List()
+	ConfirmEach(list, func(i interface{}) {
+		if i != count {
+			t.Fatalf("4: Each(%v) element %v erroneously reported as %v", list, count, i)
+		}
+		count++
+	})
+
+	list = nil
+	ConfirmEach(list, func(i interface{}) {
+		if i != count {
+			t.Fatalf("5: Each(%v) element %v erroneously reported as %v", list, count, i)
 		}
 		count++
 	})

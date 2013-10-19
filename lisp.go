@@ -16,14 +16,10 @@ func CatchIteration() {
 	A convenience wrapper for calculating the length of a chain of LispPairs.
 */
 func Len(l LispPair) (i int) {
-	if l != nil {
-		if m, ok := l.(Measureable); ok {
-			i = m.Len()
-		} else {
-			i = While(l, func(v interface{}) bool {
-				return true
-			})
-		}
+	if !IsNil(l) {
+		Each(l, func(v interface{}) {
+			i++
+		})
 	}
 	return
 }
@@ -31,16 +27,31 @@ func Len(l LispPair) (i int) {
 /*
 	We define an atom as any type which doesn't implement the LispPair interface or
 	which does implement a LispPair and has a Cdr() which links to another LispPair.
-	This means slices, hashes and channels are by default atoms.
+	This means go's slices, hashes and channels are by default atoms.
 */
 
 func IsList(v interface{}) (r bool) {
-	_, r = v.(LispPair)
+	if v, ok := v.(LispPair); ok {
+		if v, r = v.Cdr().(LispPair); !r {
+			r = IsNil(v)
+		} 
+	}
 	return
 }
 
 func IsAtom(v interface{}) bool {
 	return !IsList(v)
+}
+
+func IsNil(v interface{}) (r bool) {
+	if v == nil {
+		r = true
+	} else {
+		if v, ok := v.(Nilable); ok {
+			r = v.IsNil()
+		}
+	}
+	return
 }
 
 func areEqual(l, r interface{}) bool {
@@ -180,7 +191,7 @@ func Offset(l LispPair, i int) (r LispPair) {
 }
 
 func End(l LispPair) (r LispPair) {
-	if l != nil {
+	if !IsNil(l) {
 		if cdr, ok := l.Cdr().(LispPair); ok {
 			r = End(cdr)
 		} else {
@@ -191,7 +202,7 @@ func End(l LispPair) (r LispPair) {
 }
 
 func Append(l LispPair, v... interface{}) (r LispPair) {
-	if r = End(l); r != nil {
+	if r = End(l); !IsNil(r) {
 		for _, v := range v {
 			c := Cons(v, nil)
 			r.Rplacd(c)
@@ -202,20 +213,20 @@ func Append(l LispPair, v... interface{}) (r LispPair) {
 }
 
 func Each(l LispPair, f interface{}) {
-	if l != nil {
+	if ok := !IsNil(l); ok {
 		var i int
 		switch f := f.(type) {
 		case func(interface{}):
-			for ok := true; ok; l, ok = l.Cdr().(LispPair) {
+			for ; ok; l, ok = l.Cdr().(LispPair) {
 				f(l.Car())
 			}
 		case func(int, interface{}):
-			for ok := true; ok; l, ok = l.Cdr().(LispPair) {
+			for ; ok; l, ok = l.Cdr().(LispPair) {
 				f(i, l.Car())
 				i++
 			}
 		case func(interface{}, interface{}):
-			for ok := true; ok; l, ok = l.Cdr().(LispPair) {
+			for ; ok; l, ok = l.Cdr().(LispPair) {
 				f(i, l.Car())
 				i++
 			}
@@ -224,7 +235,7 @@ func Each(l LispPair, f interface{}) {
 }
 
 func While(l LispPair, f interface{}) (i int) {
-	if l != nil {
+	if !IsNil(l) {
 		var r LispPair
 		var ok bool
 		switch f := f.(type) {
@@ -254,69 +265,27 @@ func While(l LispPair, f interface{}) (i int) {
 }
 
 func Until(l LispPair, f interface{}) (i int) {
-	switch l := l.(type) {
-	case Iterable:
-		defer CatchIteration()
+	if !IsNil(l) {
 		switch f := f.(type) {
 		case func(interface{}) bool:
-			l.Each(func(v interface{}) {
-				if !f(v) {
-					ThrowIteration()
-				}
+			for r, ok := l, true; ok && !f(r.Car()); r, ok = r.Cdr().(LispPair) {
 				i++
-			})
+			}
 		case func(int, interface{}) bool:
-			l.Each(func(v interface{}) {
-				if !f(i, v) {
-					ThrowIteration()
-				}
+			for r, ok := l, true; ok && !f(i, r.Car()); r, ok = r.Cdr().(LispPair) {
 				i++
-			})
+			}
 		case func(interface{}, interface{}) bool:
-			l.Each(func(v interface{}) {
-				if !f(i, v) {
-					ThrowIteration()
-				}
+			for r, ok := l, true; ok && !f(i, r.Car()); r, ok = r.Cdr().(LispPair) {
 				i++
-			})
+			}
 		case Equatable:
-			l.Each(func(v interface{}) {
-				if !f.Equal(v) {
-					ThrowIteration()
-				}
+			for r, ok := l, true; ok && !f.Equal(r.Car()); r, ok = r.Cdr().(LispPair) {
 				i++
-			})
+			}
 		case interface{}:
-			l.Each(func(v interface{}) {
-				if f != v {
-					ThrowIteration()
-				}
+			for r, ok := l, true; ok && f != r.Car(); r, ok = r.Cdr().(LispPair) {
 				i++
-			})
-		}
-	case LispPair:
-		if l != nil {
-			switch f := f.(type) {
-			case func(interface{}) bool:
-				for r, ok := l, true; ok && !f(r.Car()); r, ok = r.Cdr().(LispPair) {
-					i++
-				}
-			case func(int, interface{}) bool:
-				for r, ok := l, true; ok && !f(i, r.Car()); r, ok = r.Cdr().(LispPair) {
-					i++
-				}
-			case func(interface{}, interface{}) bool:
-				for r, ok := l, true; ok && !f(i, r.Car()); r, ok = r.Cdr().(LispPair) {
-					i++
-				}
-			case Equatable:
-				for r, ok := l, true; ok && !f.Equal(r.Car()); r, ok = r.Cdr().(LispPair) {
-					i++
-				}
-			case interface{}:
-				for r, ok := l, true; ok && f != r.Car(); r, ok = r.Cdr().(LispPair) {
-					i++
-				}
 			}
 		}
 	}

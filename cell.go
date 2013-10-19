@@ -2,14 +2,18 @@ package greenspun
 
 import "fmt"
 
+func IgnorePanic() {
+	recover()
+}
+
 /*
-	A cell is a traditional Lisp dotted pair, storing a data item in the Head, and either a data item or
-	a pointer to another dotted pair in the Tail.
+	A cell is a traditional Lisp dotted pair, storing a data item in the head, and either a data item or
+	a pointer to another dotted pair in the tail.
 */
 
 type cell struct {
-	Head		interface{}
-	Tail		interface{}
+	head		interface{}
+	tail		interface{}
 }
 
 func Cons(head, tail interface{}) (c *cell) {
@@ -20,75 +24,75 @@ func (c *cell) String() (r string) {
 	if c == nil {
 		r = "()"
 	} else {
-		if t, ok := c.Tail.(LispPair); ok {
-			r = fmt.Sprintf("(%v %v)", c.Head, t)
+		if t, ok := c.tail.(LispPair); ok {
+			r = fmt.Sprintf("(%v %v)", c.head, t)
 		} else {
-			r = fmt.Sprintf("(%v . %v)", c.Head, c.Tail)
+			r = fmt.Sprintf("(%v . %v)", c.head, c.tail)
 		}
 	}
 	return
 }
 
-func (c cell) equal(o cell) (r bool) {
-	defer func() {
-		if x := recover(); x != nil {
-			r = false
-		}
-	}()
-	if v, ok := c.Head.(Equatable); ok {
-		r = v.Equal(o.Head)
-	} else {
-		r = c.Head == o.Head
-	}
+func (c *cell) IsNil() (r bool) {
+	return c == nil || (c.head == nil && c.tail == nil)
+}
 
-	if r {
-		if v, ok := c.Tail.(Equatable); ok {
-			r = v.Equal(o.Tail)
+func (c *cell) equal(o *cell) (r bool) {
+	if r = c.IsNil() && o.IsNil(); !r {
+		defer IgnorePanic()
+		if v, ok := c.head.(Equatable); ok {
+			r = v.Equal(o.head)
 		} else {
-			r = c.Tail == o.Tail
+			r = c.head == o.head
+		}
+
+		if r {
+			if v, ok := c.tail.(Equatable); ok {
+				r = v.Equal(o.tail)
+			} else {
+				r = c.tail == o.tail
+			}
 		}
 	}
 	return
 }
 
-func (c cell) Equal(o interface{}) (r bool) {
+func (c *cell) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case nil:
-		r = false
-	case cell:
-		r = c.equal(o)
 	case *cell:
-		r = o != nil && c.equal(*o)
+		r = o != nil && c.equal(o)
 	case LispPair:
-		r = c.equal(cell{ Head: o.Car(), Tail: o.Cdr() })
+		r = c.equal(Cons(o.Car(), o.Cdr()))
 	}
 	return
 }
 
-func (c *cell) Car() (r interface{}) {
-	if c != nil {
-		r = c.Head
+func (c *cell) Car() interface{} {
+	if !c.IsNil() {
+		return c.head
 	}
-	return
+	return nil
 }
 
-func (c *cell) Cdr() (r interface{}) {
-	if c != nil {
-		r = c.Tail
+func (c *cell) Cdr() interface{} {
+	if !c.IsNil() {
+		return c.tail
 	}
-	return
+	return nil
 }
 
-func (c *cell) Rplaca(i interface{}) (r LispPair) {
-	if c != nil {
-		c.Head = i
+func (c *cell) Rplaca(i interface{}) LispPair {
+	if !c.IsNil() {
+		c.head = i
+		return c
 	}
-	return
+	return nil
 }
 
-func (c *cell) Rplacd(i interface{}) (r LispPair) {
-	if c != nil {
-		c.Tail = i
+func (c *cell) Rplacd(i interface{}) LispPair {
+	if !c.IsNil() {
+		c.tail = i
+		return c
 	}
-	return
+	return nil
 }

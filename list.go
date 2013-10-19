@@ -3,7 +3,7 @@ package greenspun
 func List(items... interface{}) (c *cell) {
 	switch len(items) {
 	case 0:
-		c = nil
+		return nil
 	case 1:
 		c = Cons(items[0], nil)
 	default:
@@ -18,14 +18,39 @@ func List(items... interface{}) (c *cell) {
 	therefore the length may need to be adjusted accordingly.
 */
 func (c *cell) Len() (i int) {
-	ok := true
-	for n := c; ok && n != nil; n, ok = n.Tail.(*cell) {
-		i++
-		c = n
-	}
-	//	if c.Tail is not a *cell then it's a value and the length of the chain should be incremented
-	if c != nil && c.Tail != nil {
-		i++
+	if ok := c != nil; ok {
+		for n := c; ok && n != nil; n, ok = n.tail.(*cell) {
+			i++
+			c = n
+		}
+		//	if c.tail is not a *cell then it's a value and the length of the chain should be incremented
+		if c != nil && c.tail != nil {
+			i++
+		}		
 	}
 	return
+}
+
+func (c *cell) Each(f interface{}) {
+	if ok := c != nil; ok {
+		var i		int
+		var l		LispPair
+
+		switch f := f.(type) {
+		case func(interface{}):
+			for l = c; ok; l, ok = l.Cdr().(LispPair) {
+				f(l.Car())
+			}
+		case func(int, interface{}):
+			for l = c; ok; l, ok = l.Cdr().(LispPair) {
+				f(i, l.Car())
+				i++
+			}
+		case func(interface{}, interface{}):
+			for l = c; ok; l, ok = l.Cdr().(LispPair) {
+				f(i, l.Car())
+				i++
+			}
+		}
+	}
 }
