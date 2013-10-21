@@ -1,6 +1,6 @@
 package greenspun
 
-const _ITERATION = iota
+const _ITERATION = "iteration"
 
 func ThrowIteration() {
 	panic(_ITERATION)
@@ -16,11 +16,9 @@ func CatchIteration() {
 	A convenience wrapper for calculating the length of a chain of LispPairs.
 */
 func Len(l LispPair) (i int) {
-	if !IsNil(l) {
-		Each(l, func(v interface{}) {
-			i++
-		})
-	}
+	Each(l, func(v interface{}) {
+		i++
+	})
 	return
 }
 
@@ -54,70 +52,43 @@ func IsNil(v interface{}) (r bool) {
 	return
 }
 
-func areEqual(l, r interface{}) bool {
-	if l == nil {
-		return r == nil
-	}
-	if l, ok := l.(Equatable); ok {
-		return l.Equal(r)
-	}
-	if r, ok := r.(Equatable); ok {
-		return r.Equal(l)
-	}
-	if l, ok := l.(LispPair); ok {
-		if r, ok := r.(LispPair); ok {
-			defer CatchIteration()
-			Each(l, func(v interface{}) {
-				car := r.Car()
-				r, _ = r.Cdr().(LispPair)
-				if car != nil {
-					if v, ok := v.(Equatable); ok && v.Equal(car) {
-						return
+func Equal(l, r interface{}) bool {
+	switch {
+	case IsNil(l):
+		return IsNil(r)
+	case IsNil(r):
+		return false
+	default:
+		if l, ok := l.(Equatable); ok {
+			return l.Equal(r)
+		}
+		if r, ok := r.(Equatable); ok {
+			return r.Equal(l)
+		}
+		if l, ok := l.(LispPair); ok {
+			if r, ok := r.(LispPair); ok {
+				defer CatchIteration()
+				Each(l, func(v interface{}) {
+					car := r.Car()
+					r, _ = r.Cdr().(LispPair)
+					if car != nil {
+						if v, ok := v.(Equatable); ok && v.Equal(car) {
+							return
+						}
+						if car, ok := car.(Equatable); ok && car.Equal(v) {
+							return
+						}
+						if v == car {
+							return
+						}
 					}
-					if car, ok := car.(Equatable); ok && car.Equal(v) {
-						return
-					}
-					if v == car {
-						return
-					}
-				}
-				ThrowIteration()
-			})
-			return Len(r) == 0
+					ThrowIteration()
+				})
+				return Len(r) == 0
+			}
 		}
 	}
 	return l == r
-}
-
-func Equal(l LispPair, o interface{}) (r bool) {
-	if l == nil {
-		r = o == nil
-	} else {
-		defer CatchIteration()
-		not_equal := func() {
-			ThrowIteration()
-		}
-		if o, ok := o.(LispPair); ok {
-			Each(l, func(v interface{}) {
-				car := o.Car()
-				o, _ = o.Cdr().(LispPair)
-				if car != nil {
-					if v, ok := v.(Equatable); ok && v.Equal(car) {
-						return
-					}
-					if car, ok := car.(Equatable); ok && car.Equal(v) {
-						return
-					}
-					if v == car {
-						return
-					}
-				}
-				not_equal()
-			})
-			r = Len(o) == 0
-		}
-	}
-	return
 }
 
 func Car(l LispPair) (r interface{}) {
@@ -191,23 +162,49 @@ func Offset(l LispPair, i int) (r LispPair) {
 }
 
 func End(l LispPair) (r LispPair) {
-	if !IsNil(l) {
-		if cdr, ok := l.Cdr().(LispPair); ok {
-			r = End(cdr)
-		} else {
-			r = l
+	if do := IsList(l); !do {
+		r = l
+	} else {
+		r = l
+		n, do := l.Cdr().(LispPair)
+		for ; do && n != l; n, do = n.Cdr().(LispPair) {
+			r = n
 		}
 	}
 	return
 }
 
+func valueAppend(l LispPair, v interface{}) (r LispPair) {
+	if x, ok := v.(LispPair); ok {
+		l.Rplacd(x)
+		r = End(x)
+	} else {
+		l.Rplacd(Cons(v, nil))
+		r = l.Cdr().(LispPair)				
+	}
+	return
+}
+
 func Append(l LispPair, v... interface{}) (r LispPair) {
-	if r = End(l); !IsNil(r) {
-		for _, v := range v {
-			c := Cons(v, nil)
-			r.Rplacd(c)
-			r = c
+	var head LispPair
+
+	if len(v) > 0 {
+		if x, ok := v[0].(LispPair); ok {
+			head = x
+		} else {
+			head = Cons(v[0], nil)
 		}
+		r = End(head)
+		for _, v := range v[1:] {
+			r = valueAppend(r, v)
+		}
+	}
+
+	if !IsNil(l) {
+		End(l).Rplacd(head)
+		r = l
+	} else {
+		r = head
 	}
 	return
 }
@@ -232,6 +229,61 @@ func Each(l LispPair, f interface{}) {
 			}
 		}
 	}
+}
+
+func Map(l LispPair, f interface{}) (r LispPair) {
+	if !IsNil(l) {
+		var c *cell
+		head := &cell{}
+		r = head
+		switch f := f.(type) {
+		case func(interface{}) interface{}:
+			Each(l, func(v interface{}) {
+				c = Cons(f(v), nil)
+				r.Rplacd(c)
+				r = c
+			})
+		case func(int, interface{}) interface{}:
+			Each(l, func(i int, v interface{}) {
+				c = Cons(f(i, v), nil)
+				r.Rplacd(c)
+				r = c
+			})
+		case func(interface{}, interface{}) interface{}:
+			Each(l, func(k, v interface{}) {
+				c = Cons(f(k, v), nil)
+				r.Rplacd(c)
+				r = c
+			})
+		}
+		if head.Cdr() != nil {
+			r = head.Cdr().(LispPair)
+		} else {
+			r = nil
+		}
+	}
+	return
+}
+
+func Reduce(l LispPair, seed, f interface{}) (r interface{}) {
+	if !IsNil(l) {
+		r = seed
+		switch f := f.(type) {
+		case func(seed, value interface{}) interface{}:
+			Each(l, func(v interface{}) {
+				r = f(r, v)
+			})
+		case func(index int, seed, value interface{}) interface{}:
+			Each(l, func(i int, v interface{}) {
+				r = f(i, r, v)
+			})
+		case func(key, seed, value interface{}) interface{}:
+			Each(l, func(k, v interface{}) {
+				r = f(k, r, v)
+			})
+		}
+	}
+	return
 }
 
 func While(l LispPair, f interface{}) (i int) {

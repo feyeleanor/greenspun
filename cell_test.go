@@ -100,7 +100,7 @@ func TestcellEqual(t *testing.T) {
 
 func TestcellCar(t *testing.T) {
 	ConfirmCar := func(c *cell, r interface{}) {
-		if car := c.Car(); !areEqual(car, r) {
+		if car := c.Car(); !Equal(car, r) {
 			t.Fatalf("%v.Car() should be %v but is %v", c, r, car)
 		}
 	}
@@ -117,7 +117,7 @@ func TestcellCar(t *testing.T) {
 
 func TestcellCdr(t *testing.T) {
 	ConfirmCdr := func(c *cell, r interface{}) {
-		if cdr := c.Cdr(); !areEqual(cdr, r) {
+		if cdr := c.Cdr(); !Equal(cdr, r) {
 			t.Fatalf("%v.Cdr() should be %v but is %v", c, r, cdr)
 		}
 	}

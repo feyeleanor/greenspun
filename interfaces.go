@@ -15,3 +15,7 @@ type LispPair interface {
 type Equatable interface {
 	Equal(f interface{}) bool
 }
+
+type HasLength interface {
+	Len() int
+}

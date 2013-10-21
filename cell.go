@@ -1,10 +1,9 @@
 package greenspun
 
-import "fmt"
-
-func IgnorePanic() {
-	recover()
-}
+import (
+	"fmt"
+	"strings"
+)
 
 /*
 	A cell is a traditional Lisp dotted pair, storing a data item in the head, and either a data item or
@@ -21,20 +20,24 @@ func Cons(head, tail interface{}) (c *cell) {
 }
 
 func (c *cell) String() (r string) {
-	if c == nil {
-		r = "()"
+	if _, ok := c.tail.(LispPair); ok {
+		terms := make([]string, 0, 4)		
+		Each(c, func(v interface{}) {
+			terms = append(terms, fmt.Sprintf("%v", v))
+		})
+		r = strings.Join(terms, " ")
 	} else {
-		if t, ok := c.tail.(LispPair); ok {
-			r = fmt.Sprintf("(%v %v)", c.head, t)
+		if c.tail == nil {
+			r = fmt.Sprintf("%v", c.head)
 		} else {
-			r = fmt.Sprintf("(%v . %v)", c.head, c.tail)
+			r = fmt.Sprintf("%v . %v", c.head, c.tail)
 		}
 	}
-	return
+	return "(" + r + ")"
 }
 
 func (c *cell) IsNil() (r bool) {
-	return c == nil || (c.head == nil && c.tail == nil)
+	return c == nil
 }
 
 func (c *cell) equal(o *cell) (r bool) {

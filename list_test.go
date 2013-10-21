@@ -11,23 +11,11 @@ func TestListString(t *testing.T) {
 		}
 	}
 
-	ConfirmString(List(0, 1, 2), "(0 (1 (2 . <nil>)))")
-	ConfirmString(List(0, 1, 2, 3), "(0 (1 (2 (3 . <nil>))))")
+	ConfirmString(List(0, 1, 2), "(0 1 2)")
+	ConfirmString(List(0, 1, 2, 3), "(0 1 2 3)")
+	ConfirmString(List(0, List(1, 2, 3), List(2, 3), 3), "(0 (1 2 3) (2 3) 3)")
 }
-/*
-func TestListLen(t *testing.T) {
-	ConfirmLen := func(c *cell, r int) {
-		if l := c.Len(); l != r {
-			t.Fatalf("%v.Len() should be %v but is %v", c, r, l)
-		}
-	}
 
-	ConfirmLen(Cons(nil, nil), 1)
-	ConfirmLen(Cons(0, nil), 1)
-	ConfirmLen(Cons(0, 1), 2)
-	ConfirmLen(List(0, 1, 2), 3)
-}
-*/
 func TestListequal(t *testing.T) {
 	ConfirmEqual := func(l *cell, r *cell, ok bool) {
 		if x := l.equal(r); x != ok {

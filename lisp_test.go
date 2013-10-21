@@ -1,6 +1,6 @@
 package greenspun
 
-import(
+import (
 	"fmt"
 	"testing"
 )
@@ -13,9 +13,9 @@ func TestLen(t *testing.T) {
 	}
 
 	ConfirmLen(nil, 0)
-	ConfirmLen(&cell{}, 0)
-	ConfirmLen(Cons(nil, nil), 0)
 	ConfirmLen(List(), 0)
+	ConfirmLen(&cell{}, 1)
+	ConfirmLen(Cons(nil, nil), 1)
 	ConfirmLen(Cons(0, nil), 1)
 	ConfirmLen(List(0), 1)
 	ConfirmLen(Cons(0, 1), 1)
@@ -35,6 +35,7 @@ func TestIsList(t *testing.T) {
 	ConfirmIsList([]int{}, false)
 	ConfirmIsList(&cell{}, true)
 	ConfirmIsList(Cons(nil, nil), true)
+	ConfirmIsList(Cons(0, nil), true)
 	ConfirmIsList(List(), true)
 	ConfirmIsList(List(0), true)
 }
@@ -55,9 +56,48 @@ func TestIsAtom(t *testing.T) {
 	ConfirmIsAtom(List(0), false)
 }
 
+func TestIsNil(t *testing.T) {
+	ConfirmIsNil := func(v interface{}, r bool) {
+		if n := IsNil(v); n != r {
+			t.Fatalf("IsNil(%v) should be %v but is %v", v, r, n)
+		}
+	}
+
+	ConfirmIsNil(nil, true)
+	ConfirmIsNil(Cons(nil, nil), false)
+	ConfirmIsNil(Cons(1, nil), false)
+	ConfirmIsNil(List(), true)
+	ConfirmIsNil(List(nil), false)
+}
+
+func TestEqual(t *testing.T) {
+	ConfirmEqual := func(v, o LispPair, r bool) {
+		if a := Equal(v, o); a != r {
+			t.Fatalf("1: Equal(%v, %v) should be %v but is %v\n", v, o, r, a)
+		}
+		if a := Equal(o, v); a != r {
+			t.Fatalf("2: Equal(%v, %v) should be %v but is %v\n", o, v, r, a)
+		}
+	}
+
+	ConfirmEqual(nil, nil, true)
+	ConfirmEqual(List(), nil, true)
+	ConfirmEqual(Cons(nil, nil), nil, false)
+	ConfirmEqual(Cons(nil, nil), Cons(nil, nil), true)
+	ConfirmEqual(List(nil), Cons(nil, nil), true)
+	ConfirmEqual(List(nil), List(nil), true)
+	ConfirmEqual(List(1, 2), Cons(1, Cons(2, nil)), true)
+	ConfirmEqual(List(1, 2, 3), Cons(1, Cons(2, Cons(3, nil))), true)
+	ConfirmEqual(List(1, List(2, 3), 4), List(1, Cons(2, Cons(3, nil)), 4), true)
+	ConfirmEqual(List(1, List(2, 3), 4), List(1, List(2, 3), 4), true)
+	ConfirmEqual(List(List(1, 3, 5), List(2, 3), 4), List(List(1, 3, 5), List(2, 3), 4), true)
+
+	t.Logf("add tests for circular lists")
+}
+
 func TestCar(t *testing.T) {
 	ConfirmCar := func(v LispPair, r interface{}) {
-		if car := Car(v); !areEqual(car, r) {
+		if car := Car(v); !Equal(car, r) {
 			t.Fatalf("Car(%v) should be %v but is %v", v, r, car)
 		}
 	}
@@ -74,7 +114,7 @@ func TestCar(t *testing.T) {
 
 func TestCdr(t *testing.T) {
 	ConfirmCdr := func(v LispPair, r interface{}) {
-		if cdr := Cdr(v); !areEqual(cdr, r) {
+		if cdr := Cdr(v); !Equal(cdr, r) {
 			t.Fatalf("Cdr(%v) should be %v but is %v", v, r, cdr)
 		}
 	}
@@ -166,7 +206,8 @@ func TestOffset(t *testing.T) {
 
 func TestEnd(t *testing.T) {
 	ConfirmEnd := func(v, o LispPair) {
-		if end := End(v); !Equal(end, o) {
+		end := End(v)
+		if ok := Equal(end, o); !ok {
 			t.Fatalf("End(%v) should be %v but is %v", v, o, end)
 		}
 	}
@@ -174,23 +215,41 @@ func TestEnd(t *testing.T) {
 	ConfirmEnd(nil, nil)
 	ConfirmEnd(Cons(0, nil), Cons(0, nil))
 	ConfirmEnd(Cons(0, 1), Cons(0, 1))
-	ConfirmEnd(List(0, 1, 2), Cons(1, 2))
+	ConfirmEnd(List(0, 1, 2), Cons(2, nil))
+	ConfirmEnd(List(0, 1, 2, 3), Cons(3, nil))
+	ConfirmEnd(Cons(0, Cons(1, Cons(2, Cons(3, nil)))), Cons(3, nil))
 }
 
 func TestAppend(t *testing.T) {
 	ConfirmAppend := func(c LispPair, v interface{}, r interface{}) {
 		cs := fmt.Sprintf("%v", c)
-		if x := Append(c, v); !Equal(c, r) {
-			t.Fatalf("%v.Append(%v) should have tail %v but has %v", cs, v, r, x)
+		if x := Append(c, v); !Equal(x, r) {
+			t.Fatalf("%v.Append(%v) should be %v but is %v", cs, v, r, x)
 		}
 	}
 
-	ConfirmAppend(List(), 1, 1)
 	ConfirmAppend(List(), 1, List(1))
 	ConfirmAppend(List(), List(1), List(1))
-	ConfirmAppend(List(1), 2, 2)
-	ConfirmAppend(List(1), 2, List(2))
-	ConfirmAppend(List(1), List(2), List(2))
+	ConfirmAppend(List(), List(1, 2), List(1, 2))
+	ConfirmAppend(List(), List(1, 2, 3), List(1, 2, 3))
+	ConfirmAppend(List(1), 2, List(1, 2))
+	ConfirmAppend(List(1), List(2), List(1, 2))
+	ConfirmAppend(List(1), List(2, 3), List(1, 2, 3))
+
+	ConfirmMultipleAppend := func(c LispPair, r interface{}, v... interface{}) {
+		call := fmt.Sprintf("%v.Append(%v)", c, v)
+		if x := Append(c, v...); !Equal(x, r) {
+			t.Fatalf("%v should be %v but is %v", call, r, x)
+		}
+	}
+
+	ConfirmMultipleAppend(List(), List(1, 2, 3), List(1), List(2, 3))
+	ConfirmMultipleAppend(List(), List(1, 2, 3, 4), List(1, 2), 3, List(4))
+	ConfirmMultipleAppend(List(), List(1, 2, 3), List(1, 2, 3))
+	ConfirmMultipleAppend(List(1), List(1, 2), 2)
+	ConfirmMultipleAppend(List(1), List(1, 2, 3), 2, 3)
+	ConfirmMultipleAppend(List(1), List(1, 2), List(2))
+	ConfirmMultipleAppend(List(1), List(1, 2, 3), List(2, 3))
 }
 
 func TestEach(t *testing.T) {
@@ -240,6 +299,75 @@ func TestEach(t *testing.T) {
 			t.Fatalf("5: Each(%v) element %v erroneously reported as %v", list, count, i)
 		}
 		count++
+	})
+}
+
+func TestMap(t *testing.T) {
+	list := List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	doubles := List(0, 2, 4, 6, 8, 10, 12, 14, 16, 18)
+	ConfirmMap := func(c, r LispPair, f interface{}) {
+		switch m := Map(c, f); {
+		case Len(c) != Len(m):
+			t.Fatalf("Map(%v) should have iterated %v times not %v times", c, Len(c), Len(m))
+		case !Equal(m, r):
+			t.Fatalf("Map(%v) should be %v but is %v", c, r, m)
+		}
+	}
+
+	ConfirmMap(list, doubles, func(i interface{}) interface{} {
+		return i.(int) * 2
+	})
+
+	ConfirmMap(list, doubles, func(index int, i interface{}) interface{} {
+		return index + i.(int)
+	})
+
+	ConfirmMap(list, doubles, func(key, i interface{}) interface{} {
+		return key.(int) + i.(int)
+	})
+}
+
+func TestReduce(t *testing.T) {
+	ConfirmReduce := func(c LispPair, r, seed, f interface{}) {
+		if x := Reduce(c, seed, f); !Equal(x, r) {
+			t.Fatalf("Reduce(%v, %v) should be %v but is %v", c, seed, r, x)
+		}
+	}
+
+	ConfirmReduce(List(1, 2, 3), 6, 1, func(seed, value interface{}) interface{} {
+		return seed.(int) * value.(int)
+	})
+
+	ConfirmReduce(List(1, 2, 3), 6, 1, func(index int, seed, value interface{}) interface{} {
+		return seed.(int) * value.(int)
+	})
+
+	ConfirmReduce(List(1, 2, 3), 6, 1, func(key, seed, value interface{}) interface{} {
+		return seed.(int) * value.(int)
+	})
+
+	ConfirmReduce(List(1, 2, 3), 7, 1, func(seed, value interface{}) interface{} {
+		return seed.(int) + value.(int)
+	})
+
+	ConfirmReduce(List(1, 2, 3), 7, 1, func(index int, seed, value interface{}) interface{} {
+		return seed.(int) + value.(int)
+	})
+
+	ConfirmReduce(List(1, 2, 3), 7, 1, func(key, seed, value interface{}) interface{} {
+		return seed.(int) + value.(int)
+	})
+
+	ConfirmReduce(List("A", "B", "C"), "ABC", "", func(seed, value interface{}) interface{} {
+		return seed.(string) + value.(string)
+	})
+
+	ConfirmReduce(List("A", "B", "C"), "ABC", "", func(index int, seed, value interface{}) interface{} {
+		return seed.(string) + value.(string)
+	})
+
+	ConfirmReduce(List("A", "B", "C"), "ABC", "", func(key, seed, value interface{}) interface{} {
+		return seed.(string) + value.(string)
 	})
 }
 
