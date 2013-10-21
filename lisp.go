@@ -343,3 +343,13 @@ func Until(l LispPair, f interface{}) (i int) {
 	}
 	return
 }
+
+func Reverse(l LispPair) (r LispPair) {
+	for !IsNil(l) {
+		n, _ := l.Cdr().(LispPair)
+		l.Rplacd(r)
+		r = l
+		l = n
+	}
+	return
+}

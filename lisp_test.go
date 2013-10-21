@@ -418,3 +418,17 @@ func TestUntil(t *testing.T) {
 		return key == limit
 	})
 }
+
+func TestReverse(t *testing.T) {
+	ConfirmReverse := func(l, r LispPair) {
+		if c := Reverse(l); !Equal(r, c) {
+			t.Fatalf("Reverse(%v) should be %v but is %v", l, r, c)
+		}
+	}
+
+	ConfirmReverse(List(), List())
+	ConfirmReverse(List(0), List(0))
+	ConfirmReverse(List(0, 1), List(1, 0))
+	ConfirmReverse(List(0, 1, 2), List(2, 1, 0))
+	ConfirmReverse(List(0, 1, List(2, 3), 4), List(4, List(2, 3), 1, 0))
+}
