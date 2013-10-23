@@ -432,3 +432,44 @@ func TestReverse(t *testing.T) {
 	ConfirmReverse(List(0, 1, 2), List(2, 1, 0))
 	ConfirmReverse(List(0, 1, List(2, 3), 4), List(4, List(2, 3), 1, 0))
 }
+
+func TestCopy(t *testing.T) {
+	ConfirmCopy := func(l, r LispPair) {
+		if c := Copy(l); !Equal(r, c) {
+			t.Fatalf("Copy(%v) should be %v but is %v", l, r, c)
+		}
+	}
+
+	ConfirmCopy(List(), List())
+	ConfirmCopy(List(0), List(0))
+	ConfirmCopy(List(0, 1), List(0, 1))
+	ConfirmCopy(List(0, 1, List(2, 3), 4), List(0, 1, List(2, 3), 4))
+}
+
+func TestRepeat(t *testing.T) {
+	ConfirmRepeat := func(l LispPair, count int, r LispPair) {
+		if c := Repeat(l, count); !Equal(r, c) {
+			t.Fatalf("Repeat(%v, %v) should be %v but is %v", l, count, r, c)
+		}
+	}
+
+	ConfirmRepeat(List(), 0, List())
+	ConfirmRepeat(List(), 1, List())
+	ConfirmRepeat(List(), 2, List())
+	ConfirmRepeat(List(), 3, List())
+
+	ConfirmRepeat(List(0), 0, List())
+	ConfirmRepeat(List(0), 1, List(0))
+	ConfirmRepeat(List(0), 2, List(0, 0))
+	ConfirmRepeat(List(0), 3, List(0, 0, 0))
+
+	ConfirmRepeat(List(0, 1), 0, List())
+	ConfirmRepeat(List(0, 1), 1, List(0, 1))
+	ConfirmRepeat(List(0, 1), 2, List(0, 1, 0, 1))
+	ConfirmRepeat(List(0, 1), 3, List(0, 1, 0, 1, 0, 1))
+
+	ConfirmRepeat(List(0, 1, List(2, 3), 4), 0, List())
+	ConfirmRepeat(List(0, 1, List(2, 3), 4), 1, List(0, 1, List(2, 3), 4))
+	ConfirmRepeat(List(0, 1, List(2, 3), 4), 2, List(0, 1, List(2, 3), 4, 0, 1, List(2, 3), 4))
+	ConfirmRepeat(List(0, 1, List(2, 3), 4), 3, List(0, 1, List(2, 3), 4, 0, 1, List(2, 3), 4, 0, 1, List(2, 3), 4))
+}

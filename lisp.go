@@ -1,5 +1,7 @@
 package greenspun
 
+import "fmt"
+
 const _ITERATION = "iteration"
 
 func ThrowIteration() {
@@ -350,6 +352,51 @@ func Reverse(l LispPair) (r LispPair) {
 		l.Rplacd(r)
 		r = l
 		l = n
+	}
+	return
+}
+
+func Copy(l LispPair) (r LispPair) {
+	if !IsNil(l) {
+		var c *cell
+		head := &cell{}
+		r = head
+
+		Each(l, func(v interface{}) {
+			c = Cons(v, nil)
+			r.Rplacd(c)
+			r = c
+		})
+
+		if head.Cdr() != nil {
+			r = head.Cdr().(LispPair)
+		} else {
+			r = nil
+		}
+	}
+fmt.Printf("Copy(%v) => %v\n", l, r)
+	return
+}
+
+func Repeat(l LispPair, count int) (r LispPair) {
+	if !IsNil(l) {
+		var c *cell
+		head := &cell{}
+		r = head
+
+		for i := count; i > 0; i-- {
+			Each(l, func(v interface{}) {
+				c = Cons(v, nil)
+				r.Rplacd(c)
+				r = c
+			})
+		}
+
+		if head.Cdr() != nil {
+			r = head.Cdr().(LispPair)
+		} else {
+			r = nil
+		}
 	}
 	return
 }
