@@ -20,17 +20,19 @@ func Cons(head, tail interface{}) (c *cell) {
 }
 
 func (c *cell) String() (r string) {
-	if _, ok := c.tail.(LispPair); ok {
-		terms := make([]string, 0, 4)		
-		Each(c, func(v interface{}) {
-			terms = append(terms, fmt.Sprintf("%v", v))
-		})
-		r = strings.Join(terms, " ")
-	} else {
-		if c.tail == nil {
-			r = fmt.Sprintf("%v", c.head)
+	if c != nil {
+		if _, ok := c.tail.(LispPair); ok {
+			terms := make([]string, 0, 4)		
+			Each(c, func(v interface{}) {
+				terms = append(terms, fmt.Sprintf("%v", v))
+			})
+			r = strings.Join(terms, " ")
 		} else {
-			r = fmt.Sprintf("%v . %v", c.head, c.tail)
+			if c.tail == nil {
+				r = fmt.Sprintf("%v", c.head)
+			} else {
+				r = fmt.Sprintf("%v . %v", c.head, c.tail)
+			}
 		}
 	}
 	return "(" + r + ")"

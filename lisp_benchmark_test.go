@@ -5,10 +5,17 @@ import "testing"
 var (
 	List0 = List()
 	List1 = List(0)
-	List10 = Repeat(List(0), 10)
-	List100 = Repeat(List(0), 100)
-	List1000 = Repeat(List(0), 1000)
+	List10 = Repeat(List(0), 10).(*cell)
+	List100 = Repeat(List(0), 100).(*cell)
+	List1000 = Repeat(List(0), 1000).(*cell)
+	ListInterface interface{} = List0
 )
+
+func BenchmarkLispPairAssertion(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		_, _ = ListInterface.(LispPair)
+	}
+}
 
 func BenchmarkLispLen0(b *testing.B) {
 	for i := 0; i < b.N; i++ {

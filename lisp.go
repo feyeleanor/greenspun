@@ -1,6 +1,6 @@
 package greenspun
 
-import "fmt"
+//import "fmt"
 
 const _ITERATION = "iteration"
 
@@ -347,11 +347,11 @@ func Until(l LispPair, f interface{}) (i int) {
 }
 
 func Reverse(l LispPair) (r LispPair) {
-	for !IsNil(l) {
-		n, _ := l.Cdr().(LispPair)
-		l.Rplacd(r)
-		r = l
-		l = n
+	for current := Copy(l); current != nil; {
+		temp := current
+		current, _ = current.Cdr().(LispPair)
+		temp.Rplacd(r)
+		r = temp
 	}
 	return
 }
@@ -374,7 +374,6 @@ func Copy(l LispPair) (r LispPair) {
 			r = nil
 		}
 	}
-fmt.Printf("Copy(%v) => %v\n", l, r)
 	return
 }
 

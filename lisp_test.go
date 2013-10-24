@@ -431,6 +431,7 @@ func TestReverse(t *testing.T) {
 	ConfirmReverse(List(0, 1), List(1, 0))
 	ConfirmReverse(List(0, 1, 2), List(2, 1, 0))
 	ConfirmReverse(List(0, 1, List(2, 3), 4), List(4, List(2, 3), 1, 0))
+	ConfirmReverse(List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), List(9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
 }
 
 func TestCopy(t *testing.T) {
@@ -444,6 +445,7 @@ func TestCopy(t *testing.T) {
 	ConfirmCopy(List(0), List(0))
 	ConfirmCopy(List(0, 1), List(0, 1))
 	ConfirmCopy(List(0, 1, List(2, 3), 4), List(0, 1, List(2, 3), 4))
+	ConfirmCopy(List(0, 1, List(2, List(3, 4, 5)), 6), List(0, 1, List(2, List(3, 4, 5)), 6))
 }
 
 func TestRepeat(t *testing.T) {
