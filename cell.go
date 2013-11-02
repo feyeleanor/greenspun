@@ -404,3 +404,12 @@ func (c *Cell) Repeat(count int) (r *Cell) {
 		}
 	})
 }
+
+func (c *Cell) Zip(n *Cell) (r *Cell) {
+	return c.constructList(func(cursor *Cell) {
+		for ; !c.IsNil() || !n.IsNil(); c, n = c.Next(), n.Next() {
+			cursor = cursor.append(Cons(c.Car(), n.Car()))
+		}
+	})
+	return
+}

@@ -651,3 +651,19 @@ func TestCellRepeat(t *testing.T) {
 	ConfirmRepeat(List(0, 1, List(2, 3), 4), 2, List(0, 1, List(2, 3), 4, 0, 1, List(2, 3), 4))
 	ConfirmRepeat(List(0, 1, List(2, 3), 4), 3, List(0, 1, List(2, 3), 4, 0, 1, List(2, 3), 4, 0, 1, List(2, 3), 4))
 }
+
+func TestCellZip(t *testing.T) {
+	ConfirmZip := func(x, y, r *Cell) {
+		if c := x.Zip(y); !c.Equal(r) {
+			t.Fatalf("%v.Zip(%v) should be %v but is %v", x, y, r, c)
+		}
+	}
+
+	ConfirmZip(nil, nil, nil)
+	ConfirmZip(List(), List(), List())
+	ConfirmZip(Cons(nil, nil), Cons(nil, nil), Cons(Cons(nil, nil), nil))
+	ConfirmZip(Cons(1, nil), Cons(2, nil), Cons(Cons(1, 2), nil))
+	ConfirmZip(Cons(2, nil), Cons(1, nil), Cons(Cons(2, 1), nil))
+	ConfirmZip(List(1, 2), List(3, 4), List(Cons(1, 3), Cons(2, 4)))
+	ConfirmZip(List(1, 2, 3, 4, 5), List(5, 4, 3, 2, 1), List(Cons(1, 5), Cons(2, 4), Cons(3, 3), Cons(4, 2), Cons(5, 1)))
+}

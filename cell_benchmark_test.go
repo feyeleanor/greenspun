@@ -640,3 +640,33 @@ func BenchmarkCellPartition1000(b *testing.B) {
 		List1000.Partition(999)
 	}
 }
+
+func BenchmarkCellZip0(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List0.Zip(List0)
+	}
+}
+
+func BenchmarkCellZip1(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List1.Zip(List1)
+	}
+}
+
+func BenchmarkCellZip10(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List10.Zip(List10)
+	}
+}
+
+func BenchmarkCellZip100(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List100.Zip(List100)
+	}
+}
+
+func BenchmarkCellZip1000(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List1000.Zip(List1000)
+	}
+}
