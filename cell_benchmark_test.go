@@ -370,9 +370,33 @@ func BenchmarkCellEach100(b *testing.B) {
 	}
 }
 
-func BenchmarkCellEach1000(b *testing.B) {
+func BenchmarkCellStep0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		List1000.Each(func(v interface{}) {})
+		List0.Step(0, 1, func(v interface{}) {})
+	}
+}
+
+func BenchmarkCellStep1(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List1.Step(0, 1, func(v interface{}) {})
+	}
+}
+
+func BenchmarkCellStep10(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List10.Step(0, 1, func(v interface{}) {})
+	}
+}
+
+func BenchmarkCellStep100(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List100.Step(0, 1, func(v interface{}) {})
+	}
+}
+
+func BenchmarkCellStep1000(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List1000.Step(0, 1, func(v interface{}) {})
 	}
 }
 

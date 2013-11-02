@@ -256,6 +256,46 @@ func (c *Cell) Each(f interface{}) {
 	}
 }
 
+func (c *Cell) Step(start, n int, f interface{}) {
+	var i		int
+
+	c = c.Offset(start)
+	switch f := f.(type) {
+	case func():
+		for ; !c.IsNil(); c = c.Offset(n) {
+			f()
+		}
+	case func(interface{}):
+		for ; !c.IsNil(); c = c.Offset(n) {
+			f(c.Car())
+		}
+	case func(int, interface{}):
+		for ; !c.IsNil(); c = c.Offset(n) {
+			f(i, c.Car())
+			i++
+		}
+	case func(interface{}, interface{}):
+		for ; !c.IsNil(); c = c.Offset(n) {
+			f(i, c.Car())
+			i++
+		}
+	case func(*Cell):
+		for ; !c.IsNil(); c = c.Offset(n) {
+			f(c)
+		}
+	case func(int, *Cell):
+		for ; !c.IsNil(); c = c.Offset(n) {
+			f(i, c)
+			i++
+		}
+	case func(interface{}, *Cell):
+		for ; !c.IsNil(); c = c.Offset(n) {
+			f(i, c)
+			i++
+		}
+	}
+}
+
 func (c *Cell) append(v interface{}) (r *Cell) {
 	r = Cons(v, nil)
 	c.Rplacd(r)
@@ -411,5 +451,4 @@ func (c *Cell) Zip(n *Cell) (r *Cell) {
 			cursor = cursor.append(Cons(c.Car(), n.Car()))
 		}
 	})
-	return
 }

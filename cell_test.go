@@ -449,6 +449,52 @@ func TestCellEach(t *testing.T) {
 	})
 }
 
+
+func TestCellStep(t *testing.T) {
+	list := List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	count := 0
+
+	ConfirmStep := func(c *Cell, start, step, expected int, f interface{}) {
+		count = 0
+		c.Step(start, step, f)
+		if expected != count {
+			t.Fatalf("%v.Step(%v, %v) should have iterated %v times not %v times", c, start, step, expected, count)
+		}
+	}
+
+	f := func(index int, i interface{}) {
+		count++
+	}
+
+	ConfirmStep(list, 0, 1, 10, f)
+	ConfirmStep(list, 0, 2, 5, f)
+	ConfirmStep(list, 0, 3, 4, f)
+	ConfirmStep(list, 0, 4, 3, f)
+	ConfirmStep(list, 0, 5, 2, f)
+	ConfirmStep(list, 0, 6, 2, f)
+
+	ConfirmStep(list, 1, 1, 9, f)
+	ConfirmStep(list, 1, 2, 5, f)
+	ConfirmStep(list, 1, 3, 3, f)
+	ConfirmStep(list, 1, 4, 3, f)
+	ConfirmStep(list, 1, 5, 2, f)
+	ConfirmStep(list, 1, 6, 2, f)
+
+	ConfirmStep(list, 2, 1, 8, f)
+	ConfirmStep(list, 2, 2, 4, f)
+	ConfirmStep(list, 2, 3, 3, f)
+	ConfirmStep(list, 2, 4, 2, f)
+	ConfirmStep(list, 2, 5, 2, f)
+	ConfirmStep(list, 2, 6, 2, f)
+
+	ConfirmStep(list, 3, 1, 7, f)
+	ConfirmStep(list, 3, 2, 4, f)
+	ConfirmStep(list, 3, 3, 3, f)
+	ConfirmStep(list, 3, 4, 2, f)
+	ConfirmStep(list, 3, 5, 2, f)
+	ConfirmStep(list, 3, 6, 2, f)
+}
+
 func TestCellMap(t *testing.T) {
 	list := List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	doubles := List(0, 2, 4, 6, 8, 10, 12, 14, 16, 18)
