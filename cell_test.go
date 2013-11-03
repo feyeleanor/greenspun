@@ -155,6 +155,49 @@ func TestCellEqual(t *testing.T) {
 	
 }
 
+func TestCellPush(t *testing.T) {
+	ConfirmPush := func(c *Cell, v interface{}, r *Cell) {
+		if x := c.Push(v); !x.Equal(r) {
+			t.Fatalf("%v.Push(%v) should be %v but is %v", c, v, r, x)
+		}
+	}
+
+	ConfirmPush(nil, nil, List(nil))
+	ConfirmPush(nil, List(), List(List()))
+	ConfirmPush(nil, 1, List(1))
+
+	ConfirmPush(List(), nil, List(nil))
+	ConfirmPush(List(0), 1, List(1, 0))
+}
+
+func TestCellPop(t *testing.T) {
+	ConfirmPop := func(c *Cell, rv interface{}, r *Cell) {
+		switch v, x := c.Pop(); {
+		case !r.Equal(x):
+			t.Fatalf("1. %v.Pop() should be %v, %v but is %v, %v", c, rv, r, v, x)
+		case rv != v:
+			t.Fatalf("2. %v.Pop() should be %v, %v but is %v, %v", c, rv, r, v, x)
+		}
+	}
+
+	ConfirmPop(nil, nil, nil)
+	ConfirmPop(List(), nil, nil)
+	ConfirmPop(List(1), 1, nil)
+	ConfirmPop(List(1, 2), 1, List(2))
+}
+
+func TestCellNext(t *testing.T) {
+	ConfirmNext := func(c *Cell, r *Cell) {
+		if x := c.Next(); !x.Equal(r) {
+			t.Fatalf("%v.Next() should be %v but is %v", c, r, x)
+		}
+	}
+
+	ConfirmNext(nil, nil)
+	ConfirmNext(List(), nil)
+	ConfirmNext(List(0, 1), List(1))
+}
+
 func TestCellCar(t *testing.T) {
 	ConfirmCar := func(c *Cell, r interface{}) {
 		if car, ok := c.Car().(Equatable); ok {

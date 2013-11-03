@@ -95,6 +95,19 @@ func (c *Cell) Equal(o interface{}) (r bool) {
 	return
 }
 
+func (c *Cell) Push(v interface{}) (r *Cell) {
+	if !c.IsNil() {
+		r = Cons(v, c)
+	} else {
+		r = Cons(v, nil)
+	}
+	return 
+}
+
+func (c *Cell) Pop() (interface{}, *Cell) {
+	return c.Car(), c.Next()
+}
+
 func (c *Cell) Next() (r *Cell) {
 	r, _ = c.Cdr().(*Cell)
 	return
@@ -128,18 +141,12 @@ func (c *Cell) Cadr() (r interface{}) {
 	return
 }
 
-func (c *Cell) Cdar() (r interface{}) {
-	if h, ok := c.Cdr().(*Cell); ok {
-		r = h.Car()
-	}
-	return
+func (c *Cell) Cdar() interface{} {
+	return c.Next().Car()
 }
 
-func (c *Cell) Cddr() (r interface{}) {
-	if h, ok := c.Cdr().(*Cell); ok {
-		r = h.Cdr()
-	}
-	return
+func (c *Cell) Cddr() interface{} {
+	return c.Next().Cdr()
 }
 
 func (c *Cell) Rplaca(i interface{}) *Cell {
@@ -218,42 +225,7 @@ func (c *Cell) Append(v... interface{}) (r *Cell) {
 }
 
 func (c *Cell) Each(f interface{}) {
-	var i		int
-
-	switch f := f.(type) {
-	case func():
-		for ; !c.IsNil(); c = c.Next() {
-			f()
-		}
-	case func(interface{}):
-		for ; !c.IsNil(); c = c.Next() {
-			f(c.Car())
-		}
-	case func(int, interface{}):
-		for ; !c.IsNil(); c = c.Next() {
-			f(i, c.Car())
-			i++
-		}
-	case func(interface{}, interface{}):
-		for ; !c.IsNil(); c = c.Next() {
-			f(i, c.Car())
-			i++
-		}
-	case func(*Cell):
-		for ; !c.IsNil(); c = c.Next() {
-			f(c)
-		}
-	case func(int, *Cell):
-		for ; !c.IsNil(); c = c.Next() {
-			f(i, c)
-			i++
-		}
-	case func(interface{}, *Cell):
-		for ; !c.IsNil(); c = c.Next() {
-			f(i, c)
-			i++
-		}
-	}
+	c.Step(0, 1, f)
 }
 
 func (c *Cell) Step(start, n int, f interface{}) {
@@ -418,12 +390,9 @@ func (c *Cell) Partition(offset int) (x, y *Cell) {
 }
 
 func (c *Cell) Reverse() (r *Cell) {
-	r = new(Cell)
 	c.Each(func(v interface{}) {
-		r.head = v
-		r = Cons(nil, r)
+		r = r.Push(v)
 	})
-	r = r.Next()
 	return
 }
 

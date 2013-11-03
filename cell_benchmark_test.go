@@ -118,6 +118,42 @@ func BenchmarkCellEqual1000(b *testing.B) {
 	}
 }
 
+func BenchmarkCellPush0(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List0.Push(nil)
+	}
+}
+
+func BenchmarkCellPush1(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List1.Push(nil)
+	}
+}
+
+func BenchmarkCellPop0(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List0.Pop()
+	}
+}
+
+func BenchmarkCellPop1(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List1.Pop()
+	}
+}
+
+func BenchmarkCellNext0(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List0.Next()
+	}
+}
+
+func BenchmarkCellNext1(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List1.Next()
+	}
+}
+
 func BenchmarkCellCar0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Car()
