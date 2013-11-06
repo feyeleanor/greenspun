@@ -186,6 +186,29 @@ func TestCellPop(t *testing.T) {
 	ConfirmPop(List(1, 2), 1, List(2))
 }
 
+func TestIntPair(t *testing.T) {
+	ConfirmIntPair := func(c *Cell, l, r int) {
+		if x, y := c.IntPair(); x != l || y != r {
+			t.Fatalf("%v.IntPair() should be (%v, %v) but is (%v, %v)", c, l, r, x, y)
+		}
+	}
+
+	ConfirmIntPair(Cons(0, 0), 0, 0)
+	ConfirmIntPair(Cons(0, 1), 0, 1)
+	ConfirmIntPair(Cons(1, 0), 1, 0)
+}
+
+func TestCellPair(t *testing.T) {
+	ConfirmCellPair := func(c, l, r *Cell) {
+		if x, y := c.CellPair(); !x.Equal(l) || !y.Equal(r) {
+			t.Fatalf("%v.IntPair() should be (%v, %v) but is (%v, %v)", c, l, r, x, y)
+		}
+	}
+
+	ConfirmCellPair(Cons(List(), List()), List(), List())
+	ConfirmCellPair(Cons(List(0, 1), List(2, 3)), List(0, 1), List(2, 3))
+}
+
 func TestCellNext(t *testing.T) {
 	ConfirmNext := func(c *Cell, r *Cell) {
 		if x := c.Next(); !x.Equal(r) {

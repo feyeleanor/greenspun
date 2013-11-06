@@ -142,6 +142,24 @@ func BenchmarkCellPop1(b *testing.B) {
 	}
 }
 
+func BenchmarkCellIntPair(b *testing.B) {
+	b.StopTimer()
+		p := Cons(0, 0)
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		p.IntPair()
+	}
+}
+
+func BenchmarkCellCellPair(b *testing.B) {
+	b.StopTimer()
+		p := Cons(List(), List())
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		p.CellPair()
+	}
+}
+
 func BenchmarkCellNext0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Next()
