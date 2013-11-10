@@ -166,14 +166,6 @@ func TestVMRap(t *testing.T) {
 }
 
 func TestVMCar(t *testing.T) {
-	vm := &VM{
-		S: List(
-						List(0),
-						List(1),
-						List(2),
-						),
-		C: List(CAR, CAR, CAR),
-	}
 	ConfirmCar := func(v *VM, r interface{}) {
 		vs := fmt.Sprintf("%v", v)
 		if v.Car(); v.S.head != r {
@@ -181,19 +173,46 @@ func TestVMCar(t *testing.T) {
 		}
 	}
 
-	ConfirmCar(vm, 0)
-	ConfirmCar(vm, 1)
-	ConfirmCar(vm, 2)
+	ConfirmCar(&VM{ S: List(List(0)) }, 0)
+	ConfirmCar(&VM{ S: List(List(1)) }, 1)
+	ConfirmCar(&VM{ S: List(List(2)) }, 2)
 }
 
 func TestVMCdr(t *testing.T) {
-	t.Logf("Implement tests for VM::Cdr()")
+	ConfirmCdr := func(v *VM, r *Cell) {
+		vs := fmt.Sprintf("%v", v)
+		if v.Cdr(); !r.Equal(v.S) {
+			t.Fatalf("%v.Cdr() should be %v but is %v", vs, r, v.S)
+		}
+	}
+
+	ConfirmCdr(&VM{ S: List(Cons(0, 1), 2) }, List(1, 2))
+	ConfirmCdr(&VM{ S: List(Cons(1, 2), 3) }, List(2, 3))
+	ConfirmCdr(&VM{ S: List(Cons(2, 3), 4) }, List(3, 4))
 }
 
 func TestVMCons(t *testing.T) {
-	t.Logf("Implement tests for VM::Cons()")
+	vm := &VM{ S: List(0, 1, 2, 3) }
+	ConfirmCons := func(v *VM, r *Cell) {
+		vs := fmt.Sprintf("%v", v)
+		if v.Cons(); !r.Equal(v.S) {
+			t.Fatalf("%v.Cons() should be %v but is %v", vs, r, v.S)
+		}
+	}
+
+	ConfirmCons(vm, List(Cons(0, 1), 2, 3))
+	ConfirmCons(vm, List(Cons(Cons(0, 1), 2), 3))
+	ConfirmCons(vm, List(Cons(Cons(Cons(0, 1), 2), 3)))
 }
 
 func TestVMEq(t *testing.T) {
-	t.Logf("Implement tests for VM::Eq()")
+	ConfirmCons := func(v *VM, r interface{}) {
+		vs := fmt.Sprintf("%v", v)
+		if v.Eq(); v.S.head != r {
+			t.Fatalf("%v.Eq() should be %v but is %v", vs, r, v.S.head)
+		}
+	}
+
+	ConfirmCons(&VM{ S: List(0, 0) }, "T")
+	ConfirmCons(&VM{ S: List(0, 1) }, nil)
 }

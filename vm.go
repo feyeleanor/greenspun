@@ -1,6 +1,6 @@
 package greenspun
 
-import "fmt"
+//import "fmt"
 
 //	This type embodies the core of the SECD virtual machine for implementing functional languages
 //
@@ -116,7 +116,8 @@ func (vm *VM) Ld() {
 //		s									-> ((f . e) . s)
 //		(LDF f . c)				-> c
 func (vm *VM) Ldf() {
-	vm.S = Cons(Cons(vm.C.Cadr(), vm.E), vm.S)
+	vm.Advance()
+	vm.S = Cons(Cons(vm.C.Car(), vm.E), vm.S)
 	vm.Advance()
 }
 
@@ -211,10 +212,6 @@ func (vm *VM) Rap() {
 //		(CAR . c) 			-> c
 //
 func (vm *VM) Car() {
-fmt.Println("vm = ", vm)
-fmt.Println("vm.S = ", vm.S)
-fmt.Println("vm.S.Caar() = ", vm.S.Caar())
-fmt.Println("vm.S.Cdr() = ", vm.S.Cdr())
 	vm.S = Cons(vm.S.Caar(), vm.S.Cdr())
 	vm.Advance()
 }

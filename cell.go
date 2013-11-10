@@ -111,7 +111,7 @@ func (c *Cell) Pop() (interface{}, *Cell) {
 //	Combine the first two items at the front of the list into a Cons Cell and make this the front of the list
 
 func (c *Cell) Cons() *Cell {
-	return Cons(Cons(c.Car(), c.Cdar()), c.Cdr())
+	return Cons(Cons(c.Car(), c.Cdar()), c.Cddr())
 }
 
 //	These are convenience wrappers for two common storage situations: a pair of integers, and a pair of pairs
