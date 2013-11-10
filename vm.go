@@ -1,5 +1,7 @@
 package greenspun
 
+import "fmt"
+
 //	This type embodies the core of the SECD virtual machine for implementing functional languages
 //
 type VM struct {
@@ -12,7 +14,7 @@ type VM struct {
 
 //	Initialise the virtual machine with a global environment and code for execution
 //
-func (vm *VM) Initialise(env, code *Cell) {
+func (vm *VM) Initialize(env, code *Cell) {
 	vm.S = nil
 	vm.E = env
 	vm.C = code
@@ -22,8 +24,8 @@ func (vm *VM) Initialise(env, code *Cell) {
 
 //	Load a value from a slot in the environment
 //
-func (vm *VM) Locate(env, slot int) *Cell {
-	return vm.E.Offset(env).Car().(*Cell).Offset(slot).Car().(*Cell)
+func (vm *VM) Locate(env, slot int) interface{} {
+	return vm.E.Offset(env).Car().(*Cell).Offset(slot).Car()
 }
 
 
@@ -83,7 +85,7 @@ func (vm *VM) Run() bool {
 //		s						-> (nil . s)
 //		(NIL . c)		-> c
 func (vm *VM) Nil() {
-	vm.S.Push(nil)
+	vm.S = vm.S.Push(nil)
 	vm.Advance()
 }
 
@@ -102,7 +104,9 @@ func (vm *VM) Ldc() {
 //		s									-> (locate((i . j), e) . s)
 //		(LD (i . j) . c)	-> c
 func (vm *VM) Ld() {
-	vm.S.Push(vm.Locate(vm.C.Car().(*Cell).IntPair()))
+	vm.Advance()
+	env, slot := vm.C.Car().(*Cell).IntPair()
+	vm.S = vm.S.Push(vm.Locate(env, slot))
 	vm.Advance()
 }
 
@@ -172,8 +176,9 @@ func (vm *VM) Ret() {
 
 //	Dum - push a "dummy", an empty list, in front of the environment list.
 //
-//		s e (DUM.c) d  ->  s (W.e) c d
-//		           				where W has been called PENDING earlier
+//		e (DUM.c) d			-> (W . e)
+//		           					where W has been called PENDING earlier
+//		(DUM . c)				-> c
 //
 func (vm *VM) Dum() {
 	vm.E = Cons(List(), vm.E)
@@ -186,11 +191,12 @@ func (vm *VM) Dum() {
 //		the current one, pushing the parameter list in front of that, clearing the stack, and setting C to the closure's function pointer. The
 //		previous values of S, E, and the next value of C are saved on the dump.
 //
-//		((f.(W.e)) v.s) (W.e) (RAP.c) d  ->  nil rplaca((W.e),v) f (s e c.d)
+//		((f . (W . e)) v . s)	-> nil
+//		(W . e)								-> rplaca((W . e), v)
+//		(RAP . c)							-> f
+//		d											-> (s e c . d)
 //
 func (vm *VM) Rap() {
-//  ((c'.e') v.s) (?.e) (RAP.c) d -> NIL rpl(e',v) c' (s e c.d)
-
 	vm.D = Cons(vm.S.Cddr(), Cons(vm.E.Cdr(), Cons(vm.C.Cdr(), vm.D)))
 	vm.E = vm.S.Cdar().(*Cell)
 	vm.E.Rplaca(vm.S.Cadr())
@@ -201,9 +207,14 @@ func (vm *VM) Rap() {
 
 //		Replace TOS with Car(TOS)
 //
-//		((a.b).s) e (CAR.c) d --> (a.s) e c d
+//		((a . b) . s)		-> (a . s)
+//		(CAR . c) 			-> c
 //
 func (vm *VM) Car() {
+fmt.Println("vm = ", vm)
+fmt.Println("vm.S = ", vm.S)
+fmt.Println("vm.S.Caar() = ", vm.S.Caar())
+fmt.Println("vm.S.Cdr() = ", vm.S.Cdr())
 	vm.S = Cons(vm.S.Caar(), vm.S.Cdr())
 	vm.Advance()
 }
@@ -211,7 +222,8 @@ func (vm *VM) Car() {
 
 //		Replace TOS with Cdr(TOS)
 //
-//		((a.b).s) e (CDR.c) d --> (b.s) e c d
+//		((a . b) . s) 	-> (b . s)
+//		(CDR . c)				-> c
 //
 func (vm *VM) Cdr() {
  	vm.S = Cons(vm.S.Cadr(), vm.S.Cdr())
@@ -221,7 +233,8 @@ func (vm *VM) Cdr() {
 
 //		Pop top two items of stack, combine them into a Pair and push onto stack
 //
-//		(a b.s) e (CONS.c) d --> ((a.b).s) e c d
+//		(a b . s)				-> ((a . b) . s)
+//		(CONS . c)			-> c
 //
 func (vm *VM) Cons() {
 	vm.S = vm.S.Cons()
@@ -231,8 +244,9 @@ func (vm *VM) Cons() {
 
 //		Push EQ of TOS and Cdr(TOS) onto the stack
 //
-//		(a a.s) e (EQ.c) d --> (#t.s) e c d
-//		(a b.s) e (EQ.c) d --> (#f.s) e c d
+//		(a a . s)				-> (#t . s)
+//		(a b . s)				-> (#f . s)
+//		(EQ . c) 				-> c
 //
 func (vm *VM) Eq() {
 	if vm.S.Car() == vm.S.Cdar() {
