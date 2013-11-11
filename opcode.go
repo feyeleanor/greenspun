@@ -11,9 +11,13 @@ const (
 	RET
 	DUM
 	RAP
-	CAR
-	CDR
-	CONS
-	EQ
+	SCAR
+	SCDR
+	SCONS
+	SEQ
 	HALT
+)
+
+const (
+	TRUE = "T"
 )

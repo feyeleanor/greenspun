@@ -5,8 +5,8 @@ import(
 	"testing"
 )
 
-func TestCellString(t *testing.T) {
-	ConfirmString := func(c *Cell, r string) {
+func TestPairString(t *testing.T) {
+	ConfirmString := func(c *Pair, r string) {
 		if s := c.String(); s != r {
 			t.Fatalf("%v.String() should be %v", s, r)
 		}
@@ -29,8 +29,8 @@ func TestCellString(t *testing.T) {
 	ConfirmString(List(0, List(1, 2, 3), List(2, 3), 3), "(0 (1 2 3) (2 3) 3)")
 }
 
-func TestCellLen(t *testing.T) {
-	ConfirmLen := func(c *Cell, r int) {
+func TestPairLen(t *testing.T) {
+	ConfirmLen := func(c *Pair, r int) {
 		if l := c.Len(); l != r {
 			t.Fatalf("%v.Len() should be %v but is %v", c, r, l)
 		}
@@ -38,7 +38,7 @@ func TestCellLen(t *testing.T) {
 
 	ConfirmLen(nil, 0)
 	ConfirmLen(List(), 0)
-	ConfirmLen(&Cell{}, 1)
+	ConfirmLen(&Pair{}, 1)
 	ConfirmLen(Cons(nil, nil), 1)
 	ConfirmLen(Cons(0, nil), 1)
 	ConfirmLen(List(0), 1)
@@ -47,8 +47,8 @@ func TestCellLen(t *testing.T) {
 	ConfirmLen(List(0, 1, 2), 3)
 }
 
-func TestCellIsNil(t *testing.T) {
-	ConfirmIsNil := func(c *Cell, r bool) {
+func TestPairIsNil(t *testing.T) {
+	ConfirmIsNil := func(c *Pair, r bool) {
 		if n := c.IsNil(); n != r {
 			t.Fatalf("%v.IsNil() should be %v but is %v", c, r, n)
 		}
@@ -61,56 +61,56 @@ func TestCellIsNil(t *testing.T) {
 	ConfirmIsNil(List(nil), false)
 }
 
-func TestCellEqual(t *testing.T) {
-	ConfirmEqual := func(l *Cell, r interface{}, ok bool) {
+func TestPairEqual(t *testing.T) {
+	ConfirmEqual := func(l *Pair, r interface{}, ok bool) {
 		if x := l.Equal(r); x != ok {
 			t.Fatalf("%v.Equal(%v) should be %v but is %v", l, r, ok, x)
 		}
 	}
 
-	ConfirmEqual(&Cell{ &Cell{ 1, 1 }, nil }, &Cell{ nil, nil }, false)
-	ConfirmEqual(&Cell{ nil, &Cell{ 1, 1 } }, &Cell{ nil, nil }, false)
-	ConfirmEqual(&Cell{ nil, nil }, &Cell{ &Cell{ 1, 1 }, nil }, false)
-	ConfirmEqual(&Cell{ nil, nil }, &Cell{ nil, &Cell{ 1, 1 } }, false)
-	ConfirmEqual(&Cell{ &Cell{ 1, 1 }, nil }, &Cell{ &Cell{ 1, 1 }, nil }, true)
-	ConfirmEqual(&Cell{ nil, &Cell{ 1, 1 } }, &Cell{ nil, &Cell{ 1, 1 } }, true)
-	ConfirmEqual(&Cell{ &Cell{ 1, 1 }, &Cell{ 1, 1 } }, &Cell{ &Cell{ 1, 1 }, &Cell{ 1, 1 } }, true)
+	ConfirmEqual(&Pair{ &Pair{ 1, 1 }, nil }, &Pair{ nil, nil }, false)
+	ConfirmEqual(&Pair{ nil, &Pair{ 1, 1 } }, &Pair{ nil, nil }, false)
+	ConfirmEqual(&Pair{ nil, nil }, &Pair{ &Pair{ 1, 1 }, nil }, false)
+	ConfirmEqual(&Pair{ nil, nil }, &Pair{ nil, &Pair{ 1, 1 } }, false)
+	ConfirmEqual(&Pair{ &Pair{ 1, 1 }, nil }, &Pair{ &Pair{ 1, 1 }, nil }, true)
+	ConfirmEqual(&Pair{ nil, &Pair{ 1, 1 } }, &Pair{ nil, &Pair{ 1, 1 } }, true)
+	ConfirmEqual(&Pair{ &Pair{ 1, 1 }, &Pair{ 1, 1 } }, &Pair{ &Pair{ 1, 1 }, &Pair{ 1, 1 } }, true)
 
-	ConfirmEqual(Cons(nil, nil), Cell{ nil, nil }, true)
-	ConfirmEqual(Cons(nil, nil), &Cell{ nil, nil }, true)
+	ConfirmEqual(Cons(nil, nil), Pair{ nil, nil }, true)
+	ConfirmEqual(Cons(nil, nil), &Pair{ nil, nil }, true)
 	ConfirmEqual(Cons(nil, nil), Cons(nil, nil), true)
 
-	ConfirmEqual(Cons(1, nil), Cell{ 1, nil }, true)
-	ConfirmEqual(Cons(1, nil), &Cell{ 1, nil }, true)
+	ConfirmEqual(Cons(1, nil), Pair{ 1, nil }, true)
+	ConfirmEqual(Cons(1, nil), &Pair{ 1, nil }, true)
 	ConfirmEqual(Cons(1, nil), Cons(1, nil), true)
 
-	ConfirmEqual(Cons(nil, 1), Cell{ nil, 1 }, true)
-	ConfirmEqual(Cons(nil, 1), &Cell{ nil, 1 }, true)
+	ConfirmEqual(Cons(nil, 1), Pair{ nil, 1 }, true)
+	ConfirmEqual(Cons(nil, 1), &Pair{ nil, 1 }, true)
 	ConfirmEqual(Cons(nil, 1), Cons(nil, 1), true)
 
-	ConfirmEqual(Cons(1, nil), Cell{ nil, nil }, false)
-	ConfirmEqual(Cons(1, nil), &Cell{ nil, nil }, false)
+	ConfirmEqual(Cons(1, nil), Pair{ nil, nil }, false)
+	ConfirmEqual(Cons(1, nil), &Pair{ nil, nil }, false)
 	ConfirmEqual(Cons(1, nil), Cons(nil, nil), false)
 
-	ConfirmEqual(Cons(nil, 1), Cell{ nil, nil }, false)
-	ConfirmEqual(Cons(nil, 1), &Cell{ nil, nil }, false)
+	ConfirmEqual(Cons(nil, 1), Pair{ nil, nil }, false)
+	ConfirmEqual(Cons(nil, 1), &Pair{ nil, nil }, false)
 	ConfirmEqual(Cons(nil, 1), Cons(nil, nil), false)
 
-	ConfirmEqual(Cons(nil, 1), Cell{ 1, nil }, false)
-	ConfirmEqual(Cons(nil, 1), &Cell{ 1, nil }, false)
+	ConfirmEqual(Cons(nil, 1), Pair{ 1, nil }, false)
+	ConfirmEqual(Cons(nil, 1), &Pair{ 1, nil }, false)
 	ConfirmEqual(Cons(nil, 1), Cons(1, nil), false)
 
-	ConfirmEqual(Cons(1, nil), Cell{ nil, 1 }, false)
-	ConfirmEqual(Cons(1, nil), &Cell{ nil, 1 }, false)
+	ConfirmEqual(Cons(1, nil), Pair{ nil, 1 }, false)
+	ConfirmEqual(Cons(1, nil), &Pair{ nil, 1 }, false)
 	ConfirmEqual(Cons(1, nil), Cons(nil, 1), false)
 
-	ConfirmEqual(Cons(nil, 1), Cell{ nil, 1 }, true)
-	ConfirmEqual(Cons(nil, 1), &Cell{ nil, 1 }, true)
+	ConfirmEqual(Cons(nil, 1), Pair{ nil, 1 }, true)
+	ConfirmEqual(Cons(nil, 1), &Pair{ nil, 1 }, true)
 	ConfirmEqual(Cons(nil, 1), Cons(nil, 1), true)
 
-	ConfirmEqual(Cons(Cons(0, 1), 2), Cell{ &Cell{ 0, 1 }, 2 }, true)
-	ConfirmEqual(Cons(Cons(0, 1), 2), &Cell{ &Cell{ 0, 1 }, 2 }, true)
-	ConfirmEqual(Cons(Cons(0, 1), 2), Cons( &Cell{ 0, 1 }, 2 ), true)
+	ConfirmEqual(Cons(Cons(0, 1), 2), Pair{ &Pair{ 0, 1 }, 2 }, true)
+	ConfirmEqual(Cons(Cons(0, 1), 2), &Pair{ &Pair{ 0, 1 }, 2 }, true)
+	ConfirmEqual(Cons(Cons(0, 1), 2), Cons( &Pair{ 0, 1 }, 2 ), true)
 
 	ConfirmEqual(Cons(Cons(1, 1), nil), Cons(nil, nil), false)
 	ConfirmEqual(Cons(nil, Cons(1, 1)), Cons(nil, nil), false)
@@ -120,43 +120,43 @@ func TestCellEqual(t *testing.T) {
 	ConfirmEqual(Cons(nil, Cons(1, 1)), Cons(nil, Cons(1, 1)), true)
 	ConfirmEqual(Cons(Cons(1, 1), Cons(1, 1)), Cons(Cons(1, 1), Cons(1, 1)), true)
 
-	ConfirmEqual(List(1), &Cell{ nil, nil }, false)
-	ConfirmEqual(List(1), &Cell{ 1, nil }, true)
+	ConfirmEqual(List(1), &Pair{ nil, nil }, false)
+	ConfirmEqual(List(1), &Pair{ 1, nil }, true)
 	ConfirmEqual(List(1), Cons(1, nil), true)
 
 	ConfirmEqual(List(1), List(), false)
 	ConfirmEqual(List(1), nil, false)
 	ConfirmEqual(List(1), Cons(nil, nil), false)
 
-	ConfirmEqual(List(nil, 1), &Cell{ nil, &Cell{ 1, nil } }, true)
+	ConfirmEqual(List(nil, 1), &Pair{ nil, &Pair{ 1, nil } }, true)
 	ConfirmEqual(List(nil, 1), Cons(nil, Cons(1, nil)), true)
 
-	ConfirmEqual(List(nil, 1), &Cell{ nil, nil }, false)
+	ConfirmEqual(List(nil, 1), &Pair{ nil, nil }, false)
 	ConfirmEqual(List(nil, 1), Cons(nil, nil), false)
 
-	ConfirmEqual(List(Cons(0, 1), 2), &Cell{ &Cell{ 0, 1 }, 2 }, false)
-	ConfirmEqual(List(Cons(0, 1), 2), Cons(&Cell{ 0, 1 }, 2), false)
+	ConfirmEqual(List(Cons(0, 1), 2), &Pair{ &Pair{ 0, 1 }, 2 }, false)
+	ConfirmEqual(List(Cons(0, 1), 2), Cons(&Pair{ 0, 1 }, 2), false)
 	ConfirmEqual(List(Cons(0, 1), 2), Cons(Cons(0, 1), 2), false)
 	ConfirmEqual(List(Cons(0, 1), 2), List(Cons(0, 1), 2), true)
 	ConfirmEqual(List(Cons(0, 1), 2), Cons(Cons(0, 1), Cons(2, nil)), true)
 
 
-	ConfirmEqual(List(nil, 1), &Cell{ 1, nil }, false)
-	ConfirmEqual(List(nil, 1), &Cell{ nil, 1 }, false)
+	ConfirmEqual(List(nil, 1), &Pair{ 1, nil }, false)
+	ConfirmEqual(List(nil, 1), &Pair{ nil, 1 }, false)
 	ConfirmEqual(List(nil, 1), Cons(nil, 1), false)
-	ConfirmEqual(List(nil, 1), &Cell{ nil, &Cell{ 1, nil} }, true)
+	ConfirmEqual(List(nil, 1), &Pair{ nil, &Pair{ 1, nil} }, true)
 
-	ConfirmEqual(List(nil, 1), &Cell{ nil, 1 }, false)
-	ConfirmEqual(List(nil, 1), &Cell{ nil, &Cell{ 1, nil } }, true)
-	ConfirmEqual(List(nil, 1), &Cell{ nil, &Cell{ 1, nil } }, true)
+	ConfirmEqual(List(nil, 1), &Pair{ nil, 1 }, false)
+	ConfirmEqual(List(nil, 1), &Pair{ nil, &Pair{ 1, nil } }, true)
+	ConfirmEqual(List(nil, 1), &Pair{ nil, &Pair{ 1, nil } }, true)
 
-	ConfirmEqual(List(nil, 1), &Cell{ nil, &Cell{ 1, nil } }, true)
-	ConfirmEqual(List(1, 1), &Cell{ 1, &Cell{ 1, nil } }, true)
+	ConfirmEqual(List(nil, 1), &Pair{ nil, &Pair{ 1, nil } }, true)
+	ConfirmEqual(List(1, 1), &Pair{ 1, &Pair{ 1, nil } }, true)
 	
 }
 
-func TestCellPush(t *testing.T) {
-	ConfirmPush := func(c *Cell, v interface{}, r *Cell) {
+func TestPairPush(t *testing.T) {
+	ConfirmPush := func(c *Pair, v interface{}, r *Pair) {
 		if x := c.Push(v); !x.Equal(r) {
 			t.Fatalf("%v.Push(%v) should be %v but is %v", c, v, r, x)
 		}
@@ -170,8 +170,8 @@ func TestCellPush(t *testing.T) {
 	ConfirmPush(List(0), 1, List(1, 0))
 }
 
-func TestCellPop(t *testing.T) {
-	ConfirmPop := func(c *Cell, rv interface{}, r *Cell) {
+func TestPairPop(t *testing.T) {
+	ConfirmPop := func(c *Pair, rv interface{}, r *Pair) {
 		switch v, x := c.Pop(); {
 		case !r.Equal(x):
 			t.Fatalf("1. %v.Pop() should be %v, %v but is %v, %v", c, rv, r, v, x)
@@ -187,7 +187,7 @@ func TestCellPop(t *testing.T) {
 }
 
 func TestIntPair(t *testing.T) {
-	ConfirmIntPair := func(c *Cell, l, r int) {
+	ConfirmIntPair := func(c *Pair, l, r int) {
 		if x, y := c.IntPair(); x != l || y != r {
 			t.Fatalf("%v.IntPair() should be (%v, %v) but is (%v, %v)", c, l, r, x, y)
 		}
@@ -198,19 +198,19 @@ func TestIntPair(t *testing.T) {
 	ConfirmIntPair(Cons(1, 0), 1, 0)
 }
 
-func TestCellPair(t *testing.T) {
-	ConfirmCellPair := func(c, l, r *Cell) {
-		if x, y := c.CellPair(); !x.Equal(l) || !y.Equal(r) {
+func TestPairPair(t *testing.T) {
+	ConfirmPairPair := func(c, l, r *Pair) {
+		if x, y := c.PairPair(); !x.Equal(l) || !y.Equal(r) {
 			t.Fatalf("%v.IntPair() should be (%v, %v) but is (%v, %v)", c, l, r, x, y)
 		}
 	}
 
-	ConfirmCellPair(Cons(List(), List()), List(), List())
-	ConfirmCellPair(Cons(List(0, 1), List(2, 3)), List(0, 1), List(2, 3))
+	ConfirmPairPair(Cons(List(), List()), List(), List())
+	ConfirmPairPair(Cons(List(0, 1), List(2, 3)), List(0, 1), List(2, 3))
 }
 
-func TestCellNext(t *testing.T) {
-	ConfirmNext := func(c *Cell, r *Cell) {
+func TestPairNext(t *testing.T) {
+	ConfirmNext := func(c *Pair, r *Pair) {
 		if x := c.Next(); !x.Equal(r) {
 			t.Fatalf("%v.Next() should be %v but is %v", c, r, x)
 		}
@@ -221,8 +221,8 @@ func TestCellNext(t *testing.T) {
 	ConfirmNext(List(0, 1), List(1))
 }
 
-func TestCellCar(t *testing.T) {
-	ConfirmCar := func(c *Cell, r interface{}) {
+func TestPairCar(t *testing.T) {
+	ConfirmCar := func(c *Pair, r interface{}) {
 		if car, ok := c.Car().(Equatable); ok {
 			if !car.Equal(r) {
 				t.Fatalf("%v.Car() should be %v but is %v", c, r, car)
@@ -248,8 +248,8 @@ func TestCellCar(t *testing.T) {
 	ConfirmCar(Cons(List(1, nil, nil), 0), List(1, nil, nil))
 }
 
-func TestCellCdr(t *testing.T) {
-	ConfirmCdr := func(c *Cell, r interface{}) {
+func TestPairCdr(t *testing.T) {
+	ConfirmCdr := func(c *Pair, r interface{}) {
 		if cdr, ok := c.Cdr().(Equatable); ok {
 			if !cdr.Equal(r) {
 				t.Fatalf("%v.Cdr() should be %v but is %v", c, r, cdr)
@@ -272,8 +272,8 @@ func TestCellCdr(t *testing.T) {
 	ConfirmCdr(Cons(0, Cons(1, 2)), Cons(1, 2))
 }
 
-func TestCellCaar(t *testing.T) {
-	ConfirmCaar := func(c *Cell, r interface{}) {
+func TestPairCaar(t *testing.T) {
+	ConfirmCaar := func(c *Pair, r interface{}) {
 		if caar, ok := c.Caar().(Equatable); ok {
 			if !caar.Equal(r) {
 				t.Fatalf("%v.Caar() should be %v but is %v", c, r, caar)
@@ -295,8 +295,8 @@ func TestCellCaar(t *testing.T) {
 	ConfirmCaar(Cons(Cons(0, 1), nil), 0)
 }
 
-func TestCellCadr(t *testing.T) {
-	ConfirmCadr := func(c *Cell, r interface{}) {
+func TestPairCadr(t *testing.T) {
+	ConfirmCadr := func(c *Pair, r interface{}) {
 		if cadr, ok := c.Cadr().(Equatable); ok {
 			if !cadr.Equal(r) {
 				t.Fatalf("%v.Cadr() should be %v but is %v", c, r, cadr)
@@ -318,8 +318,8 @@ func TestCellCadr(t *testing.T) {
 	ConfirmCadr(Cons(Cons(0, 1), nil), 1)
 }
 
-func TestCellCdar(t *testing.T) {
-	ConfirmCdar := func(c *Cell, r interface{}) {
+func TestPairCdar(t *testing.T) {
+	ConfirmCdar := func(c *Pair, r interface{}) {
 		if cdar, ok := c.Cdar().(Equatable); ok {
 			if !cdar.Equal(r) {
 				t.Fatalf("%v.Cdar() should be %v but is %v", c, r, cdar)
@@ -341,8 +341,8 @@ func TestCellCdar(t *testing.T) {
 	ConfirmCdar(Cons(0, Cons(1, 2)), 1)
 }
 
-func TestCellCddr(t *testing.T) {
-	ConfirmCddr := func(c *Cell, r interface{}) {
+func TestPairCddr(t *testing.T) {
+	ConfirmCddr := func(c *Pair, r interface{}) {
 		if cddr, ok := c.Cddr().(Equatable); ok {
 			if !cddr.Equal(r) {
 				t.Fatalf("%v.Cddr() should be %v but is %v", c, r, cddr)
@@ -364,8 +364,8 @@ func TestCellCddr(t *testing.T) {
 	ConfirmCddr(Cons(0, Cons(1, 2)), 2)
 }
 
-func TestCellRplaca(t *testing.T) {
-	ConfirmRplaca := func(c *Cell, v interface{}, r *Cell) {
+func TestPairRplaca(t *testing.T) {
+	ConfirmRplaca := func(c *Pair, v interface{}, r *Pair) {
 		cs := c.String()
 		c.Rplaca(v)
 		if x := c.Equal(r); !x {
@@ -377,8 +377,8 @@ func TestCellRplaca(t *testing.T) {
 	ConfirmRplaca(Cons(Cons(0, 1), 2), 1, Cons(1, 2))
 }
 
-func TestCellRplacd(t *testing.T) {
-	ConfirmRplacd := func(c *Cell, v interface{}, r *Cell) {
+func TestPairRplacd(t *testing.T) {
+	ConfirmRplacd := func(c *Pair, v interface{}, r *Pair) {
 		cs := c.String()
 		c.Rplacd(v)
 		if x := c.Equal(r); !x {
@@ -391,8 +391,8 @@ func TestCellRplacd(t *testing.T) {
 	ConfirmRplacd(Cons(Cons(0, 1), 2), 1, Cons(Cons(0, 1), 1))
 }
 
-func TestCellOffset(t *testing.T) {
-	ConfirmOffset := func(c *Cell, i int, r *Cell) {
+func TestPairOffset(t *testing.T) {
+	ConfirmOffset := func(c *Pair, i int, r *Pair) {
 		if offset := c.Offset(i); !offset.Equal(r) {
 			t.Fatalf("%v.Offset(%v) should be %v but is %v", c, i, r, offset)
 		}
@@ -417,8 +417,8 @@ func TestCellOffset(t *testing.T) {
 	ConfirmOffset(Cons(0, Cons(1, 2)), 2, nil)
 }
 
-func TestCellEnd(t *testing.T) {
-	ConfirmEnd := func(c, o *Cell) {
+func TestPairEnd(t *testing.T) {
+	ConfirmEnd := func(c, o *Pair) {
 		end := c.End()
 		if ok := end.Equal(o); !ok {
 			t.Fatalf("%v.End() should be %v but is %v", c, o, end)
@@ -433,8 +433,8 @@ func TestCellEnd(t *testing.T) {
 	ConfirmEnd(Cons(0, Cons(1, Cons(2, Cons(3, nil)))), Cons(3, nil))
 }
 
-func TestCellAppend(t *testing.T) {
-	ConfirmAppend := func(c *Cell, v interface{}, r interface{}) {
+func TestPairAppend(t *testing.T) {
+	ConfirmAppend := func(c *Pair, v interface{}, r interface{}) {
 		cs := fmt.Sprintf("%v", c)
 		if x := c.Append(v); !x.Equal(r) {
 			t.Fatalf("%v.Append(%v) should be %v but is %v", cs, v, r, x)
@@ -449,7 +449,7 @@ func TestCellAppend(t *testing.T) {
 	ConfirmAppend(List(1), List(2), List(1, 2))
 	ConfirmAppend(List(1), List(2, 3), List(1, 2, 3))
 
-	ConfirmMultipleAppend := func(c *Cell, r interface{}, v... interface{}) {
+	ConfirmMultipleAppend := func(c *Pair, r interface{}, v... interface{}) {
 		call := fmt.Sprintf("%v.Append(%v)", c, v)
 		if x := c.Append(v...); !x.Equal(r) {
 			t.Fatalf("%v should be %v but is %v", call, r, x)
@@ -465,11 +465,11 @@ func TestCellAppend(t *testing.T) {
 	ConfirmMultipleAppend(List(1), List(1, 2, 3), List(2, 3))
 }
 
-func TestCellEach(t *testing.T) {
+func TestPairEach(t *testing.T) {
 	list := List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	count := 0
 
-	ConfirmEach := func(c *Cell, f interface{}) {
+	ConfirmEach := func(c *Pair, f interface{}) {
 		count = 0
 		c.Each(f)
 		if l := c.Len(); l != count {
@@ -516,11 +516,11 @@ func TestCellEach(t *testing.T) {
 }
 
 
-func TestCellStep(t *testing.T) {
+func TestPairStep(t *testing.T) {
 	list := List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	count := 0
 
-	ConfirmStep := func(c *Cell, start, step, expected int, f interface{}) {
+	ConfirmStep := func(c *Pair, start, step, expected int, f interface{}) {
 		count = 0
 		c.Step(start, step, f)
 		if expected != count {
@@ -561,10 +561,10 @@ func TestCellStep(t *testing.T) {
 	ConfirmStep(list, 3, 6, 2, f)
 }
 
-func TestCellMap(t *testing.T) {
+func TestPairMap(t *testing.T) {
 	list := List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
 	doubles := List(0, 2, 4, 6, 8, 10, 12, 14, 16, 18)
-	ConfirmMap := func(c, r *Cell, f interface{}) {
+	ConfirmMap := func(c, r *Pair, f interface{}) {
 		switch m := c.Map(f); {
 		case c.Len() != m.Len():
 			t.Fatalf("%v.Map() should have iterated %v times not %v times", c, c.Len(), m.Len())
@@ -586,8 +586,8 @@ func TestCellMap(t *testing.T) {
 	})
 }
 
-func TestCellReduce(t *testing.T) {
-	ConfirmReduce := func(c *Cell, r, seed, f interface{}) {
+func TestPairReduce(t *testing.T) {
+	ConfirmReduce := func(c *Pair, r, seed, f interface{}) {
 		if x, ok := c.Reduce(seed, f).(Equatable); ok {
 			if !x.Equal(r) {
 				t.Fatalf("%v.Reduce() should be %v but is %v", c, r, x)
@@ -641,9 +641,9 @@ func TestCellReduce(t *testing.T) {
 	})
 }
 
-func TestCellWhile(t *testing.T) {
+func TestPairWhile(t *testing.T) {
 	list := List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-	ConfirmLimit := func(condition bool, c *Cell, l int, f interface{}) {
+	ConfirmLimit := func(condition bool, c *Pair, l int, f interface{}) {
 		if count := c.While(condition, f); count != l {
 			t.Fatalf("%v.While(%v, %v) should have iterated %v times not %v times", c, condition, l, l, count)
 		}
@@ -680,8 +680,8 @@ func TestCellWhile(t *testing.T) {
 	})
 }
 
-func TestCellPartition(t *testing.T) {
-	ConfirmPartition := func(l *Cell, offset int, x, y *Cell) {
+func TestPairPartition(t *testing.T) {
+	ConfirmPartition := func(l *Pair, offset int, x, y *Pair) {
 		ls := fmt.Sprintf("%v", l)
 		switch c1, c2 := l.Partition(offset); {
 		case !c1.Equal(x):
@@ -707,8 +707,8 @@ func TestCellPartition(t *testing.T) {
 	ConfirmPartition(List(0, 1, 2), 3, List(0, 1, 2), List())
 }
 
-func TestCellReverse(t *testing.T) {
-	ConfirmReverse := func(l, r *Cell) {
+func TestPairReverse(t *testing.T) {
+	ConfirmReverse := func(l, r *Pair) {
 		if c := l.Reverse(); !c.Equal(r) {
 			t.Fatalf("%v.Reverse() should be %v but is %v", l, r, c)
 		}
@@ -722,8 +722,8 @@ func TestCellReverse(t *testing.T) {
 	ConfirmReverse(List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9), List(9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
 }
 
-func TestCellCopy(t *testing.T) {
-	ConfirmCopy := func(l, r *Cell) {
+func TestPairCopy(t *testing.T) {
+	ConfirmCopy := func(l, r *Pair) {
 		if c := l.Copy(); !c.Equal(r) {
 			t.Fatalf("%v.Copy() should be %v but is %v", l, r, c)
 		}
@@ -736,8 +736,8 @@ func TestCellCopy(t *testing.T) {
 	ConfirmCopy(List(0, 1, List(2, List(3, 4, 5)), 6), List(0, 1, List(2, List(3, 4, 5)), 6))
 }
 
-func TestCellRepeat(t *testing.T) {
-	ConfirmRepeat := func(l *Cell, count int, r *Cell) {
+func TestPairRepeat(t *testing.T) {
+	ConfirmRepeat := func(l *Pair, count int, r *Pair) {
 		if c := l.Repeat(count); !c.Equal(r) {
 			t.Fatalf("%v.Repeat(%v) should be %v but is %v", l, count, r, c)
 		}
@@ -764,8 +764,8 @@ func TestCellRepeat(t *testing.T) {
 	ConfirmRepeat(List(0, 1, List(2, 3), 4), 3, List(0, 1, List(2, 3), 4, 0, 1, List(2, 3), 4, 0, 1, List(2, 3), 4))
 }
 
-func TestCellZip(t *testing.T) {
-	ConfirmZip := func(x, y, r *Cell) {
+func TestPairZip(t *testing.T) {
+	ConfirmZip := func(x, y, r *Pair) {
 		if c := x.Zip(y); !c.Equal(r) {
 			t.Fatalf("%v.Zip(%v) should be %v but is %v", x, y, r, c)
 		}

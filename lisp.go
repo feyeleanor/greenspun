@@ -1,20 +1,20 @@
 package greenspun
 
 type Lambda	struct {
-	Formals		*Cell
-	Body			*Cell
+	Formals		*Pair
+	Body			*Pair
 }
 
 func (l Lambda) Eval(e Environment) interface{} {
 	return nil
 }
 
-type DespatchTable	map[string] func(*Cell) *Cell
+type DespatchTable	map[string] func(*Pair) *Pair
 
 var SpecialForms DespatchTable = DespatchTable{
-	"lambda":		func(l *Cell) *Cell {
-		largs := l.Cadr().(*Cell)
-		lsexp := largs.Cdr().(*Cell)
+	"lambda":		func(l *Pair) *Pair {
+		largs := l.Cadr().(*Pair)
+		lsexp := largs.Cdr().(*Pair)
 		return Cons(&Lambda{ largs, lsexp }, nil)
 	},
 }
@@ -22,13 +22,13 @@ var SpecialForms DespatchTable = DespatchTable{
 
 func Eval(v interface{}, e Environment) interface{} {
 	switch v := v.(type) {
-	case *Cell:
+	case *Pair:
 		switch {
 		case v.IsNil():
 			return nil
 		case v.Car() == "lambda":
-//		largs := Cadr(v).(*Cell)
-//		lsexp := Cdr(largs).(*Cell)
+//		largs := Cadr(v).(*Pair)
+//		lsexp := Cdr(largs).(*Pair)
 //		return lambda(largs, lsexp)
 			panic("no support for lambda at this time")
 		default:

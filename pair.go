@@ -6,20 +6,20 @@ import (
 )
 
 /*
-	A Cell is a traditional Lisp dotted pair, storing a data item in the head, and either a data item or
+	A Pair is a traditional Lisp dotted pair, storing a data item in the head, and either a data item or
 	a pointer to another dotted pair in the tail.
 */
 
-type Cell struct {
+type Pair struct {
 	head		interface{}
 	tail		interface{}
 }
 
-func Cons(head, tail interface{}) (c *Cell) {
-	return &Cell{ head, tail }
+func Cons(head, tail interface{}) (c *Pair) {
+	return &Pair{ head, tail }
 }
 
-func List(items... interface{}) (c *Cell) {
+func List(items... interface{}) (c *Pair) {
 	switch len(items) {
 	case 0:
 		return nil
@@ -31,11 +31,11 @@ func List(items... interface{}) (c *Cell) {
 	return
 }
 
-func (c *Cell) String() string {
+func (c *Pair) String() string {
 	terms := make([]string, 0)
 	if c != nil {
 		var head	string
-		c.Each(func(i int, v *Cell) {
+		c.Each(func(i int, v *Pair) {
 			switch v.head {
 			case nil, false:
 				head = "nil"
@@ -54,22 +54,22 @@ func (c *Cell) String() string {
 	return "(" + strings.Join(terms, " ") + ")"
 }
 
-func (c *Cell) Len() (i int) {
+func (c *Pair) Len() (i int) {
 	c.Each(func(v interface{}) {
 		i++
 	})
 	return
 }
 
-func (c *Cell) IsNil() (r bool) {
+func (c *Pair) IsNil() (r bool) {
 	return c == nil
 }
 
-func (c *Cell) Equal(o interface{}) (r bool) {
+func (c *Pair) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case Cell:
+	case Pair:
 		r = c.Equal(&o)
-	case *Cell:
+	case *Pair:
 		if c.IsNil() {
 			r = o.IsNil()
 		} else if !o.IsNil() {
@@ -95,7 +95,7 @@ func (c *Cell) Equal(o interface{}) (r bool) {
 	return
 }
 
-func (c *Cell) Push(v interface{}) (r *Cell) {
+func (c *Pair) Push(v interface{}) (r *Pair) {
 	if !c.IsNil() {
 		r = Cons(v, c)
 	} else {
@@ -104,68 +104,68 @@ func (c *Cell) Push(v interface{}) (r *Cell) {
 	return 
 }
 
-func (c *Cell) Pop() (interface{}, *Cell) {
+func (c *Pair) Pop() (interface{}, *Pair) {
 	return c.Car(), c.Next()
 }
 
-//	Combine the first two items at the front of the list into a Cons Cell and make this the front of the list
+//	Combine the first two items at the front of the list into a Cons Pair and make this the front of the list
 
-func (c *Cell) Cons() *Cell {
+func (c *Pair) Cons() *Pair {
 	return Cons(Cons(c.Car(), c.Cdar()), c.Cddr())
 }
 
 //	These are convenience wrappers for two common storage situations: a pair of integers, and a pair of pairs
 
-func (c *Cell) IntPair() (l, r int) {
+func (c *Pair) IntPair() (l, r int) {
 	return c.Car().(int), c.Cdr().(int)
 }
 
-func (c *Cell) CellPair() (l, r *Cell) {
-	return c.Car().(*Cell), c.Cdr().(*Cell)
+func (c *Pair) PairPair() (l, r *Pair) {
+	return c.Car().(*Pair), c.Cdr().(*Pair)
 }
 
-func (c *Cell) Next() (r *Cell) {
-	r, _ = c.Cdr().(*Cell)
+func (c *Pair) Next() (r *Pair) {
+	r, _ = c.Cdr().(*Pair)
 	return
 }
 
-func (c *Cell) Car() interface{} {
+func (c *Pair) Car() interface{} {
 	if !c.IsNil() {
 		return c.head
 	}
 	return nil
 }
 
-func (c *Cell) Cdr() interface{} {
+func (c *Pair) Cdr() interface{} {
 	if !c.IsNil() {
 		return c.tail
 	}
 	return nil
 }
 
-func (c *Cell) Caar() (r interface{}) {
-	if h, ok := c.Car().(*Cell); ok {
+func (c *Pair) Caar() (r interface{}) {
+	if h, ok := c.Car().(*Pair); ok {
 		r = h.Car()
 	}
 	return
 }
 
-func (c *Cell) Cadr() (r interface{}) {
-	if h, ok := c.Car().(*Cell); ok {
+func (c *Pair) Cadr() (r interface{}) {
+	if h, ok := c.Car().(*Pair); ok {
 		r = h.Cdr()
 	}
 	return
 }
 
-func (c *Cell) Cdar() interface{} {
+func (c *Pair) Cdar() interface{} {
 	return c.Next().Car()
 }
 
-func (c *Cell) Cddr() interface{} {
+func (c *Pair) Cddr() interface{} {
 	return c.Next().Cdr()
 }
 
-func (c *Cell) Rplaca(i interface{}) *Cell {
+func (c *Pair) Rplaca(i interface{}) *Pair {
 	if !c.IsNil() {
 		c.head = i
 		return c
@@ -173,7 +173,7 @@ func (c *Cell) Rplaca(i interface{}) *Cell {
 	return nil
 }
 
-func (c *Cell) Rplacd(i interface{}) *Cell {
+func (c *Pair) Rplacd(i interface{}) *Pair {
 	if !c.IsNil() {
 		c.tail = i
 		return c
@@ -181,7 +181,7 @@ func (c *Cell) Rplacd(i interface{}) *Cell {
 	return nil
 }
 
-func (c *Cell) Offset(i int) (r *Cell) {
+func (c *Pair) Offset(i int) (r *Pair) {
 	switch {
 	case i < 0:
 		r = nil
@@ -197,7 +197,7 @@ func (c *Cell) Offset(i int) (r *Cell) {
 	return
 }
 
-func (c *Cell) End() (r *Cell) {
+func (c *Pair) End() (r *Pair) {
 	r = c
 	for n := c.Next(); !n.IsNil() && n != c; n = n.Next() {
 		r = n
@@ -205,22 +205,22 @@ func (c *Cell) End() (r *Cell) {
 	return
 }
 
-func (c *Cell) valueAppend(v interface{}) (r *Cell) {
-	if x, ok := v.(*Cell); ok {
+func (c *Pair) valueAppend(v interface{}) (r *Pair) {
+	if x, ok := v.(*Pair); ok {
 		c.Rplacd(x)
 		r = x.End()
 	} else {
 		c.Rplacd(Cons(v, nil))
-		r = c.Cdr().(*Cell)				
+		r = c.Cdr().(*Pair)				
 	}
 	return
 }
 
-func (c *Cell) Append(v... interface{}) (r *Cell) {
-	var head *Cell
+func (c *Pair) Append(v... interface{}) (r *Pair) {
+	var head *Pair
 
 	if len(v) > 0 {
-		if x, ok := v[0].(*Cell); ok {
+		if x, ok := v[0].(*Pair); ok {
 			head = x
 		} else {
 			head = Cons(v[0], nil)
@@ -240,11 +240,11 @@ func (c *Cell) Append(v... interface{}) (r *Cell) {
 	return
 }
 
-func (c *Cell) Each(f interface{}) {
+func (c *Pair) Each(f interface{}) {
 	c.Step(0, 1, f)
 }
 
-func (c *Cell) Step(start, n int, f interface{}) {
+func (c *Pair) Step(start, n int, f interface{}) {
 	var i		int
 
 	c = c.Offset(start)
@@ -267,16 +267,16 @@ func (c *Cell) Step(start, n int, f interface{}) {
 			f(i, c.Car())
 			i++
 		}
-	case func(*Cell):
+	case func(*Pair):
 		for ; !c.IsNil(); c = c.Offset(n) {
 			f(c)
 		}
-	case func(int, *Cell):
+	case func(int, *Pair):
 		for ; !c.IsNil(); c = c.Offset(n) {
 			f(i, c)
 			i++
 		}
-	case func(interface{}, *Cell):
+	case func(interface{}, *Pair):
 		for ; !c.IsNil(); c = c.Offset(n) {
 			f(i, c)
 			i++
@@ -284,20 +284,20 @@ func (c *Cell) Step(start, n int, f interface{}) {
 	}
 }
 
-func (c *Cell) append(v interface{}) (r *Cell) {
+func (c *Pair) append(v interface{}) (r *Pair) {
 	r = Cons(v, nil)
 	c.Rplacd(r)
 	return
 }
 
-func (c *Cell) constructList(f func(anchor *Cell)) *Cell {
-	anchor := &Cell{}
+func (c *Pair) constructList(f func(anchor *Pair)) *Pair {
+	anchor := &Pair{}
 	f(anchor)
 	return anchor.Next()
 }
 
-func (c *Cell) Map(f interface{}) (r *Cell) {
-	return c.constructList(func(cursor *Cell) {
+func (c *Pair) Map(f interface{}) (r *Pair) {
+	return c.constructList(func(cursor *Pair) {
 		switch f := f.(type) {
 		case func(interface{}) interface{}:
 			c.Each(func(v interface{}) {
@@ -311,23 +311,23 @@ func (c *Cell) Map(f interface{}) (r *Cell) {
 			c.Each(func(k, v interface{}) {
 				cursor = cursor.append(f(k, v))
 			})
-		case func(*Cell) interface{}:
-			c.Each(func(v *Cell) {
+		case func(*Pair) interface{}:
+			c.Each(func(v *Pair) {
 				cursor = cursor.append(f(v))
 			})
-		case func(int, *Cell) interface{}:
-			c.Each(func(i int, v *Cell) {
+		case func(int, *Pair) interface{}:
+			c.Each(func(i int, v *Pair) {
 				cursor = cursor.append(f(i, v))
 			})
-		case func(interface{}, *Cell) interface{}:
-			c.Each(func(k interface{}, v *Cell) {
+		case func(interface{}, *Pair) interface{}:
+			c.Each(func(k interface{}, v *Pair) {
 				cursor = cursor.append(f(k, v))
 			})
 		}
 	})
 }
 
-func (c *Cell) Reduce(seed, f interface{}) (r interface{}) {
+func (c *Pair) Reduce(seed, f interface{}) (r interface{}) {
 	r = seed
 	switch f := f.(type) {
 	case func(seed, value interface{}) interface{}:
@@ -342,23 +342,23 @@ func (c *Cell) Reduce(seed, f interface{}) (r interface{}) {
 		c.Each(func(k, v interface{}) {
 			r = f(k, r, v)
 		})
-	case func(seed interface{}, value *Cell) interface{}:
-		c.Each(func(v *Cell) {
+	case func(seed interface{}, value *Pair) interface{}:
+		c.Each(func(v *Pair) {
 			r = f(r, v)
 		})
-	case func(index int, seed interface{}, value *Cell) interface{}:
-		c.Each(func(i int, v *Cell) {
+	case func(index int, seed interface{}, value *Pair) interface{}:
+		c.Each(func(i int, v *Pair) {
 			r = f(i, r, v)
 		})
-	case func(key, seed interface{}, value *Cell) interface{}:
-		c.Each(func(k interface{}, v *Cell) {
+	case func(key, seed interface{}, value *Pair) interface{}:
+		c.Each(func(k interface{}, v *Pair) {
 			r = f(k, r, v)
 		})
 	}
 	return
 }
 
-func (c *Cell) While(condition bool, f interface{}) (i int) {
+func (c *Pair) While(condition bool, f interface{}) (i int) {
 	switch f := f.(type) {
 	case func(interface{}) bool:
 		for r := c; !r.IsNil() && f(r.Car()) == condition; r = r.Next() {
@@ -372,15 +372,15 @@ func (c *Cell) While(condition bool, f interface{}) (i int) {
 		for r := c; !r.IsNil() && f(i, r.Car()) == condition; r = r.Next() {
 			i++
 		}
-	case func(*Cell) bool:
+	case func(*Pair) bool:
 		for r := c; !r.IsNil() && f(r) == condition; r = r.Next() {
 			i++
 		}
-	case func(int, *Cell) bool:
+	case func(int, *Pair) bool:
 		for r := c; !r.IsNil() && f(i, r) == condition; r = r.Next() {
 			i++
 		}
-	case func(interface{}, *Cell) bool:
+	case func(interface{}, *Pair) bool:
 		for r := c; !r.IsNil() && f(i, r) == condition; r = r.Next() {
 			i++
 		}
@@ -396,7 +396,7 @@ func (c *Cell) While(condition bool, f interface{}) (i int) {
 	return
 }
 
-func (c *Cell) Partition(offset int) (x, y *Cell) {
+func (c *Pair) Partition(offset int) (x, y *Pair) {
 	if y = c.Offset(offset); !y.IsNil() {
 		r := y.Next()
 		y.Rplacd(nil)
@@ -405,23 +405,23 @@ func (c *Cell) Partition(offset int) (x, y *Cell) {
 	return c, y
 }
 
-func (c *Cell) Reverse() (r *Cell) {
+func (c *Pair) Reverse() (r *Pair) {
 	c.Each(func(v interface{}) {
 		r = r.Push(v)
 	})
 	return
 }
 
-func (c *Cell) Copy() (r *Cell) {
-	return c.constructList(func(cursor *Cell) {
+func (c *Pair) Copy() (r *Pair) {
+	return c.constructList(func(cursor *Pair) {
 		c.Each(func(v interface{}) {
 			cursor = cursor.append(v)
 		})
 	})
 }
 
-func (c *Cell) Repeat(count int) (r *Cell) {
-	return c.constructList(func(cursor *Cell) {
+func (c *Pair) Repeat(count int) (r *Pair) {
+	return c.constructList(func(cursor *Pair) {
 		for i := count; i > 0; i-- {
 			c.Each(func(v interface{}) {
 				cursor = cursor.append(v)
@@ -430,8 +430,8 @@ func (c *Cell) Repeat(count int) (r *Cell) {
 	})
 }
 
-func (c *Cell) Zip(n *Cell) (r *Cell) {
-	return c.constructList(func(cursor *Cell) {
+func (c *Pair) Zip(n *Pair) (r *Pair) {
+	return c.constructList(func(cursor *Pair) {
 		for ; !c.IsNil() || !n.IsNil(); c, n = c.Next(), n.Next() {
 			cursor = cursor.append(Cons(c.Car(), n.Car()))
 		}

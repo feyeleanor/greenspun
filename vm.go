@@ -5,16 +5,16 @@ package greenspun
 //	This type embodies the core of the SECD virtual machine for implementing functional languages
 //
 type VM struct {
-	S		*Cell		"stack"
-	E		*Cell		"environment"
-	C		*Cell		"control"
-	D		*Cell		"dump"
+	S		*Pair		"stack"
+	E		*Pair		"environment"
+	C		*Pair		"control"
+	D		*Pair		"dump"
 }
 
 
 //	Initialise the virtual machine with a global environment and code for execution
 //
-func (vm *VM) Initialize(env, code *Cell) {
+func (vm *VM) Initialize(env, code *Pair) {
 	vm.S = nil
 	vm.E = env
 	vm.C = code
@@ -25,7 +25,7 @@ func (vm *VM) Initialize(env, code *Cell) {
 //	Load a value from a slot in the environment
 //
 func (vm *VM) Locate(env, slot int) interface{} {
-	return vm.E.Offset(env).Car().(*Cell).Offset(slot).Car()
+	return vm.E.Offset(env).Car().(*Pair).Offset(slot).Car()
 }
 
 
@@ -63,14 +63,14 @@ func (vm *VM) Run() bool {
 			vm.Dum()
 		case RAP:
 			vm.Rap()
-		case CAR:
-			vm.Car()
-		case CDR:
-			vm.Cdr()
-		case CONS:
-			vm.Cons()
-		case EQ:
-			vm.Eq()
+		case SCAR:
+			vm.SCar()
+		case SCDR:
+			vm.SCdr()
+		case SCONS:
+			vm.SCons()
+		case SEQ:
+			vm.SEq()
 		case HALT:
 			break
 		default:
@@ -105,7 +105,7 @@ func (vm *VM) Ldc() {
 //		(LD (i . j) . c)	-> c
 func (vm *VM) Ld() {
 	vm.Advance()
-	env, slot := vm.C.Car().(*Cell).IntPair()
+	env, slot := vm.C.Car().(*Pair).IntPair()
 	vm.S = vm.S.Push(vm.Locate(env, slot))
 	vm.Advance()
 }
@@ -128,11 +128,11 @@ func (vm *VM) Ldf() {
 //		(SEL ct cf . c)		-> ct if x is T, or cf if x is F
 //		d									-> (c . d)
 func (vm *VM) Sel() {
-	vm.D = Cons(vm.C.Cddr().(*Cell).Cdr(), vm.D)
+	vm.D = Cons(vm.C.Cddr().(*Pair).Cdr(), vm.D)
 	if vm.S.Car() == nil {
-		vm.C = vm.C.Cadr().(*Cell).Cdr().(*Cell)
+		vm.C = vm.C.Cadr().(*Pair).Cdr().(*Pair)
 	} else {
-		vm.C = vm.C.Cadr().(*Cell)
+		vm.C = vm.C.Cadr().(*Pair)
 	}
 	vm.S = vm.S.Next()
 }
@@ -142,7 +142,7 @@ func (vm *VM) Sel() {
 //		(JOIN . c)				-> cr
 //		(cr . d)					-> d
 func (vm *VM) Join() {
-	vm.C = vm.D.Car().(*Cell)
+	vm.C = vm.D.Car().(*Pair)
 	vm.D = vm.D.Next()
 }
 
@@ -157,7 +157,7 @@ func (vm *VM) Join() {
 func (vm *VM) Ap() {
 	vm.D = Cons(vm.S.Cddr(), Cons(vm.E, Cons(vm.C.Cdr(), vm.D)))
 	vm.E = Cons(vm.S.Cadr(), vm.S.Cdar())
-	vm.C = vm.S.Caar().(*Cell)
+	vm.C = vm.S.Caar().(*Pair)
 	vm.S = nil
 }
 
@@ -169,9 +169,9 @@ func (vm *VM) Ap() {
 //		(s e c . d)				-> d
 func (vm *VM) Ret() {
 	vm.S = Cons(vm.S.Car(), vm.D.Car())
-	vm.E = vm.D.Cadr().(*Cell)
-	vm.C = vm.D.Cadr().(*Cell).Cdr().(*Cell)
-	vm.D = vm.D.Cddr().(*Cell).Cdr().(*Cell)
+	vm.E = vm.D.Cadr().(*Pair)
+	vm.C = vm.D.Cadr().(*Pair).Cdr().(*Pair)
+	vm.D = vm.D.Cddr().(*Pair).Cdr().(*Pair)
 }
 
 
@@ -199,9 +199,9 @@ func (vm *VM) Dum() {
 //
 func (vm *VM) Rap() {
 	vm.D = Cons(vm.S.Cddr(), Cons(vm.E.Cdr(), Cons(vm.C.Cdr(), vm.D)))
-	vm.E = vm.S.Cdar().(*Cell)
+	vm.E = vm.S.Cdar().(*Pair)
 	vm.E.Rplaca(vm.S.Cadr())
-	vm.C = vm.S.Caar().(*Cell)
+	vm.C = vm.S.Caar().(*Pair)
 	vm.S = nil
 }
 
@@ -211,7 +211,7 @@ func (vm *VM) Rap() {
 //		((a . b) . s)		-> (a . s)
 //		(CAR . c) 			-> c
 //
-func (vm *VM) Car() {
+func (vm *VM) SCar() {
 	vm.S = Cons(vm.S.Caar(), vm.S.Cdr())
 	vm.Advance()
 }
@@ -222,7 +222,7 @@ func (vm *VM) Car() {
 //		((a . b) . s) 	-> (b . s)
 //		(CDR . c)				-> c
 //
-func (vm *VM) Cdr() {
+func (vm *VM) SCdr() {
  	vm.S = Cons(vm.S.Cadr(), vm.S.Cdr())
 	vm.Advance()
 }
@@ -233,7 +233,7 @@ func (vm *VM) Cdr() {
 //		(a b . s)				-> ((a . b) . s)
 //		(CONS . c)			-> c
 //
-func (vm *VM) Cons() {
+func (vm *VM) SCons() {
 	vm.S = vm.S.Cons()
 	vm.Advance()
 }
@@ -245,7 +245,7 @@ func (vm *VM) Cons() {
 //		(a b . s)				-> (#f . s)
 //		(EQ . c) 				-> c
 //
-func (vm *VM) Eq() {
+func (vm *VM) SEq() {
 	if vm.S.Car() == vm.S.Cdar() {
 		vm.S = Cons("T", vm.S.Cddr())
 	} else {

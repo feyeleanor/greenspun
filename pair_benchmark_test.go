@@ -11,138 +11,138 @@ var (
 	ListInterface interface{} = List0
 )
 
-func BenchmarkCellAssertion(b *testing.B) {
+func BenchmarkPairAssertion(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		_, _ = ListInterface.(*Cell)
+		_, _ = ListInterface.(*Pair)
 	}
 }
 
-func BenchmarkCellString0(b *testing.B) {
+func BenchmarkPairString0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.String()
 	}
 }
 
-func BenchmarkCellString1(b *testing.B) {
+func BenchmarkPairString1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.String()
 	}
 }
 
-func BenchmarkCellString10(b *testing.B) {
+func BenchmarkPairString10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.String()
 	}
 }
 
-func BenchmarkCellString100(b *testing.B) {
+func BenchmarkPairString100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.String()
 	}
 }
 
-func BenchmarkCellString1000(b *testing.B) {
+func BenchmarkPairString1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.String()
 	}
 }
-func BenchmarkCellLen0(b *testing.B) {
+func BenchmarkPairLen0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Len()
 	}
 }
 
-func BenchmarkCellLen1(b *testing.B) {
+func BenchmarkPairLen1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Len()
 	}
 }
 
-func BenchmarkCellLen10(b *testing.B) {
+func BenchmarkPairLen10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.Len()
 	}
 }
 
-func BenchmarkCellLen100(b *testing.B) {
+func BenchmarkPairLen100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.Len()
 	}
 }
 
-func BenchmarkCellLen1000(b *testing.B) {
+func BenchmarkPairLen1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.Len()
 	}
 }
 
-func BenchmarkCellIsNil0(b *testing.B) {
+func BenchmarkPairIsNil0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.IsNil()
 	}
 }
 
-func BenchmarkCellIsNil1(b *testing.B) {
+func BenchmarkPairIsNil1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.IsNil()
 	}
 }
 
-func BenchmarkCellEqual0(b *testing.B) {
+func BenchmarkPairEqual0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Equal(List0)
 	}
 }
 
-func BenchmarkCellEqual1(b *testing.B) {
+func BenchmarkPairEqual1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Equal(List1)
 	}
 }
 
-func BenchmarkCellEqual10(b *testing.B) {
+func BenchmarkPairEqual10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.Equal(List10)
 	}
 }
 
-func BenchmarkCellEqual100(b *testing.B) {
+func BenchmarkPairEqual100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.Equal(List100)
 	}
 }
 
-func BenchmarkCellEqual1000(b *testing.B) {
+func BenchmarkPairEqual1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.Equal(List1000)
 	}
 }
 
-func BenchmarkCellPush0(b *testing.B) {
+func BenchmarkPairPush0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Push(nil)
 	}
 }
 
-func BenchmarkCellPush1(b *testing.B) {
+func BenchmarkPairPush1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Push(nil)
 	}
 }
 
-func BenchmarkCellPop0(b *testing.B) {
+func BenchmarkPairPop0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Pop()
 	}
 }
 
-func BenchmarkCellPop1(b *testing.B) {
+func BenchmarkPairPop1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Pop()
 	}
 }
 
-func BenchmarkCellIntPair(b *testing.B) {
+func BenchmarkPairIntPair(b *testing.B) {
 	b.StopTimer()
 		p := Cons(0, 0)
 	b.StartTimer()
@@ -151,460 +151,460 @@ func BenchmarkCellIntPair(b *testing.B) {
 	}
 }
 
-func BenchmarkCellCellPair(b *testing.B) {
+func BenchmarkPairPairPair(b *testing.B) {
 	b.StopTimer()
 		p := Cons(List(), List())
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		p.CellPair()
+		p.PairPair()
 	}
 }
 
-func BenchmarkCellNext0(b *testing.B) {
+func BenchmarkPairNext0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Next()
 	}
 }
 
-func BenchmarkCellNext1(b *testing.B) {
+func BenchmarkPairNext1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Next()
 	}
 }
 
-func BenchmarkCellCar0(b *testing.B) {
+func BenchmarkPairCar0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Car()
 	}
 }
 
-func BenchmarkCellCar1(b *testing.B) {
+func BenchmarkPairCar1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Car()
 	}
 }
 
-func BenchmarkCellCdr0(b *testing.B) {
+func BenchmarkPairCdr0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Cdr()
 	}
 }
 
-func BenchmarkCellCdr1(b *testing.B) {
+func BenchmarkPairCdr1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Cdr()
 	}
 }
 
-func BenchmarkCellCaar0(b *testing.B) {
+func BenchmarkPairCaar0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Caar()
 	}
 }
 
-func BenchmarkCellCaar1(b *testing.B) {
+func BenchmarkPairCaar1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Caar()
 	}
 }
 
-func BenchmarkCellCaar10(b *testing.B) {
+func BenchmarkPairCaar10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.Caar()
 	}
 }
 
-func BenchmarkCellCaar100(b *testing.B) {
+func BenchmarkPairCaar100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.Caar()
 	}
 }
 
-func BenchmarkCellCaar1000(b *testing.B) {
+func BenchmarkPairCaar1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.Caar()
 	}
 }
 
-func BenchmarkCellCadr0(b *testing.B) {
+func BenchmarkPairCadr0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Cadr()
 	}
 }
 
-func BenchmarkCellCadr1(b *testing.B) {
+func BenchmarkPairCadr1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Cadr()
 	}
 }
 
-func BenchmarkCellCadr10(b *testing.B) {
+func BenchmarkPairCadr10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.Cadr()
 	}
 }
 
-func BenchmarkCellCadr100(b *testing.B) {
+func BenchmarkPairCadr100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.Cadr()
 	}
 }
 
-func BenchmarkCellCadr1000(b *testing.B) {
+func BenchmarkPairCadr1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.Cadr()
 	}
 }
 
-func BenchmarkCellCdar0(b *testing.B) {
+func BenchmarkPairCdar0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Cdar()
 	}
 }
 
-func BenchmarkCellCdar1(b *testing.B) {
+func BenchmarkPairCdar1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Cdar()
 	}
 }
 
-func BenchmarkCellCdar10(b *testing.B) {
+func BenchmarkPairCdar10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.Cdar()
 	}
 }
 
-func BenchmarkCellCdar100(b *testing.B) {
+func BenchmarkPairCdar100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.Cdar()
 	}
 }
 
-func BenchmarkCellCdar1000(b *testing.B) {
+func BenchmarkPairCdar1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.Cdar()
 	}
 }
 
-func BenchmarkCellCddr0(b *testing.B) {
+func BenchmarkPairCddr0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Cddr()
 	}
 }
 
-func BenchmarkCellCddr1(b *testing.B) {
+func BenchmarkPairCddr1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Cddr()
 	}
 }
 
-func BenchmarkCellCddr10(b *testing.B) {
+func BenchmarkPairCddr10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.Cddr()
 	}
 }
 
-func BenchmarkCellCddr100(b *testing.B) {
+func BenchmarkPairCddr100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.Cddr()
 	}
 }
 
-func BenchmarkCellCddr1000(b *testing.B) {
+func BenchmarkPairCddr1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.Cddr()
 	}
 }
 
-func BenchmarkCellRplaca0(b *testing.B) {
+func BenchmarkPairRplaca0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Rplaca(nil)
 	}
 }
 
-func BenchmarkCellRplaca1(b *testing.B) {
+func BenchmarkPairRplaca1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Rplaca(nil)
 	}
 }
 
-func BenchmarkCellRplacd0(b *testing.B) {
+func BenchmarkPairRplacd0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Rplacd(nil)
 	}
 }
 
-func BenchmarkCellRplacd1(b *testing.B) {
+func BenchmarkPairRplacd1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Rplacd(nil)
 	}
 }
 
-func BenchmarkCellOffset0(b *testing.B) {
+func BenchmarkPairOffset0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Offset(0)
 	}
 }
 
-func BenchmarkCellOffset1(b *testing.B) {
+func BenchmarkPairOffset1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Offset(0)
 	}
 }
 
-func BenchmarkCellOffset10(b *testing.B) {
+func BenchmarkPairOffset10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.Offset(9)
 	}
 }
 
-func BenchmarkCellOffset100(b *testing.B) {
+func BenchmarkPairOffset100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.Offset(99)
 	}
 }
 
-func BenchmarkCellOffset1000(b *testing.B) {
+func BenchmarkPairOffset1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.Offset(999)
 	}
 }
 
-func BenchmarkCellEnd0(b *testing.B) {
+func BenchmarkPairEnd0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.End()
 	}
 }
 
-func BenchmarkCellEnd1(b *testing.B) {
+func BenchmarkPairEnd1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.End()
 	}
 }
 
-func BenchmarkCellEnd10(b *testing.B) {
+func BenchmarkPairEnd10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.End()
 	}
 }
 
-func BenchmarkCellEnd100(b *testing.B) {
+func BenchmarkPairEnd100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.End()
 	}
 }
 
-func BenchmarkCellEnd1000(b *testing.B) {
+func BenchmarkPairEnd1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.End()
 	}
 }
 
-func BenchmarkCellEach0(b *testing.B) {
+func BenchmarkPairEach0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Each(func(v interface{}) {})
 	}
 }
 
-func BenchmarkCellEach1(b *testing.B) {
+func BenchmarkPairEach1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Each(func(v interface{}) {})
 	}
 }
 
-func BenchmarkCellEach10(b *testing.B) {
+func BenchmarkPairEach10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.Each(func(v interface{}) {})
 	}
 }
 
-func BenchmarkCellEach100(b *testing.B) {
+func BenchmarkPairEach100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.Each(func(v interface{}) {})
 	}
 }
 
-func BenchmarkCellStep0(b *testing.B) {
+func BenchmarkPairStep0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Step(0, 1, func(v interface{}) {})
 	}
 }
 
-func BenchmarkCellStep1(b *testing.B) {
+func BenchmarkPairStep1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Step(0, 1, func(v interface{}) {})
 	}
 }
 
-func BenchmarkCellStep10(b *testing.B) {
+func BenchmarkPairStep10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.Step(0, 1, func(v interface{}) {})
 	}
 }
 
-func BenchmarkCellStep100(b *testing.B) {
+func BenchmarkPairStep100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.Step(0, 1, func(v interface{}) {})
 	}
 }
 
-func BenchmarkCellStep1000(b *testing.B) {
+func BenchmarkPairStep1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.Step(0, 1, func(v interface{}) {})
 	}
 }
 
-func BenchmarkCellMap0(b *testing.B) {
+func BenchmarkPairMap0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Map(func(interface{}) interface{} { return nil })
 	}
 }
 
-func BenchmarkCellMap1(b *testing.B) {
+func BenchmarkPairMap1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Map(func(interface{}) interface{} { return nil })
 	}
 }
 
-func BenchmarkCellMap10(b *testing.B) {
+func BenchmarkPairMap10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.Map(func(interface{}) interface{} { return nil })
 	}
 }
 
-func BenchmarkCellMap100(b *testing.B) {
+func BenchmarkPairMap100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.Map(func(interface{}) interface{} { return nil })
 	}
 }
 
-func BenchmarkCellMap1000(b *testing.B) {
+func BenchmarkPairMap1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.Map(func(interface{}) interface{} { return nil })
 	}
 }
 
-func BenchmarkCellReduce0(b *testing.B) {
+func BenchmarkPairReduce0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Reduce(nil, func(interface{}, interface{}) interface{} { return nil })
 	}
 }
 
-func BenchmarkCellReduce1(b *testing.B) {
+func BenchmarkPairReduce1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Reduce(nil, func(interface{}, interface{}) interface{} { return nil })
 	}
 }
 
-func BenchmarkCellReduce10(b *testing.B) {
+func BenchmarkPairReduce10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.Reduce(nil, func(interface{}, interface{}) interface{} { return nil })
 	}
 }
 
-func BenchmarkCellReduce100(b *testing.B) {
+func BenchmarkPairReduce100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.Reduce(nil, func(interface{}, interface{}) interface{} { return nil })
 	}
 }
 
-func BenchmarkCellReduce1000(b *testing.B) {
+func BenchmarkPairReduce1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.Reduce(nil, func(interface{}, interface{}) interface{} { return nil })
 	}
 }
 
-func BenchmarkCellReverse0(b *testing.B) {
+func BenchmarkPairReverse0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Reverse()
 	}
 }
 
-func BenchmarkCellReverse1(b *testing.B) {
+func BenchmarkPairReverse1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Reverse()
 	}
 }
 
-func BenchmarkCellReverse10(b *testing.B) {
+func BenchmarkPairReverse10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.Reverse()
 	}
 }
 
-func BenchmarkCellReverse100(b *testing.B) {
+func BenchmarkPairReverse100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.Reverse()
 	}
 }
 
-func BenchmarkCellReverse1000(b *testing.B) {
+func BenchmarkPairReverse1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.Reverse()
 	}
 }
 
-func BenchmarkCellCopy0(b *testing.B) {
+func BenchmarkPairCopy0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Copy()
 	}
 }
 
-func BenchmarkCellCopy1(b *testing.B) {
+func BenchmarkPairCopy1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Copy()
 	}
 }
 
-func BenchmarkCellCopy10(b *testing.B) {
+func BenchmarkPairCopy10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.Copy()
 	}
 }
 
-func BenchmarkCellCopy100(b *testing.B) {
+func BenchmarkPairCopy100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.Copy()
 	}
 }
 
-func BenchmarkCellCopy1000(b *testing.B) {
+func BenchmarkPairCopy1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.Copy()
 	}
 }
 
-func BenchmarkCellRepeat0(b *testing.B) {
+func BenchmarkPairRepeat0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Repeat(0)
 	}
 }
 
-func BenchmarkCellRepeat1(b *testing.B) {
+func BenchmarkPairRepeat1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Repeat(1)
 	}
 }
 
-func BenchmarkCellRepeat10(b *testing.B) {
+func BenchmarkPairRepeat10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Repeat(10)
 	}
 }
 
-func BenchmarkCellRepeat100(b *testing.B) {
+func BenchmarkPairRepeat100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Repeat(100)
 	}
 }
 
-func BenchmarkCellRepeat1000(b *testing.B) {
+func BenchmarkPairRepeat1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Repeat(1000)
 	}
 }
 
-func BenchmarkCellAppend0(b *testing.B) {
+func BenchmarkPairAppend0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
 			l := List0.Copy()
@@ -613,7 +613,7 @@ func BenchmarkCellAppend0(b *testing.B) {
 	}
 }
 
-func BenchmarkCellAppend1(b *testing.B) {
+func BenchmarkPairAppend1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
 			l := List1.Copy()
@@ -622,7 +622,7 @@ func BenchmarkCellAppend1(b *testing.B) {
 	}
 }
 
-func BenchmarkCellAppend10(b *testing.B) {
+func BenchmarkPairAppend10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
 			l := List10.Copy()
@@ -631,7 +631,7 @@ func BenchmarkCellAppend10(b *testing.B) {
 	}
 }
 
-func BenchmarkCellAppend100(b *testing.B) {
+func BenchmarkPairAppend100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
 			l := List100.Copy()
@@ -640,7 +640,7 @@ func BenchmarkCellAppend100(b *testing.B) {
 	}
 }
 
-func BenchmarkCellAppend1000(b *testing.B) {
+func BenchmarkPairAppend1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
 			l := List1000.Copy()
@@ -649,7 +649,7 @@ func BenchmarkCellAppend1000(b *testing.B) {
 	}
 }
 
-func BenchmarkCellWhile0(b *testing.B) {
+func BenchmarkPairWhile0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.While(true, func(i interface{}) bool {
 			return true
@@ -657,7 +657,7 @@ func BenchmarkCellWhile0(b *testing.B) {
 	}
 }
 
-func BenchmarkCellWhile1(b *testing.B) {
+func BenchmarkPairWhile1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.While(true, func(i interface{}) bool {
 			return true
@@ -665,7 +665,7 @@ func BenchmarkCellWhile1(b *testing.B) {
 	}
 }
 
-func BenchmarkCellWhile10(b *testing.B) {
+func BenchmarkPairWhile10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.While(true, func(i interface{}) bool {
 			return true
@@ -673,7 +673,7 @@ func BenchmarkCellWhile10(b *testing.B) {
 	}
 }
 
-func BenchmarkCellWhile100(b *testing.B) {
+func BenchmarkPairWhile100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.While(true, func(i interface{}) bool {
 			return true
@@ -681,7 +681,7 @@ func BenchmarkCellWhile100(b *testing.B) {
 	}
 }
 
-func BenchmarkCellWhile1000(b *testing.B) {
+func BenchmarkPairWhile1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.While(true, func(i interface{}) bool {
 			return true
@@ -689,61 +689,61 @@ func BenchmarkCellWhile1000(b *testing.B) {
 	}
 }
 
-func BenchmarkCellPartition0(b *testing.B) {
+func BenchmarkPairPartition0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Partition(0)
 	}
 }
 
-func BenchmarkCellPartition1(b *testing.B) {
+func BenchmarkPairPartition1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Partition(0)
 	}
 }
 
-func BenchmarkCellPartition10(b *testing.B) {
+func BenchmarkPairPartition10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.Partition(9)
 	}
 }
 
-func BenchmarkCellPartition100(b *testing.B) {
+func BenchmarkPairPartition100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.Partition(99)
 	}
 }
 
-func BenchmarkCellPartition1000(b *testing.B) {
+func BenchmarkPairPartition1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.Partition(999)
 	}
 }
 
-func BenchmarkCellZip0(b *testing.B) {
+func BenchmarkPairZip0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Zip(List0)
 	}
 }
 
-func BenchmarkCellZip1(b *testing.B) {
+func BenchmarkPairZip1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.Zip(List1)
 	}
 }
 
-func BenchmarkCellZip10(b *testing.B) {
+func BenchmarkPairZip10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List10.Zip(List10)
 	}
 }
 
-func BenchmarkCellZip100(b *testing.B) {
+func BenchmarkPairZip100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List100.Zip(List100)
 	}
 }
 
-func BenchmarkCellZip1000(b *testing.B) {
+func BenchmarkPairZip1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1000.Zip(List1000)
 	}
