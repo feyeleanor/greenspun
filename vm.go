@@ -5,20 +5,23 @@ package greenspun
 //	This type embodies the core of the SECD virtual machine for implementing functional languages
 //
 type VM struct {
-	S		*Pair		"stack"
-	E		*Pair		"environment"
-	C		*Pair		"control"
-	D		*Pair		"dump"
+	S		*StackList	"stack"
+	E		*Pair				"environment"
+	C		*Pair				"control"
+	D		StackList		"dump"
 }
 
+func NewVM(env, code *Pair) *VM {
+	return &VM{ S: Stack(), E: env, C: code }
+}
 
 //	Initialise the virtual machine with a global environment and code for execution
 //
 func (vm *VM) Initialize(env, code *Pair) {
-	vm.S = nil
+//	vm.S = nil
 	vm.E = env
 	vm.C = code
-	vm.D = nil
+//	vm.D = nil
 }
 
 
@@ -85,7 +88,7 @@ func (vm *VM) Run() bool {
 //		s						-> (nil . s)
 //		(NIL . c)		-> c
 func (vm *VM) Nil() {
-	vm.S = vm.S.Push(nil)
+	vm.S.Push(nil)
 	vm.Advance()
 }
 
@@ -94,7 +97,7 @@ func (vm *VM) Nil() {
 //		s						-> (x . s)
 //		(LDC x . c)	-> c
 func (vm *VM) Ldc() {
-	vm.S = Cons(vm.C.Cadr(), vm.S)
+	vm.S.Push(vm.C.Cadr())
 	vm.Advance()
 }
 
@@ -106,7 +109,7 @@ func (vm *VM) Ldc() {
 func (vm *VM) Ld() {
 	vm.Advance()
 	env, slot := vm.C.Car().(*Pair).IntPair()
-	vm.S = vm.S.Push(vm.Locate(env, slot))
+	vm.S.Push(vm.Locate(env, slot))
 	vm.Advance()
 }
 
@@ -117,7 +120,7 @@ func (vm *VM) Ld() {
 //		(LDF f . c)				-> c
 func (vm *VM) Ldf() {
 	vm.Advance()
-	vm.S = Cons(Cons(vm.C.Car(), vm.E), vm.S)
+	vm.S.Push(Cons(vm.C.Car(), vm.E))
 	vm.Advance()
 }
 
@@ -128,13 +131,12 @@ func (vm *VM) Ldf() {
 //		(SEL ct cf . c)		-> ct if x is T, or cf if x is F
 //		d									-> (c . d)
 func (vm *VM) Sel() {
-	vm.D = Cons(vm.C.Cddr().(*Pair).Cdr(), vm.D)
-	if vm.S.Car() == nil {
-		vm.C = vm.C.Cadr().(*Pair).Cdr().(*Pair)
-	} else {
+	vm.D.Push(vm.C.Cddr().(*Pair).Cdr())
+	if vm.S.Pop() == TRUE {
 		vm.C = vm.C.Cadr().(*Pair)
+	} else {
+		vm.C = vm.C.Cadr().(*Pair).Cdr().(*Pair)
 	}
-	vm.S = vm.S.Next()
 }
 
 
@@ -142,8 +144,7 @@ func (vm *VM) Sel() {
 //		(JOIN . c)				-> cr
 //		(cr . d)					-> d
 func (vm *VM) Join() {
-	vm.C = vm.D.Car().(*Pair)
-	vm.D = vm.D.Next()
+	vm.C = vm.D.Pop().(*Pair)
 }
 
 
@@ -155,10 +156,14 @@ func (vm *VM) Join() {
 //		(AP . c)					-> f
 //		d									-> (s e c . d)
 func (vm *VM) Ap() {
-	vm.D = Cons(vm.S.Cddr(), Cons(vm.E, Cons(vm.C.Cdr(), vm.D)))
-	vm.E = Cons(vm.S.Cadr(), vm.S.Cdar())
-	vm.C = vm.S.Caar().(*Pair)
-	vm.S = nil
+	closure := vm.S.Pop().(*Pair)
+	vm.E = Cons(closure.Cdr(), vm.S.Pop().(*Pair))
+	vm.C = closure.Car().(*Pair)
+
+	vm.D.Push(vm.C.Cdr())
+	vm.D.Push(vm.E)
+	vm.D.Push(vm.S)
+	vm.S = Stack()
 }
 
 
@@ -168,10 +173,11 @@ func (vm *VM) Ap() {
 //		(RTN . q)					-> c
 //		(s e c . d)				-> d
 func (vm *VM) Ret() {
-	vm.S = Cons(vm.S.Car(), vm.D.Car())
-	vm.E = vm.D.Cadr().(*Pair)
-	vm.C = vm.D.Cadr().(*Pair).Cdr().(*Pair)
-	vm.D = vm.D.Cddr().(*Pair).Cdr().(*Pair)
+	x := vm.S.Top()
+	vm.S = vm.D.Top().(*StackList)
+	vm.S.Push(x)
+	vm.E = vm.D.Pop().(*Pair)
+	vm.C = vm.D.Pop().(*Pair)
 }
 
 
@@ -198,11 +204,15 @@ func (vm *VM) Dum() {
 //		d											-> (s e c . d)
 //
 func (vm *VM) Rap() {
-	vm.D = Cons(vm.S.Cddr(), Cons(vm.E.Cdr(), Cons(vm.C.Cdr(), vm.D)))
-	vm.E = vm.S.Cdar().(*Pair)
-	vm.E.Rplaca(vm.S.Cadr())
-	vm.C = vm.S.Caar().(*Pair)
-	vm.S = nil
+	closure := vm.S.Pop().(*Pair)
+	vm.E = vm.S.Pop().(*Pair)
+	vm.E.Rplaca(closure.Cdr())
+	vm.C = closure.Car().(*Pair)
+
+	vm.D.Push(vm.C.Cdr())
+	vm.D.Push(vm.E.Cdr())
+	vm.D.Push(vm.S)
+	vm.S = Stack()
 }
 
 
@@ -212,7 +222,13 @@ func (vm *VM) Rap() {
 //		(CAR . c) 			-> c
 //
 func (vm *VM) SCar() {
-	vm.S = Cons(vm.S.Caar(), vm.S.Cdr())
+	switch t := vm.S.Top().(type) {
+	case nil:
+	case *Pair:
+		vm.S.Replace(t.Car())
+	default:
+		panic(vm)
+	}
 	vm.Advance()
 }
 
@@ -223,7 +239,13 @@ func (vm *VM) SCar() {
 //		(CDR . c)				-> c
 //
 func (vm *VM) SCdr() {
- 	vm.S = Cons(vm.S.Cadr(), vm.S.Cdr())
+	switch t := vm.S.Top().(type) {
+	case nil:
+	case *Pair:
+		vm.S.Replace(t.Cdr())
+	default:
+		panic(vm)
+	}
 	vm.Advance()
 }
 
@@ -234,7 +256,7 @@ func (vm *VM) SCdr() {
 //		(CONS . c)			-> c
 //
 func (vm *VM) SCons() {
-	vm.S = vm.S.Cons()
+	vm.S.Replace(Cons(vm.S.Pop(), vm.S.Top()))
 	vm.Advance()
 }
 
@@ -246,10 +268,10 @@ func (vm *VM) SCons() {
 //		(EQ . c) 				-> c
 //
 func (vm *VM) SEq() {
-	if vm.S.Car() == vm.S.Cdar() {
-		vm.S = Cons("T", vm.S.Cddr())
+	if vm.S.Pop() == vm.S.Top() {
+		vm.S.Replace(TRUE)
 	} else {
-		vm.S = Cons(nil, vm.S.Cddr())
+		vm.S.Replace(nil)
 	}
 	vm.Advance()
 }
