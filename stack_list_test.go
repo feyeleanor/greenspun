@@ -12,14 +12,14 @@ func TestStackListString(t *testing.T) {
 		}
 	}
 
-	ConfirmString(nil, "nil:||")
-	ConfirmString(new(StackList), "0:||")
-	ConfirmString(&StackList{ depth: 1, stackCell: stack(1) }, "1:|1|")
-	ConfirmString(&StackList{ depth: 2, stackCell: stack(1, 2) }, "2:|1 2|")
-	ConfirmString(&StackList{ depth: 3, stackCell: stack(1, 2, 3) }, "3:|1 2 3|")
-	ConfirmString(Stack(1), "1:|1|")
-	ConfirmString(Stack(1, 2), "2:|1 2|")
-	ConfirmString(Stack(1, 2, 3), "3:|1 2 3|")
+	ConfirmString(nil, "nil:<]")
+	ConfirmString(new(StackList), "0:<]")
+	ConfirmString(&StackList{ depth: 1, stackCell: stack(1) }, "1:<1]")
+	ConfirmString(&StackList{ depth: 2, stackCell: stack(1, 2) }, "2:<1 2]")
+	ConfirmString(&StackList{ depth: 3, stackCell: stack(1, 2, 3) }, "3:<1 2 3]")
+	ConfirmString(Stack(1), "1:<1]")
+	ConfirmString(Stack(1, 2), "2:<1 2]")
+	ConfirmString(Stack(1, 2, 3), "3:<1 2 3]")
 }
 
 func TestStackListEqual(t *testing.T) {

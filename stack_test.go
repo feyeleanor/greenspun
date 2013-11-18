@@ -9,13 +9,13 @@ func TestStackString(t *testing.T) {
 		}
 	}
 
-	ConfirmString(nil, "||")
-	ConfirmString(&stackCell{ data: 1 }, "|1|")
-	ConfirmString(&stackCell{ data: 1, stackCell: &stackCell{ data: 2 } }, "|1 2|")
-	ConfirmString(&stackCell{ data: 1, stackCell: &stackCell{ data: 2, stackCell: &stackCell{ data: 3 } } }, "|1 2 3|")
-	ConfirmString(stack(1), "|1|")
-	ConfirmString(stack(1, 2), "|1 2|")
-	ConfirmString(stack(1, 2, 3), "|1 2 3|")
+	ConfirmString(nil, "<]")
+	ConfirmString(&stackCell{ data: 1 }, "<1]")
+	ConfirmString(&stackCell{ data: 1, stackCell: &stackCell{ data: 2 } }, "<1 2]")
+	ConfirmString(&stackCell{ data: 1, stackCell: &stackCell{ data: 2, stackCell: &stackCell{ data: 3 } } }, "<1 2 3]")
+	ConfirmString(stack(1), "<1]")
+	ConfirmString(stack(1, 2), "<1 2]")
+	ConfirmString(stack(1, 2, 3), "<1 2 3]")
 }
 
 func TestStackEqual(t *testing.T) {
@@ -142,39 +142,25 @@ func TestStackCopy(t *testing.T) {
 	ConfirmCopy(stack(0, 1, 2), 4, stack(0, 1, 2))
 }
 
-func TestStackEnd(t *testing.T) {
-	ConfirmEnd := func(s, r *stackCell) {
-		if x := s.end(); !x.Equal(r) {
-			t.Fatalf("%v.end() should be %v but is %v", s, r, x)
+func TestStackSelect(t *testing.T) {
+	ConfirmSelect := func(s *stackCell, n int, r *stackCell) {
+		if x := s.Select(n); !x.Equal(r) {
+			t.Fatalf("%v.Select(%v) should be %v but is %v", s, n, r, x)
 		}
 	}
 
-	ConfirmEnd(nil, nil)
-	ConfirmEnd(stack(), stack())
-	ConfirmEnd(stack(1), stack(1))
-	ConfirmEnd(stack(1, 2), stack(2))
-	ConfirmEnd(stack(1, 2, 3), stack(3))
-}
+	ConfirmSelect(nil, 0, nil)
+	ConfirmSelect(nil, 1, nil)
 
-func TestStackPickCell(t *testing.T) {
-	ConfirmPickCell := func(s *stackCell, n int, r *stackCell) {
-		if x := s.pickCell(n); !x.Equal(r) {
-			t.Fatalf("%v.pickCell(%v) should be %v but is %v", s, n, r, x)
-		}
-	}
+	ConfirmSelect(stack(), 0, stack())
+	ConfirmSelect(stack(), 1, nil)
 
-	ConfirmPickCell(nil, 0, nil)
-	ConfirmPickCell(nil, 1, nil)
+	ConfirmSelect(stack(0), 0, stack(0))
+	ConfirmSelect(stack(0), 1, nil)
 
-	ConfirmPickCell(stack(), 0, stack())
-	ConfirmPickCell(stack(), 1, nil)
-
-	ConfirmPickCell(stack(0), 0, stack(0))
-	ConfirmPickCell(stack(0), 1, nil)
-
-	ConfirmPickCell(stack(0, 1), 0, stack(0, 1))
-	ConfirmPickCell(stack(0, 1), 1, stack(1))
-	ConfirmPickCell(stack(0, 1), 2, nil)
+	ConfirmSelect(stack(0, 1), 0, stack(0, 1))
+	ConfirmSelect(stack(0, 1), 1, stack(1))
+	ConfirmSelect(stack(0, 1), 2, nil)
 }
 
 func TestStackPick(t *testing.T) {

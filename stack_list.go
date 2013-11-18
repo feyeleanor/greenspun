@@ -15,7 +15,7 @@ func (s *StackList) String() (r string) {
 	if s != nil {
 		r = fmt.Sprintf("%v:%v", s.depth, s.stackCell)
 	} else {
-		r = "nil:||"
+		r = "nil:<]"
 	}
 	return
 }
