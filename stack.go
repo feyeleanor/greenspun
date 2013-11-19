@@ -7,6 +7,8 @@ import "fmt"
 	Each cell contains a generic item of data which must be unboxed before anything useful can be done
 	with it, and a link to the previous cell in the stack.
 
+			cf:			http://en.wikipedia.org/wiki/Spaghetti_stack
+
 	A similar data structure could be implemented with the Pair data-structure used to represent Lisp
 	Cons values. However in instances where we know we're dealing with a Stack (such as state management
 	in the SECD virtual machine) we save the additional cost of unboxing the link value when stepping
@@ -75,6 +77,8 @@ func (s *stackCell) Equal(o interface{}) (r bool) {
 				r = x == nil && y == nil
 			}
 		}
+	case nil:
+		r = s == nil
 	}
 	return
 }
@@ -142,15 +146,8 @@ func (s *stackCell) Dup() (r *stackCell) {
 /*
 	Use the top two items on the stack to create a new list of cells in which their position is exchanged.
 */
-func (s *stackCell) Swap() (r *stackCell) {
-	if s != nil {
-		if s.stackCell != nil {
-			r = &stackCell{ data: s.stackCell.data, stackCell: &stackCell{ s.data, s.stackCell.stackCell }}
-		} else {
-			r = stack(s.data)
-		}
-	}
-	return
+func (s *stackCell) Swap() *stackCell {
+	return s.Roll(1)
 }
 
 /*
@@ -195,7 +192,7 @@ func (s *stackCell) Pick(n int) (r *stackCell) {
 
 /*
 	Create a new stack common with the current stack from the Nth+1 element. The Nth item of the current stack becames
-	the first item of the new stack and then successive elements are filled with corresponding values starting at with
+	the first item of the new stack and then successive elements are filled with corresponding values starting with
 	that at the top of the current stack.
 */
 func (s *stackCell) Roll(n int) (r *stackCell) {

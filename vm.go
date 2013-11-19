@@ -225,7 +225,7 @@ func (vm *VM) SCar() {
 	switch t := vm.S.Top().(type) {
 	case nil:
 	case *Pair:
-		vm.S.Replace(t.Car())
+		vm.S.Replace(0, t.Car())
 	default:
 		panic(vm)
 	}
@@ -242,7 +242,7 @@ func (vm *VM) SCdr() {
 	switch t := vm.S.Top().(type) {
 	case nil:
 	case *Pair:
-		vm.S.Replace(t.Cdr())
+		vm.S.Replace(0, t.Cdr())
 	default:
 		panic(vm)
 	}
@@ -256,7 +256,7 @@ func (vm *VM) SCdr() {
 //		(CONS . c)			-> c
 //
 func (vm *VM) SCons() {
-	vm.S.Replace(Cons(vm.S.Pop(), vm.S.Top()))
+	vm.S.Replace(0, Cons(vm.S.Pop(), vm.S.Top()))
 	vm.Advance()
 }
 
@@ -269,9 +269,9 @@ func (vm *VM) SCons() {
 //
 func (vm *VM) SEq() {
 	if vm.S.Pop() == vm.S.Top() {
-		vm.S.Replace(TRUE)
+		vm.S.Replace(0, TRUE)
 	} else {
-		vm.S.Replace(nil)
+		vm.S.Replace(0, nil)
 	}
 	vm.Advance()
 }

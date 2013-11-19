@@ -6,8 +6,10 @@ import (
 )
 
 /*
-	A Pair is a traditional Lisp dotted pair, storing a data item in the head, and either a data item or
-	a pointer to another dotted pair in the tail.
+	This is an implementation of the traditional Lisp dotted pair, storing a data item in the head, and either
+	a data item or a pointer to another dotted pair in the tail.
+
+			cf:			http://en.wikipedia.org/wiki/Cons
 */
 
 type Pair struct {

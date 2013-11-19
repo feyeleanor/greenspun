@@ -2,6 +2,11 @@ package greenspun
 
 import "fmt"
 
+/*
+	This is a wrapper for a cactus stack data structure as implemented by the stackCell type. It's inspired
+	by Go's SliceHeader and StringHeader types.
+*/
+
 type StackList struct {
 	*stackCell
 	depth		int
@@ -15,7 +20,7 @@ func (s *StackList) String() (r string) {
 	if s != nil {
 		r = fmt.Sprintf("%v:%v", s.depth, s.stackCell)
 	} else {
-		r = "nil:<]"
+		r = "0:<]"
 	}
 	return
 }
@@ -26,7 +31,11 @@ func (s *StackList) Equal(o interface{}) (r bool) {
 		switch {
 		case s == nil && o == nil:
 			r = true
-		case s != nil && o == nil, s == nil && o != nil, s.depth != o.depth:
+		case s != nil && o == nil:
+			r = s.stackCell == nil
+		case s == nil && o != nil:
+			r = o.stackCell == nil
+		case s.depth != o.depth:
 			r = false
 		default:
 			x, y := s.stackCell, o.stackCell
@@ -46,6 +55,8 @@ func (s *StackList) Equal(o interface{}) (r bool) {
 		} else {
 			r = o == nil
 		}
+	case nil:
+		r = s == nil || s.stackCell == nil
 	}
 	return
 }
@@ -69,7 +80,7 @@ func (s *StackList) Top() (r interface{}) {
 }
 
 func (s *StackList) Pop() (r interface{}) {
-	if s != nil {
+	if s != nil && s.stackCell != nil {
 		r, s.stackCell = s.stackCell.Pop()
 		s.depth--
 	}
@@ -84,7 +95,7 @@ func (s *StackList) Len() (r int) {
 }
 
 func (s *StackList) Drop() {
-	if s != nil {
+	if s != nil && s.stackCell != nil {
 		_, s.stackCell = s.stackCell.Pop()
 		s.depth--
 	}
@@ -96,9 +107,16 @@ func (s *StackList) Swap() {
 	}
 }
 
-func (s *StackList) Replace(item interface{}) {
-	if s == nil {
-		*s = StackList{}
+func (s *StackList) Roll(n int) {
+	if s != nil {
+		s.stackCell = s.stackCell.Roll(n)
 	}
-	s.stackCell.data = item
+}
+
+func (s *StackList) Replace(n int, item interface{}) {
+	if s != nil && s.stackCell != nil {
+		if cell := s.Select(n); cell != nil {
+			cell.data = item
+		}
+	}
 }
