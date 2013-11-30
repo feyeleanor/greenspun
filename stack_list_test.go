@@ -203,7 +203,32 @@ func TestStackListSwap(t *testing.T) {
 }
 
 func TestStackListCopy(t *testing.T) {
-	t.Fatalf("implement tests")
+	ConfirmCopy := func(s *StackList, n int, r *StackList) {
+		if x := s.Copy(n); !x.Equal(r) {
+			t.Fatalf("%v.Copy(%v) should be %v but is %v", s, n, r, x)
+		}
+	}
+
+	ConfirmCopy(nil, 0, nil)
+	ConfirmCopy(nil, 1, nil)
+
+	ConfirmCopy(Stack(), 0, Stack())
+	ConfirmCopy(Stack(), 1, Stack())
+
+	ConfirmCopy(Stack(0), 0, Stack())
+	ConfirmCopy(Stack(0), 1, Stack(0))
+	ConfirmCopy(Stack(0), 2, Stack(0))
+
+	ConfirmCopy(Stack(0, 1), 0, Stack())
+	ConfirmCopy(Stack(0, 1), 1, Stack(0))
+	ConfirmCopy(Stack(0, 1), 2, Stack(0, 1))
+	ConfirmCopy(Stack(0, 1), 3, Stack(0, 1))
+
+	ConfirmCopy(Stack(0, 1, 2), 0, Stack())
+	ConfirmCopy(Stack(0, 1, 2), 1, Stack(0))
+	ConfirmCopy(Stack(0, 1, 2), 2, Stack(0, 1))
+	ConfirmCopy(Stack(0, 1, 2), 3, Stack(0, 1, 2))
+	ConfirmCopy(Stack(0, 1, 2), 4, Stack(0, 1, 2))
 }
 
 func TestStackListMove(t *testing.T) {

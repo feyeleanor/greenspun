@@ -127,15 +127,17 @@ func (s *StackList) Swap() {
 /*
 	Make a new stack containing n cells where each cell contains the same value as is stored at the same depth
 	in the existing stack.
+
+	If the stack is shorter than n we copy the entire stack
 */
-func (s *StackList) Copy(n int) *StackList {
-	if s == nil {
-		panic(STACK_UNINITIALIZED)
+func (s *StackList) Copy(n int) (r *StackList) {
+	if s != nil {
+		if n > s.depth {
+			n = s.depth
+		}
+	 	r = &StackList{ stackCell: s.stackCell.Copy(n), depth: n }
 	}
-	if n > s.depth {
-		n = s.depth
-	}
- 	return &StackList{ stackCell: s.stackCell.Copy(n), depth: n }
+ 	return
 }
 
 /*
