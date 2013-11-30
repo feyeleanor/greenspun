@@ -46,6 +46,37 @@ func BenchmarkPairString1000(b *testing.B) {
 		List1000.String()
 	}
 }
+
+func BenchmarkPairEqual0(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List0.Equal(List0)
+	}
+}
+
+func BenchmarkPairEqual1(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List1.Equal(List1)
+	}
+}
+
+func BenchmarkPairEqual10(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List10.Equal(List10)
+	}
+}
+
+func BenchmarkPairEqual100(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List100.Equal(List100)
+	}
+}
+
+func BenchmarkPairEqual1000(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		List1000.Equal(List1000)
+	}
+}
+
 func BenchmarkPairLen0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List0.Len()
@@ -85,36 +116,6 @@ func BenchmarkPairIsNil0(b *testing.B) {
 func BenchmarkPairIsNil1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		List1.IsNil()
-	}
-}
-
-func BenchmarkPairEqual0(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		List0.Equal(List0)
-	}
-}
-
-func BenchmarkPairEqual1(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		List1.Equal(List1)
-	}
-}
-
-func BenchmarkPairEqual10(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		List10.Equal(List10)
-	}
-}
-
-func BenchmarkPairEqual100(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		List100.Equal(List100)
-	}
-}
-
-func BenchmarkPairEqual1000(b *testing.B) {
-	for i := 0; i < b.N; i++ {
-		List1000.Equal(List1000)
 	}
 }
 
@@ -342,31 +343,31 @@ func BenchmarkPairRplacd1(b *testing.B) {
 
 func BenchmarkPairOffset0(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		List0.Offset(0)
+		List0.Move(0)
 	}
 }
 
 func BenchmarkPairOffset1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		List1.Offset(0)
+		List1.Move(0)
 	}
 }
 
 func BenchmarkPairOffset10(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		List10.Offset(9)
+		List10.Move(9)
 	}
 }
 
 func BenchmarkPairOffset100(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		List100.Offset(99)
+		List100.Move(99)
 	}
 }
 
 func BenchmarkPairOffset1000(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		List1000.Offset(999)
+		List1000.Move(999)
 	}
 }
 

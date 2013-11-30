@@ -3,16 +3,16 @@ package greenspun
 import "fmt"
 
 /*
-	This is an implementation of a classic Stack data structure, using a singly-linked list of cells.
-	Each cell contains a generic item of data which must be unboxed before anything useful can be done
-	with it, and a link to the previous cell in the stack.
+	This is an implementation of a classic Spaghetti Stack data structure, using a singly-linked list of
+	cells. Each cell contains a generic item of data which must be unboxed before anything useful can be
+	done with it, and a link to the previous cell in the stack.
 
 			cf:			http://en.wikipedia.org/wiki/Spaghetti_stack
 
 	A similar data structure could be implemented with the Pair data-structure used to represent Lisp
-	Cons values. However in instances where we know we're dealing with a Stack (such as state management
-	in the SECD virtual machine) we save the additional cost of unboxing the link value when stepping
-	through the stack.
+	Cons values. However in instances where we know we're always dealing with a Stack structure (such
+	as state management in the SECD virtual machine) we save the additional cost of unboxing the link
+	value when stepping through the stack.
 
 	A small number of additional primitive operations are implemented which will be more familiar to
 	Forth programmers, allowing values to be copied from a particular place in the Stack to the top.
@@ -46,7 +46,7 @@ func (s *stackCell) String() (r string) {
 			r = fmt.Sprintf("%v %v", r, tos.data)
 		}
 	}
-	return fmt.Sprintf("<%v]", r)
+	return fmt.Sprintf("(%v)", r)
 }
 
 /*
@@ -92,29 +92,30 @@ func (s *stackCell) Push(item interface{}) (r *stackCell) {
 }
 
 /*
-	Return the data item stored in the top cell of the stack, or a nil if the stack is empty.
-	If the current cell is nil then return nil.
+	Return the data item stored in the top cell of the stack.
+
+	If the current cell is nil then panic.
 */
-func (s *stackCell) Top() (r interface{}) {
-	if s != nil {
-		r = s.data
+func (s *stackCell) Peek() interface{} {
+	if s == nil {
+		panic(STACK_EMPTY)
 	}
-	return
+	return s.data
 }
 
 /*
-	Return the data item stored in the top cell of the stack, or a nil if the stack is empty, along with a
-	reference to the succeeding cell in the stack.
-	If the current cell is nil then return nils.
-	Beccause the cells are immutable this allows other stacks which reference the current stack cell to
-	continue doing so.
+	Return the data item stored in the top cell of the stack, along with a reference to the succeeding cell in the stack.
+
+	If the current cell is nil then panic.
+
+	Because the external API for accessing cells is immutable this allows other stacks which reference the
+	current stack cell through this API to continue doing so.
 */
-func (s *stackCell) Pop() (v interface{}, r *stackCell) {
-	if s != nil {
-		v = s.data
-		r = s.stackCell
+func (s *stackCell) Pop() (interface{}, *stackCell) {
+	if s == nil {
+		panic(STACK_EMPTY)
 	}
-	return
+	return s.data, s.stackCell
 }
 
 /*
@@ -131,16 +132,33 @@ func (s *stackCell) Len() (r int) {
 	return
 }
 
+func (s *stackCell) IsNil() (r bool) {
+	return s == nil
+}
+
+/*
+	Return the next stackCell.
+
+	If the current cell is nil then this is a no-op.
+*/
+func (s *stackCell) Drop() (r *stackCell) {
+	if s != nil {
+		r = s.stackCell
+	}
+	return
+}
+
 /*
 	Make a copy of the data item stored in the current cell and then store this in a new cell which points
 	to this cell.
-	If the current cell is nil then return nil.
+
+	If the current cell is nil then panic.
 */
-func (s *stackCell) Dup() (r *stackCell) {
-	if s != nil {
-		r = s.Push(s.data)
+func (s *stackCell) Dup() *stackCell {
+	if s == nil {
+		panic(STACK_EMPTY)
 	}
-	return
+	return s.Push(s.data)
 }
 
 /*
@@ -153,6 +171,8 @@ func (s *stackCell) Swap() *stackCell {
 /*
 	Make a new stack containing n cells where each cell contains the same value as is stored at the same depth
 	in the existing stack.
+
+	If the current cell is nil then this is a no-op.
 */
 func (s *stackCell) Copy(n int) (r *stackCell) {
 	r = new(stackCell)
@@ -165,24 +185,27 @@ func (s *stackCell) Copy(n int) (r *stackCell) {
 }
 
 /*
-	Return the Nth cell from the top of the stack, or nil if there are fewer than N cells in the current stack.
+	Return the Nth cell from the top of the stack.
+
+	If the current cell is nil or there are fewer than N cells in the current stack then panic.
 */
-func (s *stackCell) Select(n int) (r *stackCell) {
-	if s != nil {
-		for r = s; n > 0 && r.stackCell != nil; r = r.stackCell { n-- }
-		if n > 0 {
-			r = nil
-		}
+func (s *stackCell) Move(n int) (r *stackCell) {
+	if s == nil {
+		panic(STACK_EMPTY)
+	}
+	for r = s; n > 0 && r.stackCell != nil; r = r.stackCell { n-- }
+	if n > 0 {
+		panic(STACK_TOO_SHALLOW)
 	}
 	return
 }
 
 /*
-	Select the Nth cell from the top of the stack and if it is not nil, create a new cell with the same value and
-	pointing to the top of the current stack.
+	Move the Nth cell from the top of the stack and create a new cell with the same value and pointing to the top
+	of the current stack.
 */
 func (s *stackCell) Pick(n int) (r *stackCell) {
-	if x := s.Select(n); x != nil {
+	if x := s.Move(n); x != nil {
 		r = s.Push(x.data)
 	} else {
 		r = s
@@ -194,14 +217,18 @@ func (s *stackCell) Pick(n int) (r *stackCell) {
 	Create a new stack common with the current stack from the Nth+1 element. The Nth item of the current stack becames
 	the first item of the new stack and then successive elements are filled with corresponding values starting with
 	that at the top of the current stack.
+
+	If the current cell is nil or there are fewer than N cells in the current stack then panic.
 */
 func (s *stackCell) Roll(n int) (r *stackCell) {
 	switch {
+	case s == nil:
+		panic(STACK_EMPTY)
 	case n == 0:
 		r = s
 	case n > 0:
-		if x := s.Select(n - 1); x == nil || x.stackCell == nil {
-			r = s
+		if x := s.Move(n - 1); x == nil || x.stackCell == nil {
+			panic(STACK_TOO_SHALLOW)
 		} else {
 			r = &stackCell{ data: x.stackCell.data, stackCell: s }
 			x.stackCell = x.stackCell.stackCell

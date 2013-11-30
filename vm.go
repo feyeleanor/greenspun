@@ -28,7 +28,7 @@ func (vm *VM) Initialize(env, code *Pair) {
 //	Load a value from a slot in the environment
 //
 func (vm *VM) Locate(env, slot int) interface{} {
-	return vm.E.Offset(env).Car().(*Pair).Offset(slot).Car()
+	return vm.E.Move(env).Car().(*Pair).Move(slot).Car()
 }
 
 
@@ -67,13 +67,13 @@ func (vm *VM) Run() bool {
 		case RAP:
 			vm.Rap()
 		case SCAR:
-			vm.SCar()
+			vm.Scar()
 		case SCDR:
-			vm.SCdr()
+			vm.Scdr()
 		case SCONS:
-			vm.SCons()
+			vm.Scons()
 		case SEQ:
-			vm.SEq()
+			vm.Seq()
 		case HALT:
 			break
 		default:
@@ -173,8 +173,8 @@ func (vm *VM) Ap() {
 //		(RTN . q)					-> c
 //		(s e c . d)				-> d
 func (vm *VM) Ret() {
-	x := vm.S.Top()
-	vm.S = vm.D.Top().(*StackList)
+	x := vm.S.Peek()
+	vm.S = vm.D.Peek().(*StackList)
 	vm.S.Push(x)
 	vm.E = vm.D.Pop().(*Pair)
 	vm.C = vm.D.Pop().(*Pair)
@@ -221,11 +221,11 @@ func (vm *VM) Rap() {
 //		((a . b) . s)		-> (a . s)
 //		(CAR . c) 			-> c
 //
-func (vm *VM) SCar() {
-	switch t := vm.S.Top().(type) {
+func (vm *VM) Scar() {
+	switch t := vm.S.Peek().(type) {
 	case nil:
 	case *Pair:
-		vm.S.Replace(0, t.Car())
+		vm.S.Rplaca(t.Car())
 	default:
 		panic(vm)
 	}
@@ -238,11 +238,11 @@ func (vm *VM) SCar() {
 //		((a . b) . s) 	-> (b . s)
 //		(CDR . c)				-> c
 //
-func (vm *VM) SCdr() {
-	switch t := vm.S.Top().(type) {
+func (vm *VM) Scdr() {
+	switch t := vm.S.Peek().(type) {
 	case nil:
 	case *Pair:
-		vm.S.Replace(0, t.Cdr())
+		vm.S.Rplaca(t.Cdr())
 	default:
 		panic(vm)
 	}
@@ -255,8 +255,8 @@ func (vm *VM) SCdr() {
 //		(a b . s)				-> ((a . b) . s)
 //		(CONS . c)			-> c
 //
-func (vm *VM) SCons() {
-	vm.S.Replace(0, Cons(vm.S.Pop(), vm.S.Top()))
+func (vm *VM) Scons() {
+	vm.S.Rplaca(Cons(vm.S.Pop(), vm.S.Peek()))
 	vm.Advance()
 }
 
@@ -267,11 +267,11 @@ func (vm *VM) SCons() {
 //		(a b . s)				-> (#f . s)
 //		(EQ . c) 				-> c
 //
-func (vm *VM) SEq() {
-	if vm.S.Pop() == vm.S.Top() {
-		vm.S.Replace(0, TRUE)
+func (vm *VM) Seq() {
+	if vm.S.Pop() == vm.S.Peek() {
+		vm.S.Rplaca(TRUE)
 	} else {
-		vm.S.Replace(0, nil)
+		vm.S.Rplaca(nil)
 	}
 	vm.Advance()
 }

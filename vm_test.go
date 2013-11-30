@@ -56,13 +56,13 @@ func TestVMRun(t *testing.T) {
 }
 
 func TestVMNil(t *testing.T) {
-	vm := NewVM(nil, nil)
+	vm := NewVM(nil, List(NIL, NIL, NIL, NIL))
 	
 	ConfirmNil := func(v *VM, l int) {
 		vs := fmt.Sprintf("%v", v)
 		switch v.Nil(); {
-		case v.S.Top() != nil:
-			t.Fatalf("%v.Nil() the head should be nil but is %v", vs, v.S.Top())
+		case v.S.Peek() != nil:
+			t.Fatalf("%v.Nil() the head should be nil but is %v", vs, v.S.Peek())
 		case v.S.Len() != l:
 			t.Fatalf("%v.Nil() should result in a stack of %v elements but has %v elements", vs, l, v.S.Len())
 		}
@@ -88,8 +88,8 @@ func TestVMLdc(t *testing.T) {
 	ConfirmLdc := func(v *VM, l int, r interface{}) {
 		vs := fmt.Sprintf("%v", v)
 		switch v.Ldc(); {
-		case v.S.Top() != r:
-			t.Fatalf("%v.Ldc() the head should be %v but is %v", vs, r, v.S.Top())
+		case v.S.Peek() != r:
+			t.Fatalf("%v.Ldc() the head should be %v but is %v", vs, r, v.S.Peek())
 		case v.S.Len() != l:
 			t.Fatalf("%v.Ldc() should result in a stack of %v elements but has %v elements", vs, l, v.S.Len())
 		}
@@ -105,8 +105,8 @@ func TestVMLd(t *testing.T) {
 	ConfirmLd := func(v *VM, l int, r interface{}) {
 		vs := fmt.Sprintf("%v", v)
 		switch v.Ld(); {
-		case v.S.Top() != r:
-			t.Fatalf("%v.Ld() the head should be %v but is %v", vs, r, v.S.Top())
+		case v.S.Peek() != r:
+			t.Fatalf("%v.Ld() the head should be %v but is %v", vs, r, v.S.Peek())
 		case v.S.Len() != l:
 			t.Fatalf("%v.Ld() should result in a stack of %v elements but has %v elements", vs, l, v.S.Len())
 		}
@@ -171,67 +171,64 @@ func TestVMRap(t *testing.T) {
 	t.Logf("Implement tests for VM::Rap()")
 }
 
-func TestVMSCar(t *testing.T) {
-	ConfirmSCar := func(v *VM, r interface{}) {
+func TestVMScar(t *testing.T) {
+	RefuteScar := func(v *VM) {
 		vs := fmt.Sprintf("%v", v)
-		if v.SCar(); v.S.Top() != r {
-			t.Fatalf("%v.SCar() should be %v but is %v", vs, r, v.S.Top())
-		}
+		defer ConfirmPanic(t, "%v.Scar() should panic", vs)()
+		v.Scar()
 	}
 
-	ConfirmSCar(&VM{}, nil)
-	ConfirmSCar(&VM{ S: Stack(List()) }, nil)
-	ConfirmSCar(&VM{ S: Stack(List(0)) }, 0)
-	ConfirmSCar(&VM{ S: Stack(List(0, 1)) }, 0)
-	ConfirmSCar(&VM{ S: Stack(List(0, 1, 2)) }, 0)
+//	ConfirmScar := func(v *VM, r interface{}) {
+//		vs := fmt.Sprintf("%v", v)
+//		if v.Scar(); v.S.Peek() != r {
+//			t.Fatalf("%v.Scar() should be %v but is %v", vs, r, v.S.Peek())
+//		}
+//	}
 
-	RefuteSCar := func(v *VM) {
-		vs := fmt.Sprintf("%v", v)
-		defer func() {
-			if recover() == nil {
-				t.Fatalf("%v.SCar() should panic but returns %v", vs, v.S.Top())
-			}
-		}()
-		v.SCar()
-	}
+//	RefuteScar(&VM{})
+//	RefuteScar(&VM{ S: Stack() })
+//	RefuteScar(&VM{ S: Stack(0) })
+	RefuteScar(&VM{ S: Stack(List()) })
 
-	RefuteSCar(&VM{ S: Stack(0) })
+//	ConfirmScar(&VM{ S: Stack(List(0)) }, 0)
+//	ConfirmScar(&VM{ S: Stack(List(0, 1)) }, 0)
+//	ConfirmScar(&VM{ S: Stack(List(0, 1, 2)) }, 0)
 }
 
-func TestVMSCdr(t *testing.T) {
-	ConfirmSCdr := func(v *VM, r *StackList) {
+func TestVMScdr(t *testing.T) {
+	ConfirmScdr := func(v *VM, r *StackList) {
 		vs := fmt.Sprintf("%v", v)
-		if v.SCdr(); !r.Equal(v.S) {
-			t.Fatalf("%v.SCdr() should be %v but is %v", vs, r, v.S)
+		if v.Scdr(); !r.Equal(v.S) {
+			t.Fatalf("%v.Scdr() should be %v but is %v", vs, r, v.S)
 		}
 	}
 
-	ConfirmSCdr(&VM{ S: Stack(Cons(0, 1), 2) }, Stack(1, 2))
-	ConfirmSCdr(&VM{ S: Stack(Cons(1, 2), 3) }, Stack(2, 3))
-	ConfirmSCdr(&VM{ S: Stack(Cons(2, 3), 4) }, Stack(3, 4))
+	ConfirmScdr(&VM{ S: Stack(Cons(0, 1), 2), C: List(SCDR) }, Stack(1, 2))
+	ConfirmScdr(&VM{ S: Stack(Cons(1, 2), 3), C: List(SCDR) }, Stack(2, 3))
+	ConfirmScdr(&VM{ S: Stack(Cons(2, 3), 4), C: List(SCDR) }, Stack(3, 4))
 }
 
-func TestVMSCons(t *testing.T) {
-	ConfirmSCons := func(v *VM, r *StackList) {
+func TestVMScons(t *testing.T) {
+	ConfirmScons := func(v *VM, r *StackList) {
 		vs := fmt.Sprintf("%v", v)
-		if v.SCons(); !r.Equal(v.S) {
-			t.Fatalf("%v.SCons() should be %v but is %v", vs, r, v.S)
+		if v.Scons(); !r.Equal(v.S) {
+			t.Fatalf("%v.Scons() should be %v but is %v", vs, r, v.S)
 		}
 	}
 
-	ConfirmSCons(&VM{ S: Stack(0, 1, 2, 3) }, Stack(Cons(0, 1), 2, 3))
-	ConfirmSCons(&VM{ S: Stack(Cons(0, 1), 2, 3) }, Stack(Cons(Cons(0, 1), 2), 3))
-	ConfirmSCons(&VM{ S: Stack(Cons(Cons(0, 1), 2), 3) }, Stack(Cons(Cons(Cons(0, 1), 2), 3)))
+	ConfirmScons(&VM{ S: Stack(0, 1, 2, 3), C: List(SCONS) }, Stack(Cons(0, 1), 2, 3))
+	ConfirmScons(&VM{ S: Stack(Cons(0, 1), 2, 3), C: List(SCONS) }, Stack(Cons(Cons(0, 1), 2), 3))
+	ConfirmScons(&VM{ S: Stack(Cons(Cons(0, 1), 2), 3), C: List(SCONS) }, Stack(Cons(Cons(Cons(0, 1), 2), 3)))
 }
 
-func TestVMSEq(t *testing.T) {
-	ConfirmSEq := func(v *VM, r interface{}) {
+func TestVMSeq(t *testing.T) {
+	ConfirmSeq := func(v *VM, r interface{}) {
 		vs := fmt.Sprintf("%v", v)
-		if v.SEq(); v.S.Top() != r {
-			t.Fatalf("%v.Eq() should be %v but is %v", vs, r, v.S.Top())
+		if v.Seq(); v.S.Peek() != r {
+			t.Fatalf("%v.Seq() should be %v but is %v", vs, r, v.S.Peek())
 		}
 	}
 
-	ConfirmSEq(&VM{ S: Stack(0, 0) }, TRUE)
-	ConfirmSEq(&VM{ S: Stack(0, 1) }, nil)
+	ConfirmSeq(&VM{ S: Stack(0, 0), C: List(SEQ) }, TRUE)
+	ConfirmSeq(&VM{ S: Stack(0, 1), C: List(SEQ) }, nil)
 }

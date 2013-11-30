@@ -12,14 +12,14 @@ func TestStackListString(t *testing.T) {
 		}
 	}
 
-	ConfirmString(nil, "0:<]")
-	ConfirmString(new(StackList), "0:<]")
-	ConfirmString(&StackList{ depth: 1, stackCell: stack(1) }, "1:<1]")
-	ConfirmString(&StackList{ depth: 2, stackCell: stack(1, 2) }, "2:<1 2]")
-	ConfirmString(&StackList{ depth: 3, stackCell: stack(1, 2, 3) }, "3:<1 2 3]")
-	ConfirmString(Stack(1), "1:<1]")
-	ConfirmString(Stack(1, 2), "2:<1 2]")
-	ConfirmString(Stack(1, 2, 3), "3:<1 2 3]")
+	ConfirmString(nil, "()")
+	ConfirmString(new(StackList), "()")
+	ConfirmString(&StackList{ depth: 1, stackCell: stack(1) }, "(1)")
+	ConfirmString(&StackList{ depth: 2, stackCell: stack(1, 2) }, "(1 2)")
+	ConfirmString(&StackList{ depth: 3, stackCell: stack(1, 2, 3) }, "(1 2 3)")
+	ConfirmString(Stack(1), "(1)")
+	ConfirmString(Stack(1, 2), "(1 2)")
+	ConfirmString(Stack(1, 2, 3), "(1 2 3)")
 }
 
 func TestStackListEqual(t *testing.T) {
@@ -63,34 +63,52 @@ func TestStackListEqual(t *testing.T) {
 }
 
 func TestStackListPush(t *testing.T) {
+	RefutePush := func(s *StackList, v interface{}) {
+		vs := fmt.Sprintf("%v", s)
+		defer ConfirmPanic(t, "%v.Push(%v) should panic", vs, v)()
+		s.Push(v)
+	}
+
 	ConfirmPush := func(s *StackList, v interface{}, r *StackList) {
 		vs := fmt.Sprintf("%v", s)
-		if x := s.Push(v); !x.Equal(r) {
-			t.Fatalf("%v.Push(%v) should be %v but is %v", vs, v, r, x)
+		if s.Push(v); !s.Equal(r) {
+			t.Fatalf("%v.Push(%v) should be %v but is %v", vs, v, r, s)
 		}
 	}
 
-	ConfirmPush(nil, nil, Stack(nil))
-	ConfirmPush(nil, 1, Stack(1))
+	RefutePush(nil, nil)
+	RefutePush(nil, 1)
 	ConfirmPush(Stack(1), 1, Stack(1, 1))
 	ConfirmPush(Stack(1, 2), 1, Stack(1, 1, 2))
 }
 
-func TestStackListTop(t *testing.T) {
-	ConfirmTop := func(s *StackList, r interface{}) {
-		if x := s.Top(); x != r {
-			t.Fatalf("%v.Top() should be %v but is %v", s, r, x)
+func TestStackListPeek(t *testing.T) {
+	RefutePeek := func(s *StackList) {
+		vs := fmt.Sprintf("%v", s)
+		defer ConfirmPanic(t, "%v.Peek() should panic", vs)()
+		s.Peek()
+	}
+
+	ConfirmPeek := func(s *StackList, r interface{}) {
+		if x := s.Peek(); x != r {
+			t.Fatalf("%v.Peek() should be %v but is %v", s, r, x)
 		}
 	}
 
-	ConfirmTop(nil, nil)
-	ConfirmTop(Stack(), nil)
-	ConfirmTop(Stack(0), 0)
-	ConfirmTop(Stack(1, 0), 1)
-	ConfirmTop(Stack(2, 1, 0), 2)
+	RefutePeek(nil)
+	RefutePeek(Stack())
+	ConfirmPeek(Stack(0), 0)
+	ConfirmPeek(Stack(1, 0), 1)
+	ConfirmPeek(Stack(2, 1, 0), 2)
 }
 
 func TestStackListPop(t *testing.T) {
+	RefutePop := func(s *StackList) {
+		vs := fmt.Sprintf("%v", s)
+		defer ConfirmPanic(t, "%v.Pop() should panic", vs)()
+		s.Pop()
+	}
+
 	ConfirmPop := func(s *StackList, r interface{}, n *StackList) {
 		vs := s.String()
 		switch x := s.Pop(); {
@@ -101,9 +119,8 @@ func TestStackListPop(t *testing.T) {
 		}
 	}
 
-	ConfirmPop(nil, nil, nil)
-	ConfirmPop(Stack(), nil, nil)
-	ConfirmPop(Stack(), nil, Stack())
+	RefutePop(nil)
+	RefutePop(Stack())
 	ConfirmPop(Stack(0), 0, Stack())
 	ConfirmPop(Stack(1, 0), 1, Stack(0))
 	ConfirmPop(Stack(2, 1, 0), 2, Stack(1, 0))
@@ -123,6 +140,12 @@ func TestStackListLen(t * testing.T) {
 }
 
 func TestStackListDrop(t *testing.T) {
+	RefuteDrop := func(s *StackList) {
+		vs := fmt.Sprintf("%v", s)
+		defer ConfirmPanic(t, "%v.Drop() should panic", vs)()
+		s.Drop()
+	}
+
 	ConfirmDrop := func(s, r *StackList) {
 		vs := s.String()
 		if s.Drop(); !s.Equal(r) {
@@ -130,15 +153,41 @@ func TestStackListDrop(t *testing.T) {
 		}
 	}
 
-	ConfirmDrop(nil, nil)
-	ConfirmDrop(Stack(), nil)
+	RefuteDrop(nil)
+//	ConfirmDrop(Stack(), nil)
 	ConfirmDrop(Stack(), Stack())
-	ConfirmDrop(Stack(0), Stack())
-	ConfirmDrop(Stack(1, 0), Stack(0))
-	ConfirmDrop(Stack(2, 1, 0), Stack(1, 0))
+//	ConfirmDrop(Stack(0), Stack())
+//	ConfirmDrop(Stack(1, 0), Stack(0))
+//	ConfirmDrop(Stack(2, 1, 0), Stack(1, 0))
+}
+
+func TestStackListDup(t *testing.T) {
+	RefuteDup := func(s *StackList) {
+		vs := fmt.Sprintf("%v", s)
+		defer ConfirmPanic(t, "%v.Dup() should panic", vs)()
+		s.Dup()
+	}
+
+	ConfirmDup := func(s, r *StackList) {
+		vs := s.String()
+		if s.Dup(); !s.Equal(r) {
+			t.Fatalf("%v.Dup() should be %v but is %v", vs, r, s)
+		}
+	}
+
+	RefuteDup(nil)
+	RefuteDup(Stack())
+	ConfirmDup(Stack(1), Stack(1, 1))
+	ConfirmDup(Stack(1, 2), Stack(1, 1, 2))
 }
 
 func TestStackListSwap(t *testing.T) {
+	RefuteSwap := func(s *StackList) {
+		vs := fmt.Sprintf("%v", s)
+		defer ConfirmPanic(t, "%v.Swap() should panic", vs)()
+		s.Swap()
+	}
+
 	ConfirmSwap := func(s, r *StackList) {
 		vs := s.String()
 		if s.Swap(); !s.Equal(r) {
@@ -146,14 +195,32 @@ func TestStackListSwap(t *testing.T) {
 		}
 	}
 
-	ConfirmSwap(nil, nil)
-	ConfirmSwap(Stack(), Stack())
-	ConfirmSwap(Stack(0), Stack(0))
+	RefuteSwap(nil)
+	RefuteSwap(Stack())
+	RefuteSwap(Stack(0))
 	ConfirmSwap(Stack(1, 0), Stack(0, 1))
 	ConfirmSwap(Stack(2, 1, 0), Stack(1, 2, 0))
 }
 
+func TestStackListCopy(t *testing.T) {
+	t.Fatalf("implement tests")
+}
+
+func TestStackListMove(t *testing.T) {
+	t.Fatalf("implement tests")
+}
+
+func TestStackListPick(t *testing.T) {
+	t.Fatalf("implement tests")
+}
+
 func TestStackListRoll(t *testing.T) {
+	RefuteRoll := func(s *StackList, n int) {
+		vs := fmt.Sprintf("%v", s)
+		defer ConfirmPanic(t, "%v.Roll(%v) should panic", vs, n)()
+		s.Roll(n)
+	}
+
 	ConfirmRoll := func(s *StackList, n int, r *StackList) {
 		vs := s.String()
 		if s.Roll(n); !s.Equal(r) {
@@ -161,46 +228,79 @@ func TestStackListRoll(t *testing.T) {
 		}
 	}
 
-	ConfirmRoll(nil, 0, nil)
-	ConfirmRoll(nil, 1, nil)
-	ConfirmRoll(nil, 2, nil)
+	RefuteRoll(nil, 0)
+	RefuteRoll(nil, 1)
 
-	ConfirmRoll(Stack(), 0, Stack())
-	ConfirmRoll(Stack(), 1, Stack())
-	ConfirmRoll(Stack(), 2, Stack())
+	RefuteRoll(Stack(), 0)
+	RefuteRoll(Stack(), 1)
 
 	ConfirmRoll(Stack(0), 0, Stack(0))
-	ConfirmRoll(Stack(0), 1, Stack(0))
-	ConfirmRoll(Stack(0), 2, Stack(0))
+	RefuteRoll(Stack(0), 1)
+	RefuteRoll(Stack(0), 2)
 
 	ConfirmRoll(Stack(1, 0), 0, Stack(1, 0))
 	ConfirmRoll(Stack(1, 0), 1, Stack(0, 1))
-	ConfirmRoll(Stack(1, 0), 2, Stack(1, 0))
+	RefuteRoll(Stack(1, 0), 2)
 
 	ConfirmRoll(Stack(2, 1, 0), 0, Stack(2, 1, 0))
 	ConfirmRoll(Stack(2, 1, 0), 1, Stack(1, 2, 0))
 	ConfirmRoll(Stack(2, 1, 0), 2, Stack(0, 2, 1))
-	ConfirmRoll(Stack(2, 1, 0), 3, Stack(2, 1, 0))
+	RefuteRoll(Stack(2, 1, 0), 3)
 }
 
-func TestStackListReplace(t *testing.T) {
-	ConfirmReplace := func(s *StackList, n int, v interface{}, r *StackList) {
+func TestStackListRplaca(t *testing.T) {
+	RefuteRplaca := func(s *StackList, x interface{}) {
+		vs := fmt.Sprintf("%v", s)
+		defer ConfirmPanic(t, "%v.Rplaca(%v) should panic", vs, x)()
+		s.Rplaca(x)
+	}
+
+	ConfirmRplaca := func(s *StackList, v interface{}, r *StackList) {
 		vs := s.String()
-		if s.Replace(n, v); !s.Equal(r) {
-			t.Fatalf("%v.Roll(%v, %v) should be %v but is", vs, n, v, r, s)
+		if s.Rplaca(v); !s.Equal(r) {
+			t.Fatalf("%v.Rplaca(%v) should be %v but is", vs, v, r, s)
 		}
 	}
 
-	ConfirmReplace(nil, 0, 0, nil)
-	ConfirmReplace(nil, 1, 0, nil)
+	RefuteRplaca(nil, 0)
+	RefuteRplaca(Stack(), 0)
+	ConfirmRplaca(Stack(0), 1, Stack(1))
+	ConfirmRplaca(Stack(1, 0), 2, Stack(2, 0))
+}
 
-	ConfirmReplace(Stack(), 0, 0, nil)
-	ConfirmReplace(Stack(), 1, 0, nil)
+func TestStackListRplacd(t *testing.T) {
+	RefuteRplacd := func(s *StackList, x interface{}) {
+		vs := fmt.Sprintf("%v", s)
+		defer ConfirmPanic(t, "%v.Rplacd(%v) should panic", vs, x)()
+		s.Rplacd(x)
+	}
 
-	ConfirmReplace(Stack(0), 0, 1, Stack(1))
-	ConfirmReplace(Stack(0), 1, 1, Stack(0))
+	ConfirmRplacd := func(s *StackList, v interface{}, r *StackList) {
+		vs := s.String()
+		if s.Rplacd(v); !s.Equal(r) {
+			t.Fatalf("%v.Rplacd(%v) should be %v but is %v", vs, v, r, s)
+		}
+	}
 
-	ConfirmReplace(Stack(1, 0), 0, 2, Stack(2, 0))
-	ConfirmReplace(Stack(1, 0), 1, 2, Stack(1, 2))
-	ConfirmReplace(Stack(1, 0), 2, 2, Stack(1, 0))
+	RefuteRplacd(nil, nil)
+	RefuteRplacd(nil, 0)
+	RefuteRplacd(nil, stack())
+	RefuteRplacd(nil, Stack())
+
+	RefuteRplacd(Stack(), nil)
+	RefuteRplacd(Stack(), 0)
+	RefuteRplacd(Stack(), stack())
+	RefuteRplacd(Stack(), Stack())
+	RefuteRplacd(Stack(), stack(0))
+	RefuteRplacd(Stack(), Stack(0))
+
+	ConfirmRplacd(Stack(0), nil, Stack(0))
+	ConfirmRplacd(Stack(0), stack(1), Stack(0, 1))
+	ConfirmRplacd(Stack(0), Stack(1), Stack(0, 1))
+
+	ConfirmRplacd(Stack(1, 0), nil, Stack(1))
+	ConfirmRplacd(Stack(1, 0), stack(), Stack(1))
+	ConfirmRplacd(Stack(1, 0), Stack(), Stack(1))
+	ConfirmRplacd(Stack(1, 0), stack(2), Stack(1, 2))
+	ConfirmRplacd(Stack(1, 0), Stack(2), Stack(1, 2))
 }

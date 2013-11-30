@@ -56,25 +56,15 @@ func (c *Pair) String() string {
 	return "(" + strings.Join(terms, " ") + ")"
 }
 
-func (c *Pair) Len() (i int) {
-	c.Each(func(v interface{}) {
-		i++
-	})
-	return
-}
-
-func (c *Pair) IsNil() (r bool) {
-	return c == nil
-}
-
 func (c *Pair) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
 	case Pair:
 		r = c.Equal(&o)
 	case *Pair:
-		if c.IsNil() {
-			r = o.IsNil()
-		} else if !o.IsNil() {
+		switch {
+		case c == nil:
+			r = o == nil
+		case o != nil:
 			if v, ok := c.head.(Equatable); ok {
 				r = v.Equal(o.head)
 			} else if v, ok = o.head.(Equatable); ok {
@@ -97,15 +87,42 @@ func (c *Pair) Equal(o interface{}) (r bool) {
 	return
 }
 
-func (c *Pair) Push(v interface{}) (r *Pair) {
-	if !c.IsNil() {
-		r = Cons(v, c)
-	} else {
-		r = Cons(v, nil)
-	}
-	return 
+func (c *Pair) Len() (i int) {
+	c.Each(func(v interface{}) {
+		i++
+	})
+	return
 }
 
+func (c *Pair) IsNil() (r bool) {
+	return c == nil
+}
+
+func (c *Pair) Push(v interface{}) (r *Pair) {
+	if c == nil {
+		r = &Pair{ head: v, tail: nil }
+	} else {
+		r = &Pair{ head: v, tail: c }
+	}
+	return
+}
+
+/*
+	Return the data item stored in the current pair, or a nil if the stack is empty.
+	If the current cell is nil then panic.
+*/
+func (c *Pair) Peek() interface{} {
+	if c == nil {
+		panic(PAIR_EMPTY)
+	}
+	return c.head
+}
+
+/*
+	Return the data item stored in the current Pair, along with a reference to the succeeding cell in the stack.
+
+	If the current cell is nil then panic.
+*/
 func (c *Pair) Pop() (interface{}, *Pair) {
 	return c.Car(), c.Next()
 }
@@ -132,22 +149,24 @@ func (c *Pair) Next() (r *Pair) {
 }
 
 func (c *Pair) Car() interface{} {
-	if !c.IsNil() {
-		return c.head
+	if c == nil {
+		panic(PAIR_EMPTY)
 	}
-	return nil
+	return c.head
 }
 
 func (c *Pair) Cdr() interface{} {
-	if !c.IsNil() {
-		return c.tail
+	if c == nil {
+		panic(PAIR_EMPTY)
 	}
-	return nil
+	return c.tail
 }
 
 func (c *Pair) Caar() (r interface{}) {
 	if h, ok := c.Car().(*Pair); ok {
 		r = h.Car()
+	} else {
+		panic(PAIR_REQUIRED)
 	}
 	return
 }
@@ -155,6 +174,8 @@ func (c *Pair) Caar() (r interface{}) {
 func (c *Pair) Cadr() (r interface{}) {
 	if h, ok := c.Car().(*Pair); ok {
 		r = h.Cdr()
+	} else {
+		panic(PAIR_REQUIRED)
 	}
 	return
 }
@@ -168,33 +189,35 @@ func (c *Pair) Cddr() interface{} {
 }
 
 func (c *Pair) Rplaca(i interface{}) *Pair {
-	if !c.IsNil() {
-		c.head = i
-		return c
+	if c == nil {
+		panic(PAIR_EMPTY)
 	}
-	return nil
+	c.head = i
+	return c
 }
 
 func (c *Pair) Rplacd(i interface{}) *Pair {
-	if !c.IsNil() {
-		c.tail = i
-		return c
+	if c == nil {
+		panic(PAIR_EMPTY)
 	}
-	return nil
+	c.tail = i
+	return c
 }
 
-func (c *Pair) Offset(i int) (r *Pair) {
+func (c *Pair) Move(n int) (r *Pair) {
 	switch {
-	case i < 0:
-		r = nil
-	case i == 0:
-		r = c
+	case c == nil:
+		panic(PAIR_EMPTY)
+	case n < 0:
+		panic(ARGUMENT_NEGATIVE_INDEX)
 	default:
-		n := c
-		for ; i > 0 && !n.IsNil(); i-- {
-			n = n.Next()
+		for r = c; n > 0 && r.tail != nil; r = r.Next() {
+			n--
 		}
-		r = n
+
+		if n > 0 || r == nil {
+			panic(PAIR_LIST_TOO_SHALLOW)
+		}
 	}
 	return
 }
@@ -233,53 +256,99 @@ func (c *Pair) Append(v... interface{}) (r *Pair) {
 		}
 	}
 
-	if !c.IsNil() {
+	if c == nil {
+		r = head
+	} else {
 		c.End().Rplacd(head)
 		r = c
-	} else {
-		r = head
 	}
 	return
 }
 
 func (c *Pair) Each(f interface{}) {
-	c.Step(0, 1, f)
-}
-
-func (c *Pair) Step(start, n int, f interface{}) {
 	var i		int
 
-	c = c.Offset(start)
 	switch f := f.(type) {
 	case func():
-		for ; !c.IsNil(); c = c.Offset(n) {
+		for ; c != nil; c = c.Next() {
 			f()
 		}
 	case func(interface{}):
-		for ; !c.IsNil(); c = c.Offset(n) {
+		for ; c != nil; c = c.Next() {
 			f(c.Car())
 		}
 	case func(int, interface{}):
-		for ; !c.IsNil(); c = c.Offset(n) {
+		for ; c != nil; c = c.Next() {
 			f(i, c.Car())
 			i++
 		}
 	case func(interface{}, interface{}):
-		for ; !c.IsNil(); c = c.Offset(n) {
+		for ; c != nil; c = c.Next() {
 			f(i, c.Car())
 			i++
 		}
 	case func(*Pair):
-		for ; !c.IsNil(); c = c.Offset(n) {
+		for ; c != nil; c = c.Next() {
 			f(c)
 		}
 	case func(int, *Pair):
-		for ; !c.IsNil(); c = c.Offset(n) {
+		for ; c != nil; c = c.Next() {
 			f(i, c)
 			i++
 		}
 	case func(interface{}, *Pair):
-		for ; !c.IsNil(); c = c.Offset(n) {
+		for ; c != nil; c = c.Next() {
+			f(i, c)
+			i++
+		}
+	}
+}
+
+func (c *Pair) Step(start, n int, f interface{}) {
+	defer func() {
+		switch x := recover(); x {
+		case PAIR_EMPTY, PAIR_LIST_TOO_SHALLOW:
+			//	An empty or shallow pair indicates that the list has terminated before the next step increment can be reached. In this particular case this is not an error so recover cleanly.
+		default:
+			//	Any other panic occurring during step iteration should be propagated to the caller.
+			panic(x)
+		}
+	}()
+
+	if start > 0 {
+		c = c.Move(start)
+	}
+
+	switch f := f.(type) {
+	case func():
+		for ; c != nil; c = c.Move(n) {
+			f()
+		}
+	case func(interface{}):
+		for ; c != nil; c = c.Move(n) {
+			f(c.Car())
+		}
+	case func(int, interface{}):
+		for i := 0; c != nil; c = c.Move(n) {
+			f(i, c.Car())
+			i++
+		}
+	case func(interface{}, interface{}):
+		for i := 0; c != nil; c = c.Move(n) {
+			f(i, c.Car())
+			i++
+		}
+	case func(*Pair):
+		for ; c != nil; c = c.Move(n) {
+			f(c)
+		}
+	case func(int, *Pair):
+		for i := 0; c != nil; c = c.Move(n) {
+			f(i, c)
+			i++
+		}
+	case func(interface{}, *Pair):
+		for i := 0; c != nil; c = c.Move(n) {
 			f(i, c)
 			i++
 		}
@@ -363,35 +432,35 @@ func (c *Pair) Reduce(seed, f interface{}) (r interface{}) {
 func (c *Pair) While(condition bool, f interface{}) (i int) {
 	switch f := f.(type) {
 	case func(interface{}) bool:
-		for r := c; !r.IsNil() && f(r.Car()) == condition; r = r.Next() {
+		for r := c; r != nil && f(r.Car()) == condition; r = r.Next() {
 			i++
 		}
 	case func(int, interface{}) bool:
-		for r := c; !r.IsNil() && f(i, r.Car()) == condition; r = r.Next() {
+		for r := c; r != nil && f(i, r.Car()) == condition; r = r.Next() {
 			i++
 		}
 	case func(interface{}, interface{}) bool:
-		for r := c; !r.IsNil() && f(i, r.Car()) == condition; r = r.Next() {
+		for r := c; r != nil && f(i, r.Car()) == condition; r = r.Next() {
 			i++
 		}
 	case func(*Pair) bool:
-		for r := c; !r.IsNil() && f(r) == condition; r = r.Next() {
+		for r := c; r != nil && f(r) == condition; r = r.Next() {
 			i++
 		}
 	case func(int, *Pair) bool:
-		for r := c; !r.IsNil() && f(i, r) == condition; r = r.Next() {
+		for r := c; r != nil && f(i, r) == condition; r = r.Next() {
 			i++
 		}
 	case func(interface{}, *Pair) bool:
-		for r := c; !r.IsNil() && f(i, r) == condition; r = r.Next() {
+		for r := c; r != nil && f(i, r) == condition; r = r.Next() {
 			i++
 		}
 	case Equatable:
-		for r := c; !r.IsNil() && f.Equal(r.Car()) == condition; r = r.Next() {
+		for r := c; r != nil && f.Equal(r.Car()) == condition; r = r.Next() {
 			i++
 		}
 	case interface{}:
-		for r := c; !r.IsNil() && (f == r.Car()) == condition; r = r.Next() {
+		for r := c; r != nil && (f == r.Car()) == condition; r = r.Next() {
 			i++
 		}
 	}
@@ -399,7 +468,22 @@ func (c *Pair) While(condition bool, f interface{}) (i int) {
 }
 
 func (c *Pair) Partition(offset int) (x, y *Pair) {
-	if y = c.Offset(offset); !y.IsNil() {
+	defer func() {
+		switch x := recover(); x {
+		case PAIR_EMPTY, PAIR_LIST_TOO_SHALLOW:
+			//	An empty or shallow pair indicates that the list has terminated before the partition has been reached. In this particular case this is not an error so recover cleanly.
+			y = nil
+		default:
+			//	Any other panic occurring during step iteration should be propagated to the caller.
+			panic(x)
+		}
+	}()
+
+	if offset < 0 {
+		panic(ARGUMENT_NEGATIVE_INDEX)
+	}
+
+	if y = c.Move(offset); y != nil {
 		r := y.Next()
 		y.Rplacd(nil)
 		y = r
@@ -434,7 +518,7 @@ func (c *Pair) Repeat(count int) (r *Pair) {
 
 func (c *Pair) Zip(n *Pair) (r *Pair) {
 	return c.constructList(func(cursor *Pair) {
-		for ; !c.IsNil() || !n.IsNil(); c, n = c.Next(), n.Next() {
+		for ; c != nil || n != nil; c, n = c.Next(), n.Next() {
 			cursor = cursor.append(Cons(c.Car(), n.Car()))
 		}
 	})

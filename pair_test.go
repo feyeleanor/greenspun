@@ -29,38 +29,6 @@ func TestPairString(t *testing.T) {
 	ConfirmString(List(0, List(1, 2, 3), List(2, 3), 3), "(0 (1 2 3) (2 3) 3)")
 }
 
-func TestPairLen(t *testing.T) {
-	ConfirmLen := func(c *Pair, r int) {
-		if l := c.Len(); l != r {
-			t.Fatalf("%v.Len() should be %v but is %v", c, r, l)
-		}
-	}
-
-	ConfirmLen(nil, 0)
-	ConfirmLen(List(), 0)
-	ConfirmLen(&Pair{}, 1)
-	ConfirmLen(Cons(nil, nil), 1)
-	ConfirmLen(Cons(0, nil), 1)
-	ConfirmLen(List(0), 1)
-	ConfirmLen(Cons(0, 1), 1)
-	ConfirmLen(List(0, 1), 2)
-	ConfirmLen(List(0, 1, 2), 3)
-}
-
-func TestPairIsNil(t *testing.T) {
-	ConfirmIsNil := func(c *Pair, r bool) {
-		if n := c.IsNil(); n != r {
-			t.Fatalf("%v.IsNil() should be %v but is %v", c, r, n)
-		}
-	}
-
-	ConfirmIsNil(nil, true)
-	ConfirmIsNil(Cons(nil, nil), false)
-	ConfirmIsNil(Cons(1, nil), false)
-	ConfirmIsNil(List(), true)
-	ConfirmIsNil(List(nil), false)
-}
-
 func TestPairEqual(t *testing.T) {
 	ConfirmEqual := func(l *Pair, r interface{}, ok bool) {
 		if x := l.Equal(r); x != ok {
@@ -152,7 +120,38 @@ func TestPairEqual(t *testing.T) {
 
 	ConfirmEqual(List(nil, 1), &Pair{ nil, &Pair{ 1, nil } }, true)
 	ConfirmEqual(List(1, 1), &Pair{ 1, &Pair{ 1, nil } }, true)
-	
+}
+
+func TestPairLen(t *testing.T) {
+	ConfirmLen := func(c *Pair, r int) {
+		if l := c.Len(); l != r {
+			t.Fatalf("%v.Len() should be %v but is %v", c, r, l)
+		}
+	}
+
+	ConfirmLen(nil, 0)
+	ConfirmLen(List(), 0)
+	ConfirmLen(&Pair{}, 1)
+	ConfirmLen(Cons(nil, nil), 1)
+	ConfirmLen(Cons(0, nil), 1)
+	ConfirmLen(List(0), 1)
+	ConfirmLen(Cons(0, 1), 1)
+	ConfirmLen(List(0, 1), 2)
+	ConfirmLen(List(0, 1, 2), 3)
+}
+
+func TestPairIsNil(t *testing.T) {
+	ConfirmIsNil := func(c *Pair, r bool) {
+		if n := c.IsNil(); n != r {
+			t.Fatalf("%v.IsNil() should be %v but is %v", c, r, n)
+		}
+	}
+
+	ConfirmIsNil(nil, true)
+	ConfirmIsNil(Cons(nil, nil), false)
+	ConfirmIsNil(Cons(1, nil), false)
+	ConfirmIsNil(List(), true)
+	ConfirmIsNil(List(nil), false)
 }
 
 func TestPairPush(t *testing.T) {
@@ -171,6 +170,12 @@ func TestPairPush(t *testing.T) {
 }
 
 func TestPairPop(t *testing.T) {
+	RefutePop := func(c *Pair) {
+		vc := fmt.Sprintf("%v", c)
+		defer ConfirmPanic(t, "%v.Pop() should panic", vc)()
+		c.Pop()
+	}
+
 	ConfirmPop := func(c *Pair, rv interface{}, r *Pair) {
 		switch v, x := c.Pop(); {
 		case !r.Equal(x):
@@ -180,8 +185,8 @@ func TestPairPop(t *testing.T) {
 		}
 	}
 
-	ConfirmPop(nil, nil, nil)
-	ConfirmPop(List(), nil, nil)
+	RefutePop(nil)
+	RefutePop(List())
 	ConfirmPop(List(1), 1, nil)
 	ConfirmPop(List(1, 2), 1, List(2))
 }
@@ -210,18 +215,30 @@ func TestPairPair(t *testing.T) {
 }
 
 func TestPairNext(t *testing.T) {
+	RefuteNext := func(c *Pair) {
+		vc := fmt.Sprintf("%v", c)
+		defer ConfirmPanic(t, "%v.Next() should panic", vc)()
+		c.Next()
+	}
+
 	ConfirmNext := func(c *Pair, r *Pair) {
 		if x := c.Next(); !x.Equal(r) {
 			t.Fatalf("%v.Next() should be %v but is %v", c, r, x)
 		}
 	}
 
-	ConfirmNext(nil, nil)
-	ConfirmNext(List(), nil)
+	RefuteNext(nil)
+	RefuteNext(List())
 	ConfirmNext(List(0, 1), List(1))
 }
 
 func TestPairCar(t *testing.T) {
+	RefuteCar := func(c *Pair) {
+		vc := fmt.Sprintf("%v", c)
+		defer ConfirmPanic(t, "%v.Car() should panic", vc)()
+		c.Car()
+	}
+
 	ConfirmCar := func(c *Pair, r interface{}) {
 		if car, ok := c.Car().(Equatable); ok {
 			if !car.Equal(r) {
@@ -238,7 +255,8 @@ func TestPairCar(t *testing.T) {
 		}
 	}
 
-	ConfirmCar(nil, nil)
+	RefuteCar(nil)
+	RefuteCar(List())
 	ConfirmCar(Cons(0, nil), 0)
 	ConfirmCar(Cons(1, 0), 1)
 	ConfirmCar(Cons(List(1), 0), Cons(1, nil))
@@ -249,6 +267,12 @@ func TestPairCar(t *testing.T) {
 }
 
 func TestPairCdr(t *testing.T) {
+	RefuteCdr := func(c *Pair) {
+		vc := fmt.Sprintf("%v", c)
+		defer ConfirmPanic(t, "%v.Cdr() should panic", vc)()
+		c.Cdr()
+	}
+
 	ConfirmCdr := func(c *Pair, r interface{}) {
 		if cdr, ok := c.Cdr().(Equatable); ok {
 			if !cdr.Equal(r) {
@@ -265,7 +289,8 @@ func TestPairCdr(t *testing.T) {
 		}
 	}
 
-	ConfirmCdr(nil, nil)
+	RefuteCdr(nil)
+	RefuteCdr(List())
 	ConfirmCdr(Cons(0, nil), nil)
 	ConfirmCdr(Cons(0, 1), 1)
 	ConfirmCdr(Cons(0, Cons(1, nil)), Cons(1, nil))
@@ -273,6 +298,12 @@ func TestPairCdr(t *testing.T) {
 }
 
 func TestPairCaar(t *testing.T) {
+	RefuteCaar := func(c *Pair) {
+		vc := fmt.Sprintf("%v", c)
+		defer ConfirmPanic(t, "%v.Caar() should panic", vc)()
+		c.Caar()
+	}
+
 	ConfirmCaar := func(c *Pair, r interface{}) {
 		if caar, ok := c.Caar().(Equatable); ok {
 			if !caar.Equal(r) {
@@ -289,13 +320,19 @@ func TestPairCaar(t *testing.T) {
 		}
 	}
 
-	ConfirmCaar(nil, nil)
-	ConfirmCaar(Cons(0, nil), nil)
-	ConfirmCaar(Cons(0, 1), nil)
+	RefuteCaar(nil)
+	RefuteCaar(Cons(0, nil))
+	RefuteCaar(Cons(0, 1))
 	ConfirmCaar(Cons(Cons(0, 1), nil), 0)
 }
 
 func TestPairCadr(t *testing.T) {
+	RefuteCadr := func(c *Pair) {
+		vc := fmt.Sprintf("%v", c)
+		defer ConfirmPanic(t, "%v.Cadr() should panic", vc)()
+		c.Cadr()
+	}
+
 	ConfirmCadr := func(c *Pair, r interface{}) {
 		if cadr, ok := c.Cadr().(Equatable); ok {
 			if !cadr.Equal(r) {
@@ -312,13 +349,19 @@ func TestPairCadr(t *testing.T) {
 		}
 	}
 
-	ConfirmCadr(nil, nil)
-	ConfirmCadr(Cons(0, nil), nil)
-	ConfirmCadr(Cons(0, 1), nil)
+	RefuteCadr(nil)
+	RefuteCadr(Cons(0, nil))
+	RefuteCadr(Cons(0, 1))
 	ConfirmCadr(Cons(Cons(0, 1), nil), 1)
 }
 
 func TestPairCdar(t *testing.T) {
+	RefuteCdar := func(c *Pair) {
+		vc := fmt.Sprintf("%v", c)
+		defer ConfirmPanic(t, "%v.Cdar() should panic", vc)()
+		c.Cdar()
+	}
+
 	ConfirmCdar := func(c *Pair, r interface{}) {
 		if cdar, ok := c.Cdar().(Equatable); ok {
 			if !cdar.Equal(r) {
@@ -335,13 +378,19 @@ func TestPairCdar(t *testing.T) {
 		}
 	}
 
-	ConfirmCdar(nil, nil)
-	ConfirmCdar(Cons(0, nil), nil)
+	RefuteCdar(nil)
+	RefuteCdar(Cons(0, nil))
 	ConfirmCdar(Cons(0, Cons(1, nil)), 1)
 	ConfirmCdar(Cons(0, Cons(1, 2)), 1)
 }
 
 func TestPairCddr(t *testing.T) {
+	RefuteCddr := func(c *Pair) {
+		vc := fmt.Sprintf("%v", c)
+		defer ConfirmPanic(t, "%v.Cddr() should panic", vc)()
+		c.Cddr()
+	}
+
 	ConfirmCddr := func(c *Pair, r interface{}) {
 		if cddr, ok := c.Cddr().(Equatable); ok {
 			if !cddr.Equal(r) {
@@ -358,8 +407,8 @@ func TestPairCddr(t *testing.T) {
 		}
 	}
 
-	ConfirmCddr(nil, nil)
-	ConfirmCddr(Cons(0, nil), nil)
+	RefuteCddr(nil)
+	RefuteCddr(Cons(0, nil))
 	ConfirmCddr(Cons(0, Cons(1, nil)), nil)
 	ConfirmCddr(Cons(0, Cons(1, 2)), 2)
 }
@@ -391,33 +440,51 @@ func TestPairRplacd(t *testing.T) {
 	ConfirmRplacd(Cons(Cons(0, 1), 2), 1, Cons(Cons(0, 1), 1))
 }
 
-func TestPairOffset(t *testing.T) {
-	ConfirmOffset := func(c *Pair, i int, r *Pair) {
-		if offset := c.Offset(i); !offset.Equal(r) {
-			t.Fatalf("%v.Offset(%v) should be %v but is %v", c, i, r, offset)
+func TestPairMove(t *testing.T) {
+	RefuteMove := func(c *Pair, i int) {
+		vc := fmt.Sprintf("%v", c)
+		defer ConfirmPanic(t, "%v.Move(%v) should panic", vc, i)()
+		c.Move(i)
+	}
+
+	ConfirmMove := func(c *Pair, i int, r interface{}) {
+		if offset := c.Move(i); !offset.Equal(r) {
+			t.Fatalf("%v.Move(%v) should be %v but is %v", c, i, r, offset)
 		}
 	}
 
-	ConfirmOffset(nil, -1, nil)
-	ConfirmOffset(nil, 0, nil)
-	ConfirmOffset(nil, 1, nil)
+	RefuteMove(nil, -1)
+	RefuteMove(nil, 0)
+	RefuteMove(nil, 1)
 
-	ConfirmOffset(Cons(0, nil), -1, nil)
-	ConfirmOffset(Cons(0, nil), 0, Cons(0, nil))
-	ConfirmOffset(Cons(0, nil), 1, nil)
+	RefuteMove(Cons(0, nil), -1)
+	ConfirmMove(Cons(0, nil), 0, Cons(0, nil))
+	RefuteMove(Cons(0, nil), 1)
 
-	ConfirmOffset(Cons(0, Cons(1, nil)), -1, nil)
-	ConfirmOffset(Cons(0, Cons(1, nil)), 0, Cons(0, Cons(1, nil)))
-	ConfirmOffset(Cons(0, Cons(1, nil)), 1, Cons(1, nil))
-	ConfirmOffset(Cons(0, Cons(1, nil)), 2, nil)
+	RefuteMove(Cons(0, Cons(1, nil)), -1)
+	ConfirmMove(Cons(0, Cons(1, nil)), 0, Cons(0, Cons(1, nil)))
+	ConfirmMove(Cons(0, Cons(1, nil)), 1, Cons(1, nil))
+	RefuteMove(Cons(0, Cons(1, nil)), 2)
 
-	ConfirmOffset(Cons(0, Cons(1, 2)), -1, nil)
-	ConfirmOffset(Cons(0, Cons(1, 2)), 0, Cons(0, Cons(1, 2)))
-	ConfirmOffset(Cons(0, Cons(1, 2)), 1, Cons(1, 2))
-	ConfirmOffset(Cons(0, Cons(1, 2)), 2, nil)
+	RefuteMove(Cons(0, Cons(1, 2)), -1)
+	ConfirmMove(Cons(0, Cons(1, 2)), 0, Cons(0, Cons(1, 2)))
+	ConfirmMove(Cons(0, Cons(1, 2)), 1, Cons(1, 2))
+	RefuteMove(Cons(0, Cons(1, 2)), 2)
+
+	RefuteMove(Cons(0, Cons(1, Cons(2, 3))), -1)
+	ConfirmMove(Cons(0, Cons(1, Cons(2, 3))), 0, Cons(0, Cons(1, Cons(2, 3))))
+	ConfirmMove(Cons(0, Cons(1, Cons(2, 3))), 1, Cons(1, Cons(2, 3)))
+	ConfirmMove(Cons(0, Cons(1, Cons(2, 3))), 2, Cons(2, 3))
+	RefuteMove(Cons(0, Cons(1, Cons(2, 3))), 3)
 }
 
 func TestPairEnd(t *testing.T) {
+	RefuteEnd := func(c *Pair) {
+		vc := fmt.Sprintf("%v", c)
+		defer ConfirmPanic(t, "%v.End() should panic", vc)()
+		c.End()
+	}
+
 	ConfirmEnd := func(c, o *Pair) {
 		end := c.End()
 		if ok := end.Equal(o); !ok {
@@ -425,7 +492,7 @@ func TestPairEnd(t *testing.T) {
 		}
 	}
 
-	ConfirmEnd(nil, nil)
+	RefuteEnd(nil)
 	ConfirmEnd(Cons(0, nil), Cons(0, nil))
 	ConfirmEnd(Cons(0, 1), Cons(0, 1))
 	ConfirmEnd(List(0, 1, 2), Cons(2, nil))
@@ -681,6 +748,12 @@ func TestPairWhile(t *testing.T) {
 }
 
 func TestPairPartition(t *testing.T) {
+	RefutePartition := func(c *Pair, offset int) {
+		vc := fmt.Sprintf("%v", c)
+		defer ConfirmPanic(t, "%v.Partition(%v) should panic", vc, offset)()
+		c.Partition(offset)
+	}
+
 	ConfirmPartition := func(l *Pair, offset int, x, y *Pair) {
 		ls := fmt.Sprintf("%v", l)
 		switch c1, c2 := l.Partition(offset); {
@@ -691,8 +764,13 @@ func TestPairPartition(t *testing.T) {
 		}
 	}
 
-	ConfirmPartition(List(), 0, List(), List())
-	ConfirmPartition(List(), 1, List(), List())
+	RefutePartition(nil, -1)
+
+	ConfirmPartition(nil, 0, nil, nil)
+	ConfirmPartition(nil, 1, nil, nil)
+
+	ConfirmPartition(List(), 0, nil, nil)
+	ConfirmPartition(List(), 1, nil, nil)
 
 	ConfirmPartition(List(0), 0, List(0), List())
 	ConfirmPartition(List(0), 1, List(0), List())
