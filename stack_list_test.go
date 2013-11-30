@@ -154,11 +154,11 @@ func TestStackListDrop(t *testing.T) {
 	}
 
 	RefuteDrop(nil)
-//	ConfirmDrop(Stack(), nil)
+	ConfirmDrop(Stack(), nil)
 	ConfirmDrop(Stack(), Stack())
-//	ConfirmDrop(Stack(0), Stack())
-//	ConfirmDrop(Stack(1, 0), Stack(0))
-//	ConfirmDrop(Stack(2, 1, 0), Stack(1, 0))
+	ConfirmDrop(Stack(0), Stack())
+	ConfirmDrop(Stack(1, 0), Stack(0))
+	ConfirmDrop(Stack(2, 1, 0), Stack(1, 0))
 }
 
 func TestStackListDup(t *testing.T) {
