@@ -196,7 +196,7 @@ func TestVMScar(t *testing.T) {
 }
 
 func TestVMScdr(t *testing.T) {
-	ConfirmScdr := func(v *VM, r *StackList) {
+	ConfirmScdr := func(v *VM, r *Lifo) {
 		vs := fmt.Sprintf("%v", v)
 		if v.Scdr(); !r.Equal(v.S) {
 			t.Fatalf("%v.Scdr() should be %v but is %v", vs, r, v.S)
@@ -209,7 +209,7 @@ func TestVMScdr(t *testing.T) {
 }
 
 func TestVMScons(t *testing.T) {
-	ConfirmScons := func(v *VM, r *StackList) {
+	ConfirmScons := func(v *VM, r *Lifo) {
 		vs := fmt.Sprintf("%v", v)
 		if v.Scons(); !r.Equal(v.S) {
 			t.Fatalf("%v.Scons() should be %v but is %v", vs, r, v.S)

@@ -1,19 +1,19 @@
 package greenspun
 
-type StackListError int
+type LifoError int
 
-func (s StackListError) Error() string {
+func (s LifoError) Error() string {
 	return stackErrText[s]
 }
 
 const(
-	STACK_EMPTY = StackListError(iota)
+	STACK_EMPTY = LifoError(iota)
 	STACK_TOO_SHALLOW
 	STACK_UNINITIALIZED
 	STACK_REQUIRED
 )
 
-var stackErrText = map[StackListError] string {
+var stackErrText = map[LifoError] string {
 	STACK_EMPTY:					"stack empty",
 	STACK_TOO_SHALLOW:		"stack contains too few items",
 	STACK_UNINITIALIZED:	"stack needs to be initialised",

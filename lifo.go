@@ -6,20 +6,20 @@ package greenspun
 	This is a wrapper for a spaghetti stack data structure as implemented by the stackCell type. It's
 	inspired by Go's SliceHeader and StringHeader types.
 
-	Whilst bare spaghetti stack structures are immutable containers, the StackList implements Lisp's
+	Whilst bare spaghetti stack structures are immutable containers, the Lifo implements Lisp's
 	Rplaca and Rplacd functions and allows stack elements to be modified in situ.
 */
 
-type StackList struct {
+type Lifo struct {
 	*stackCell
 	depth		int
 }
 
-func Stack(items... interface{}) *StackList {
-	return &StackList{ depth: len(items), stackCell: stack(items...) }
+func Stack(items... interface{}) *Lifo {
+	return &Lifo{ depth: len(items), stackCell: stack(items...) }
 }
 
-func (s *StackList) String() (r string) {
+func (s *Lifo) String() (r string) {
 	if s != nil {
 		r = s.stackCell.String()
 	} else {
@@ -28,9 +28,9 @@ func (s *StackList) String() (r string) {
 	return
 }
 
-func (s *StackList) Equal(o interface{}) (r bool) {
+func (s *Lifo) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case *StackList:
+	case *Lifo:
 		switch {
 		case s == nil && o == nil:
 			r = true
@@ -64,7 +64,7 @@ func (s *StackList) Equal(o interface{}) (r bool) {
 	return
 }
 
-func (s *StackList) Push(item interface{}) {
+func (s *Lifo) Push(item interface{}) {
 	if s == nil {
 		panic(STACK_UNINITIALIZED)
 	}
@@ -72,14 +72,14 @@ func (s *StackList) Push(item interface{}) {
 	s.depth++
 }
 
-func (s *StackList) Peek() interface{} {
+func (s *Lifo) Peek() interface{} {
 	if s == nil {
 		panic(STACK_UNINITIALIZED)
 	}
 	return s.stackCell.Peek()
 }
 
-func (s *StackList) Pop() (r interface{}) {
+func (s *Lifo) Pop() (r interface{}) {
 	if s == nil {
 		panic(STACK_UNINITIALIZED)
 	}
@@ -88,18 +88,18 @@ func (s *StackList) Pop() (r interface{}) {
 	return
 }
 
-func (s *StackList) Len() (r int) {
+func (s *Lifo) Len() (r int) {
 	if s != nil {
 	 	r = s.depth
 	}
 	return
 }
 
-func (s *StackList) IsNil() (r bool) {
+func (s *Lifo) IsNil() (r bool) {
 	return s == nil
 }
 
-func (s *StackList) Drop() {
+func (s *Lifo) Drop() {
 	if s == nil {
 		panic(STACK_UNINITIALIZED)
 	}
@@ -109,7 +109,7 @@ func (s *StackList) Drop() {
 	}
 }
 
-func (s *StackList) Dup() {
+func (s *Lifo) Dup() {
 	if s == nil {
 		panic(STACK_UNINITIALIZED)
 	}
@@ -117,7 +117,7 @@ func (s *StackList) Dup() {
 	s.depth++
 }
 
-func (s *StackList) Swap() {
+func (s *Lifo) Swap() {
 	if s == nil {
 		panic(STACK_UNINITIALIZED)
 	}
@@ -130,12 +130,12 @@ func (s *StackList) Swap() {
 
 	If the stack is shorter than n we copy the entire stack.
 */
-func (s *StackList) Copy(n int) (r *StackList) {
+func (s *Lifo) Copy(n int) (r *Lifo) {
 	if s != nil {
 		if n > s.depth {
 			n = s.depth
 		}
-	 	r = &StackList{ stackCell: s.stackCell.Copy(n), depth: n }
+	 	r = &Lifo{ stackCell: s.stackCell.Copy(n), depth: n }
 	}
  	return
 }
@@ -143,7 +143,7 @@ func (s *StackList) Copy(n int) (r *StackList) {
 /*
 	Move to the Nth cell from the top of the stack, or return an errot if there are fewer than N cells.
 */
-func (s *StackList) Move(n int) {
+func (s *Lifo) Move(n int) {
 	if s == nil {
 		panic(STACK_UNINITIALIZED)
 	}
@@ -155,7 +155,7 @@ func (s *StackList) Move(n int) {
 	Move the Nth cell from the top of the stack and create a new cell with the same value and pointing to the
 	top of the current stack.
 */
-func (s *StackList) Pick(n int) {
+func (s *Lifo) Pick(n int) {
 	if s == nil {
 		panic(STACK_UNINITIALIZED)
 	}
@@ -168,7 +168,7 @@ func (s *StackList) Pick(n int) {
 	the first item of the new stack and then successive elements are filled with corresponding values starting with
 	that at the top of the current stack.
 */
-func (s *StackList) Roll(n int) {
+func (s *Lifo) Roll(n int) {
 	if s == nil {
 		panic(STACK_UNINITIALIZED)
 	}
@@ -178,7 +178,7 @@ func (s *StackList) Roll(n int) {
 /*
 	Replace the data item stored in the cell at the top of the stack.
 */
-func (s *StackList) Rplaca(item interface{}) {
+func (s *Lifo) Rplaca(item interface{}) {
 	if s == nil {
 		panic(STACK_UNINITIALIZED)
 	}
@@ -188,7 +188,7 @@ func (s *StackList) Rplaca(item interface{}) {
 /*
 	Change the stack pointed to by the top of the stack.
 */
-func (s *StackList) Rplacd(tail interface{}) {
+func (s *Lifo) Rplacd(tail interface{}) {
 	switch {
 	case s == nil:
 		panic(STACK_UNINITIALIZED)
@@ -199,7 +199,7 @@ func (s *StackList) Rplacd(tail interface{}) {
 	case *stackCell:
 		s.stackCell.stackCell = tail
 		s.depth = tail.Len() + 1
-	case *StackList:
+	case *Lifo:
 		s.stackCell.stackCell = tail.stackCell
 		s.depth = tail.depth + 1
 	case nil:

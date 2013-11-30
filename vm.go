@@ -5,10 +5,10 @@ package greenspun
 //	This type embodies the core of the SECD virtual machine for implementing functional languages
 //
 type VM struct {
-	S		*StackList	"stack"
+	S		*Lifo	"stack"
 	E		*Pair				"environment"
 	C		*Pair				"control"
-	D		StackList		"dump"
+	D		Lifo		"dump"
 }
 
 func NewVM(env, code *Pair) *VM {
@@ -174,7 +174,7 @@ func (vm *VM) Ap() {
 //		(s e c . d)				-> d
 func (vm *VM) Ret() {
 	x := vm.S.Peek()
-	vm.S = vm.D.Peek().(*StackList)
+	vm.S = vm.D.Peek().(*Lifo)
 	vm.S.Push(x)
 	vm.E = vm.D.Pop().(*Pair)
 	vm.C = vm.D.Pop().(*Pair)
