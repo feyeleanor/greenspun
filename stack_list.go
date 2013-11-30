@@ -159,7 +159,8 @@ func (s *StackList) Pick(n int) {
 	if s == nil {
 		panic(STACK_UNINITIALIZED)
 	}
-	s.stackCell = s.stackCell.Push(s.stackCell.Move(n))
+	s.stackCell = s.stackCell.Push(s.stackCell.Move(n).data)
+	s.depth++
 }
 
 /*

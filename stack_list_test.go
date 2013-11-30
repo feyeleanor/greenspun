@@ -232,11 +232,64 @@ func TestStackListCopy(t *testing.T) {
 }
 
 func TestStackListMove(t *testing.T) {
-	t.Fatalf("implement tests")
+	RefuteMove := func(s *StackList, x int) {
+		vs := fmt.Sprintf("%v", s)
+		defer ConfirmPanic(t, "%v.Move(%v) should panic", vs, x)()
+		s.Move(x)
+	}
+
+	ConfirmMove := func(s *StackList, n int, r *StackList) {
+		vs := s.String()
+		if s.Move(n); !s.Equal(r) {
+			t.Fatalf("%v.Move(%v) should be %v but is %v", vs, n, r, s)
+		}
+	}
+
+	RefuteMove(nil, 0)
+	RefuteMove(nil, 1)
+
+	RefuteMove(Stack(), 0)
+	RefuteMove(Stack(), 1)
+
+	ConfirmMove(Stack(0), 0, Stack(0))
+	RefuteMove(Stack(0), 1)
+
+	ConfirmMove(Stack(0, 1), 0, Stack(0, 1))
+	ConfirmMove(Stack(0, 1), 1, Stack(1))
+	RefuteMove(Stack(0, 1), 2)
 }
 
 func TestStackListPick(t *testing.T) {
-	t.Fatalf("implement tests")
+	RefutePick := func(s *StackList, x int) {
+		vs := fmt.Sprintf("%v", s)
+		defer ConfirmPanic(t, "%v.Pick(%v) should panic", vs, x)()
+		s.Pick(x)
+	}
+
+	ConfirmPick := func(s *StackList, n int, r *StackList) {
+		vs := s.String()
+		if s.Pick(n); !s.Equal(r) {
+			t.Fatalf("%v.Pick(%v) should be %v but is %v", vs, n, r, s)
+		}
+	}
+
+	RefutePick(nil, 0)
+	RefutePick(nil, 1)
+
+	RefutePick(Stack(), 0)
+	RefutePick(Stack(), 1)
+
+	ConfirmPick(Stack(0), 0, Stack(0, 0))
+	RefutePick(Stack(0), 1)
+
+	ConfirmPick(Stack(0, 1), 0, Stack(0, 0, 1))
+	ConfirmPick(Stack(0, 1), 1, Stack(1, 0, 1))
+	RefutePick(Stack(0, 1), 2)
+
+	ConfirmPick(Stack(0, 1, 2), 0, Stack(0, 0, 1, 2))
+	ConfirmPick(Stack(0, 1, 2), 1, Stack(1, 0, 1, 2))
+	ConfirmPick(Stack(0, 1, 2), 2, Stack(2, 0, 1, 2))
+	RefutePick(Stack(0, 1, 2), 3)
 }
 
 func TestStackListRoll(t *testing.T) {
