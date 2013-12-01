@@ -1,7 +1,7 @@
 package greenspun
 
 import (
-	"fmt"
+//	"fmt"
 	"testing"
 )
 
@@ -64,13 +64,13 @@ func TestLifoEqual(t *testing.T) {
 
 func TestLifoPush(t *testing.T) {
 	RefutePush := func(s *Lifo, v interface{}) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Push(%v) should panic", vs, v)()
 		s.Push(v)
 	}
 
 	ConfirmPush := func(s *Lifo, v interface{}, r *Lifo) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		if s.Push(v); !s.Equal(r) {
 			t.Fatalf("%v.Push(%v) should be %v but is %v", vs, v, r, s)
 		}
@@ -84,7 +84,7 @@ func TestLifoPush(t *testing.T) {
 
 func TestLifoPeek(t *testing.T) {
 	RefutePeek := func(s *Lifo) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Peek() should panic", vs)()
 		s.Peek()
 	}
@@ -104,7 +104,7 @@ func TestLifoPeek(t *testing.T) {
 
 func TestLifoPop(t *testing.T) {
 	RefutePop := func(s *Lifo) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Pop() should panic", vs)()
 		s.Pop()
 	}
@@ -141,7 +141,7 @@ func TestLifoLen(t * testing.T) {
 
 func TestLifoDrop(t *testing.T) {
 	RefuteDrop := func(s *Lifo) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Drop() should panic", vs)()
 		s.Drop()
 	}
@@ -163,7 +163,7 @@ func TestLifoDrop(t *testing.T) {
 
 func TestLifoDup(t *testing.T) {
 	RefuteDup := func(s *Lifo) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Dup() should panic", vs)()
 		s.Dup()
 	}
@@ -183,7 +183,7 @@ func TestLifoDup(t *testing.T) {
 
 func TestLifoSwap(t *testing.T) {
 	RefuteSwap := func(s *Lifo) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Swap() should panic", vs)()
 		s.Swap()
 	}
@@ -233,7 +233,7 @@ func TestLifoCopy(t *testing.T) {
 
 func TestLifoMove(t *testing.T) {
 	RefuteMove := func(s *Lifo, x int) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Move(%v) should panic", vs, x)()
 		s.Move(x)
 	}
@@ -261,7 +261,7 @@ func TestLifoMove(t *testing.T) {
 
 func TestLifoPick(t *testing.T) {
 	RefutePick := func(s *Lifo, x int) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Pick(%v) should panic", vs, x)()
 		s.Pick(x)
 	}
@@ -294,7 +294,7 @@ func TestLifoPick(t *testing.T) {
 
 func TestLifoRoll(t *testing.T) {
 	RefuteRoll := func(s *Lifo, n int) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Roll(%v) should panic", vs, n)()
 		s.Roll(n)
 	}
@@ -328,7 +328,7 @@ func TestLifoRoll(t *testing.T) {
 
 func TestLifoRplaca(t *testing.T) {
 	RefuteRplaca := func(s *Lifo, x interface{}) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Rplaca(%v) should panic", vs, x)()
 		s.Rplaca(x)
 	}
@@ -348,7 +348,7 @@ func TestLifoRplaca(t *testing.T) {
 
 func TestLifoRplacd(t *testing.T) {
 	RefuteRplacd := func(s *Lifo, x interface{}) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Rplacd(%v) should panic", vs, x)()
 		s.Rplacd(x)
 	}

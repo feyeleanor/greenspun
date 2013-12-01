@@ -1,7 +1,7 @@
 package greenspun
 
 import (
-	"fmt"
+//	"fmt"
 	"testing"
 )
 
@@ -51,7 +51,7 @@ func TestStackPush(t *testing.T) {
 
 func TestStackPeek(t *testing.T) {
 	RefutePeek := func(s *stackCell) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Peek() should panic", vs)()
 		s.Peek()
 	}
@@ -70,7 +70,7 @@ func TestStackPeek(t *testing.T) {
 
 func TestStackPop(t *testing.T) {
 	RefutePop := func(s *stackCell) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Pop() should panic", vs)()
 		s.Pop()
 	}
@@ -120,7 +120,7 @@ func TestStackDrop(t *testing.T) {
 
 func TestStackDup(t *testing.T) {
 	RefuteDup := func(s *stackCell) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Dup() should panic", vs)()
 		s.Dup()
 	}
@@ -139,7 +139,7 @@ func TestStackDup(t *testing.T) {
 
 func TestStackSwap(t *testing.T) {
 	RefuteSwap := func(s *stackCell) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Swap() should panic", vs)()
 		s.Swap()
 	}
@@ -188,7 +188,7 @@ func TestStackCopy(t *testing.T) {
 
 func TestStackMove(t *testing.T) {
 	RefuteMove := func(s *stackCell, x int) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Move(%v) should panic", vs, x)()
 		s.Move(x)
 	}
@@ -215,7 +215,7 @@ func TestStackMove(t *testing.T) {
 
 func TestStackPick(t *testing.T) {
 	RefutePick := func(s *stackCell, x int) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Pick(%v) should panic", vs, x)()
 		s.Pick(x)
 	}
@@ -247,7 +247,7 @@ func TestStackPick(t *testing.T) {
 
 func TestStackRoll(t *testing.T) {
 	RefuteRoll := func(s *stackCell, x int) {
-		vs := fmt.Sprintf("%v", s)
+		vs := s.String()
 		defer ConfirmPanic(t, "%v.Roll(%v) should panic", vs, x)()
 		s.Roll(x)
 	}
