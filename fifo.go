@@ -76,9 +76,116 @@ func (s *Fifo) Equal(o interface{}) (r bool) {
 
 func (s *Fifo) Put(item interface{}) {
 	if s == nil {
-		panic(STACK_UNINITIALIZED)
+		panic(LIST_UNINITIALIZED)
 	}
 	s.tail.stackCell = &stackCell{ data: item }
-	s.tail= s.tail.stackCell
+	s.tail = s.tail.stackCell
+	s.length++
+}
+
+
+func (s *Fifo) Peek() interface{} {
+	if s == nil {
+		panic(LIST_UNINITIALIZED)
+	}
+	return s.head.Peek()
+}
+
+func (s *Fifo) Pop() (r interface{}) {
+	if s == nil {
+		panic(LIST_UNINITIALIZED)
+	}
+	if r, s.head = s.head.Pop(); s.head == nil {
+		s.tail = nil
+	}
+	s.length--
+	return
+}
+
+func (s *Fifo) Len() (r int) {
+	if s != nil {
+	 	r = s.length
+	}
+	return
+}
+
+func (s *Fifo) IsNil() (r bool) {
+	return s == nil
+}
+
+func (s *Fifo) Drop() {
+	if s == nil {
+		panic(LIST_UNINITIALIZED)
+	}
+	if s.head != nil {
+		s.head = s.head.stackCell
+		s.length--
+	}
+}
+
+func (s *Fifo) Dup() {
+	if s == nil {
+		panic(LIST_UNINITIALIZED)
+	}
+	s.tail.stackCell = &stackCell{ data: s.head.data }
+	s.tail = s.tail.stackCell
+	s.length++
+}
+
+func (s *Fifo) Swap() {
+	switch {
+	case s == nil:
+		panic(LIST_UNINITIALIZED)
+	case s.head == s.tail:
+		panic(LIST_TOO_SHALLOW)
+	}
+	s.head.data, s.tail.data = s.tail.data, s.head.data
+}
+
+/*
+	Make a new queue containing n cells where each cell contains the same value as is stored at the same depth
+	in the existing queue.
+
+	If the queue is shorter than n we copy the entire queue.
+*/
+func (s *Fifo) Copy(n int) (r *Fifo) {
+	if s != nil {
+		if n > s.length {
+			n = s.length
+		}
+		r = &Fifo{ head: new(stackCell), length: n }
+		tail := r.head
+		for source := s.head; n > 0 && source != nil; n-- {
+			tail.stackCell = &stackCell{ data: source.data }
+			tail = tail.stackCell
+			source = source.stackCell
+		}
+		r.head = r.head.stackCell
+		r.tail = tail
+	}
+ 	return
+}
+
+/*
+	Move to the Nth cell from the start of the queue, or return an error if there are fewer than N cells.
+*/
+func (s *Fifo) Move(n int) {
+	if s == nil {
+		panic(LIST_UNINITIALIZED)
+	}
+	s.head = s.head.Move(n)
+	s.length -= n
+}
+
+/*
+	Move to the Nth cell from the front of the queue and create a new cell with the same value.
+*/
+func (s *Fifo) Pick(n int) {
+	if s == nil {
+		panic(LIST_UNINITIALIZED)
+	}
+	v := s.head.Move(n).data
+	s.tail.stackCell = &stackCell{ data: v }
+	s.tail = s.tail.stackCell
 	s.length++
 }

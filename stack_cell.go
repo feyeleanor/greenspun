@@ -98,7 +98,7 @@ func (s *stackCell) Push(item interface{}) (r *stackCell) {
 */
 func (s *stackCell) Peek() interface{} {
 	if s == nil {
-		panic(STACK_EMPTY)
+		panic(LIST_EMPTY)
 	}
 	return s.data
 }
@@ -113,7 +113,7 @@ func (s *stackCell) Peek() interface{} {
 */
 func (s *stackCell) Pop() (interface{}, *stackCell) {
 	if s == nil {
-		panic(STACK_EMPTY)
+		panic(LIST_EMPTY)
 	}
 	return s.data, s.stackCell
 }
@@ -156,7 +156,7 @@ func (s *stackCell) Drop() (r *stackCell) {
 */
 func (s *stackCell) Dup() *stackCell {
 	if s == nil {
-		panic(STACK_EMPTY)
+		panic(LIST_EMPTY)
 	}
 	return s.Push(s.data)
 }
@@ -191,11 +191,11 @@ func (s *stackCell) Copy(n int) (r *stackCell) {
 */
 func (s *stackCell) Move(n int) (r *stackCell) {
 	if s == nil {
-		panic(STACK_EMPTY)
+		panic(LIST_EMPTY)
 	}
 	for r = s; n > 0 && r.stackCell != nil; r = r.stackCell { n-- }
 	if n > 0 {
-		panic(STACK_TOO_SHALLOW)
+		panic(LIST_TOO_SHALLOW)
 	}
 	return
 }
@@ -223,12 +223,12 @@ func (s *stackCell) Pick(n int) (r *stackCell) {
 func (s *stackCell) Roll(n int) (r *stackCell) {
 	switch {
 	case s == nil:
-		panic(STACK_EMPTY)
+		panic(LIST_EMPTY)
 	case n == 0:
 		r = s
 	case n > 0:
 		if x := s.Move(n - 1); x == nil || x.stackCell == nil {
-			panic(STACK_TOO_SHALLOW)
+			panic(LIST_TOO_SHALLOW)
 		} else {
 			r = &stackCell{ data: x.stackCell.data, stackCell: s }
 			x.stackCell = x.stackCell.stackCell

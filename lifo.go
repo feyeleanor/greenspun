@@ -66,7 +66,7 @@ func (s *Lifo) Equal(o interface{}) (r bool) {
 
 func (s *Lifo) Push(item interface{}) {
 	if s == nil {
-		panic(STACK_UNINITIALIZED)
+		panic(LIST_UNINITIALIZED)
 	}
 	s.stackCell = s.stackCell.Push(item)
 	s.depth++
@@ -74,14 +74,14 @@ func (s *Lifo) Push(item interface{}) {
 
 func (s *Lifo) Peek() interface{} {
 	if s == nil {
-		panic(STACK_UNINITIALIZED)
+		panic(LIST_UNINITIALIZED)
 	}
 	return s.stackCell.Peek()
 }
 
 func (s *Lifo) Pop() (r interface{}) {
 	if s == nil {
-		panic(STACK_UNINITIALIZED)
+		panic(LIST_UNINITIALIZED)
 	}
 	r, s.stackCell = s.stackCell.Pop()
 	s.depth--
@@ -101,7 +101,7 @@ func (s *Lifo) IsNil() (r bool) {
 
 func (s *Lifo) Drop() {
 	if s == nil {
-		panic(STACK_UNINITIALIZED)
+		panic(LIST_UNINITIALIZED)
 	}
 	if s.stackCell != nil {
 		s.stackCell = s.stackCell.stackCell
@@ -111,7 +111,7 @@ func (s *Lifo) Drop() {
 
 func (s *Lifo) Dup() {
 	if s == nil {
-		panic(STACK_UNINITIALIZED)
+		panic(LIST_UNINITIALIZED)
 	}
 	s.stackCell = s.stackCell.Dup()
 	s.depth++
@@ -119,7 +119,7 @@ func (s *Lifo) Dup() {
 
 func (s *Lifo) Swap() {
 	if s == nil {
-		panic(STACK_UNINITIALIZED)
+		panic(LIST_UNINITIALIZED)
 	}
 	s.stackCell = s.stackCell.Swap()
 }
@@ -141,23 +141,23 @@ func (s *Lifo) Copy(n int) (r *Lifo) {
 }
 
 /*
-	Move to the Nth cell from the top of the stack, or return an errot if there are fewer than N cells.
+	Move to the Nth cell from the top of the stack, or return an error if there are fewer than N cells.
 */
 func (s *Lifo) Move(n int) {
 	if s == nil {
-		panic(STACK_UNINITIALIZED)
+		panic(LIST_UNINITIALIZED)
 	}
 	s.stackCell = s.stackCell.Move(n)
 	s.depth -= n
 }
 
 /*
-	Move the Nth cell from the top of the stack and create a new cell with the same value and pointing to the
+	Move to the Nth cell from the top of the stack and create a new cell with the same value and pointing to the
 	top of the current stack.
 */
 func (s *Lifo) Pick(n int) {
 	if s == nil {
-		panic(STACK_UNINITIALIZED)
+		panic(LIST_UNINITIALIZED)
 	}
 	s.stackCell = s.stackCell.Push(s.stackCell.Move(n).data)
 	s.depth++
@@ -170,7 +170,7 @@ func (s *Lifo) Pick(n int) {
 */
 func (s *Lifo) Roll(n int) {
 	if s == nil {
-		panic(STACK_UNINITIALIZED)
+		panic(LIST_UNINITIALIZED)
 	}
 	s.stackCell = s.stackCell.Roll(n)
 }
@@ -180,7 +180,7 @@ func (s *Lifo) Roll(n int) {
 */
 func (s *Lifo) Rplaca(item interface{}) {
 	if s == nil {
-		panic(STACK_UNINITIALIZED)
+		panic(LIST_UNINITIALIZED)
 	}
 	s.stackCell.data = item
 }
@@ -191,9 +191,9 @@ func (s *Lifo) Rplaca(item interface{}) {
 func (s *Lifo) Rplacd(tail interface{}) {
 	switch {
 	case s == nil:
-		panic(STACK_UNINITIALIZED)
+		panic(LIST_UNINITIALIZED)
 	case s.stackCell == nil:
-		panic(STACK_EMPTY)
+		panic(LIST_EMPTY)
 	}
 	switch tail := tail.(type) {
 	case *stackCell:
@@ -206,6 +206,6 @@ func (s *Lifo) Rplacd(tail interface{}) {
 		s.stackCell.stackCell = nil
 		s.depth = 1
 	default:
-		panic(STACK_REQUIRED)
+		panic(LIST_REQUIRED)
 	}
 }
