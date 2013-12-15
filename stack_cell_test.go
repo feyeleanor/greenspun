@@ -21,6 +21,20 @@ func TestStackString(t *testing.T) {
 	ConfirmString(stack(1, 2, 3), "(1 2 3)")
 }
 
+func TestStackMatchValue(t *testing.T) {
+	ConfirmMatchValue := func(s, o *stackCell, r bool) {
+		if x := s.MatchValue(o); x != r {
+			t.Fatalf("%v.MatchValue(%v) should be %v but is %v", s, o, r, x)
+		}
+	}
+
+	ConfirmMatchValue(nil, nil, true)
+	ConfirmMatchValue(nil, stack(0), false)
+	ConfirmMatchValue(stack(0), nil, false)
+	ConfirmMatchValue(stack(0), stack(0), true)
+	ConfirmMatchValue(stack(0, 1), stack(0, -1), true)
+}
+
 func TestStackEqual(t *testing.T) {
 	ConfirmEqual := func(x, y *stackCell, r bool) {
 		switch {
@@ -35,6 +49,56 @@ func TestStackEqual(t *testing.T) {
 	ConfirmEqual(stack(1), nil, false)
 	ConfirmEqual(nil, stack(1), false)
 	ConfirmEqual(stack(1), stack(1), true)
+}
+
+func TestStackEach(t *testing.T) {
+	s := stack(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	count := 0
+
+	ConfirmEach := func(c *stackCell, f interface{}) {
+		count = 0
+		c.Each(f)
+		if l := c.Len(); l != count {
+			t.Fatalf("%v.Each() should have iterated %v times not %v times", c, l, count)
+		}
+	}
+
+	ConfirmEach(s, func(i interface{}) {
+		if i != count {
+			t.Fatalf("1: %v.Each() element %v erroneously reported as %v", s, count, i)
+		}
+		count++
+	})
+
+	ConfirmEach(s, func(index int, i interface{}) {
+		if i != index {
+			t.Fatalf("2: %v.Each() element %v erroneously reported as %v", s, index, i)
+		}
+		count++
+	})
+
+	ConfirmEach(s, func(key, i interface{}) {
+		if i.(int) != key.(int) {
+			t.Fatalf("3: %v.Each() element %v erroneously reported as %v", s, key, i)
+		}
+		count++
+	})
+
+	s = stack()
+	ConfirmEach(s, func(i interface{}) {
+		if i != count {
+			t.Fatalf("4: %v.Each() element %v erroneously reported as %v", s, count, i)
+		}
+		count++
+	})
+
+	s = nil
+	ConfirmEach(s, func(i interface{}) {
+		if i != count {
+			t.Fatalf("5: %v.Each() element %v erroneously reported as %v", s, count, i)
+		}
+		count++
+	})
 }
 
 func TestStackPush(t *testing.T) {
@@ -281,4 +345,17 @@ func TestStackRoll(t *testing.T) {
 	ConfirmRoll(stack(0, 1, 2, 3), 2, stack(2, 0, 1, 3))
 	ConfirmRoll(stack(0, 1, 2, 3), 3, stack(3, 0, 1, 2))
 	RefuteRoll(stack(0, 1, 2, 3), 4)
+}
+
+func TestStackReverse(t *testing.T) {
+	ConfirmReverse := func(s, r *stackCell) {
+		if x := s.Reverse(); !x.Equal(r) {
+			t.Fatalf("%v.Reverse() should be %v but is %v", s, r, x)
+		}
+	}
+
+	ConfirmReverse(nil, nil)
+	ConfirmReverse(stack(0), stack(0))
+	ConfirmReverse(stack(0, 1), stack(1, 0))
+	ConfirmReverse(stack(0, 1, 2), stack(2, 1, 0))
 }

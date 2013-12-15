@@ -50,6 +50,26 @@ func (s *stackCell) String() (r string) {
 }
 
 /*
+	Check the equality of two cells based upon their contents
+*/
+func (s *stackCell) MatchValue(o *stackCell) (r bool) {
+	switch {
+	case s == nil && o == nil:
+		r = true
+	case s != nil && o != nil:
+		if v, ok := s.data.(Equatable); ok {
+			r = v.Equal(o.data)
+		} else if v, ok := o.data.(Equatable); ok {
+			r = v.Equal(s.data)
+		} else {
+			r = s.data == o.data
+		}
+	}
+	return
+}
+
+
+/*
 	Check the equality of two lists of cells based upon their contents.
 	Because lists are immutable, when two lists are confirmed to be identical then code using them can
 	discard one and perform all of its operations in terms of the other.
@@ -65,13 +85,7 @@ func (s *stackCell) Equal(o interface{}) (r bool) {
 		default:
 			x, y := s.stackCell, o.stackCell
 			for r = true ; r && x != nil && y != nil; x, y = x.stackCell, y.stackCell {
-				if v, ok := x.data.(Equatable); ok {
-					r = v.Equal(y.data)
-				} else if v, ok := y.data.(Equatable); ok {
-					r = v.Equal(x.data)
-				} else {
-					r = x.data == y.data
-				}
+				r = x.MatchValue(y)
 			}
 			if r {
 				r = x == nil && y == nil
@@ -81,6 +95,34 @@ func (s *stackCell) Equal(o interface{}) (r bool) {
 		r = s == nil
 	}
 	return
+}
+
+/*
+	Iterate through all cells in order, applying the supplied closure.
+*/
+func (s *stackCell) Each(f interface{}) {
+	var i		int
+
+	switch f := f.(type) {
+	case func():
+		for ; s != nil; s = s.stackCell {
+			f()
+		}
+	case func(interface{}):
+		for ; s != nil; s = s.stackCell {
+			f(s.data)
+		}
+	case func(int, interface{}):
+		for ; s != nil; s = s.stackCell {
+			f(i, s.data)
+			i++
+		}
+	case func(interface{}, interface{}):
+		for ; s != nil; s = s.stackCell {
+			f(i, s.data)
+			i++
+		}
+	}
 }
 
 /*
@@ -234,5 +276,15 @@ func (s *stackCell) Roll(n int) (r *stackCell) {
 			x.stackCell = x.stackCell.stackCell
 		}
 	}
+	return
+}
+
+/*
+	Create a new stack containing the elements of the current stack in reverse order.
+*/
+func (s *stackCell) Reverse() (r *stackCell) {
+	s.Each(func(v interface{}) {
+		r = r.Push(v)
+	})
 	return
 }

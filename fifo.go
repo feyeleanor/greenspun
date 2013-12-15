@@ -1,14 +1,20 @@
 package greenspun
 
-//import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 /*
-	This is a wrapper for a spaghetti stack data structure as implemented by the stackCell type. It's
-	inspired by Go's SliceHeader and StringHeader types.
+	This is a wrapper for a functional queue data structure implemented as a pair of stackCells. It's
+	inspired by Chris Okasaki's non-lazy functional queue and Go's SliceHeader and StringHeader types.
 
-	Whilst bare spaghetti stack structures are immutable containers, the Lifo implements Lisp's
-	Rplaca and Rplacd functions and allows stack elements to be modified in situ.
+	When an item is appended to the queue, it's pushed onto the tail stack.
+	When an item is popped from the queue, it's popped from the head stack.
+	When the head stack is empty, the tail stack is reversed and assigned as the head stack.
+	We also maintain a cached length for the queue which is incremented on append & decremented on pop.
 */
+
 
 type Fifo struct {
 	head		*stackCell
@@ -20,22 +26,47 @@ func Queue(items... interface{}) (r *Fifo) {
 	r = &Fifo{ length: len(items) }
 	if r.length > 0 {
 		r.head = &stackCell{ data: items[0] }
-		r.tail = r.head
 		for _, v := range items[1:] {
-			r.tail.stackCell = &stackCell{ data: v }
-			r.tail = r.tail.stackCell
+			r.tail = &stackCell{ data: v, stackCell: r.tail }
 		}
+	}
+	return
+}
+
+func (s *Fifo) copyHeader() *Fifo {
+	return &Fifo{ head: s.head, tail: s.tail, length: s.length }
+}
+
+func (s *Fifo) reverseTail() (r *Fifo) {
+	if s == nil {
+		panic(LIST_UNINITIALIZED)
+	}
+
+	if s.head == nil {
+		r = &Fifo{ length: s.length }
+		s.tail.Each(func(v interface{}) {
+			r.head = r.head.Push(v)
+		})
+	} else {
+		r = s.copyHeader()
 	}
 	return
 }
 
 func (s *Fifo) String() (r string) {
 	if s != nil {
-		r = s.head.String()
-	} else {
-		r = "()"
+		l := s.length
+		b := make([]string, l, l)
+		s.head.Each(func(i int, v interface{}) {
+			b[i] = fmt.Sprintf("%v", v)
+		})
+		s.tail.Each(func(v interface{}) {
+			l--
+			b[l] = fmt.Sprintf("%v", v)
+		})
+		r = strings.Join(b, " ")
 	}
-	return
+	return "(" + r + ")"
 }
 
 func (s *Fifo) Equal(o interface{}) (r bool) {
@@ -45,60 +76,74 @@ func (s *Fifo) Equal(o interface{}) (r bool) {
 		case s == nil && o == nil:
 			r = true
 		case s != nil && o == nil:
-			r = s.head == nil
+			r = s.head == nil && s.tail == nil
 		case s == nil && o != nil:
-			r = o.head == nil
+			r = o.head == nil && o.tail == nil
 		case s.length != o.length:
 			r = false
 		default:
-			x, y := s.head, o.head
-			for r = true ; x != nil && r; x, y = x.stackCell, y.stackCell {
-				if v, ok := x.data.(Equatable); ok {
-					r = v.Equal(y.data)
-				} else if v, ok := y.data.(Equatable); ok {
-					r = v.Equal(x.data)
-				} else {
-					r = x.data == y.data
+			shead, ohead, stail, otail := s.head, o.head, s.tail, o.tail
+			for r = true; r && shead != nil && ohead != nil; shead , ohead = shead.stackCell, ohead.stackCell {
+				r = shead.MatchValue(ohead)
+			}
+			for ; r && stail != nil && otail != nil; stail , otail = stail.stackCell, otail.stackCell {
+				r = stail.MatchValue(otail)
+			}
+			if r {
+				switch {
+				case shead != nil && otail != nil, ohead != nil && stail != nil:
+					r = shead.Equal(otail.Reverse())
 				}
 			}
 		}
 	case *stackCell:
-		if s != nil {
-			r = s.head.Equal(o)
-		} else {
-			r = o == nil
+		switch {
+		case s == nil && o == nil:
+			r = true
+		case s == nil && o != nil:
+			r = false
+		case s != nil && o == nil:
+			r = s.head == nil && s.tail == nil
+		default:
+			shead := s.head
+			for r = true; r && shead != nil && o != nil; shead, o = shead.stackCell, o.stackCell {
+				r = shead.MatchValue(o)
+			}
+			if r {
+				r = o.Equal(s.tail.Reverse())
+			}
 		}
 	case nil:
-		r = s == nil || s.head == nil
+		r = s == nil || (s.head == nil && s.tail == nil)
 	}
 	return
 }
 
-func (s *Fifo) Put(item interface{}) {
+func (s *Fifo) Put(item interface{}) (r *Fifo) {
 	if s == nil {
-		panic(LIST_UNINITIALIZED)
+		r = new(Fifo)
+	} else {
+		r = s.copyHeader()
 	}
-	s.tail.stackCell = &stackCell{ data: item }
-	s.tail = s.tail.stackCell
-	s.length++
+	r.tail.Push(item)
+	r.length++
+	return
 }
 
-
-func (s *Fifo) Peek() interface{} {
-	if s == nil {
-		panic(LIST_UNINITIALIZED)
+func (s *Fifo) Peek() (v interface{}) {
+	if r := s.reverseTail(); r.length > 0 {
+		*s = *r
+		v = s.head.Peek()
 	}
-	return s.head.Peek()
+	return
 }
 
-func (s *Fifo) Pop() (r interface{}) {
-	if s == nil {
-		panic(LIST_UNINITIALIZED)
+func (s *Fifo) Pop() (v interface{}, r *Fifo) {
+	if r = s.reverseTail(); r.length == 0 {
+		panic(LIST_EMPTY)
 	}
-	if r, s.head = s.head.Pop(); s.head == nil {
-		s.tail = nil
-	}
-	s.length--
+	v, r.head = r.head.Pop()
+	r.length--
 	return
 }
 
@@ -113,33 +158,46 @@ func (s *Fifo) IsNil() (r bool) {
 	return s == nil
 }
 
-func (s *Fifo) Drop() {
-	if s == nil {
-		panic(LIST_UNINITIALIZED)
+func (s *Fifo) Drop() (r *Fifo) {
+	if r = s.reverseTail(); r.length > 0 {
+		r.head = r.head.stackCell
+		r.length--
 	}
-	if s.head != nil {
-		s.head = s.head.stackCell
-		s.length--
-	}
+	return
 }
 
-func (s *Fifo) Dup() {
-	if s == nil {
-		panic(LIST_UNINITIALIZED)
+func (s *Fifo) Dup() (r *Fifo) {
+	if r = s.reverseTail(); r.length == 0 {
+		panic(LIST_TOO_SHALLOW)
 	}
-	s.tail.stackCell = &stackCell{ data: s.head.data }
-	s.tail = s.tail.stackCell
-	s.length++
+	r.tail.Push(r.head.Peek())
+	return
 }
 
-func (s *Fifo) Swap() {
+func (s *Fifo) Swap() (r *Fifo) {
 	switch {
 	case s == nil:
 		panic(LIST_UNINITIALIZED)
-	case s.head == s.tail:
+	case s.length == 1:
 		panic(LIST_TOO_SHALLOW)
+	case s.head == nil:
+		r = &Fifo{ tail: s.tail.stackCell, length: s.length }
+		r = r.reverseTail()
+		r.tail = &stackCell{ data: s.tail.data }
+		r.head.data, r.tail.data = r.tail.data, r.head.data
+	case s.tail == nil:
+		r = &Fifo{ head: &stackCell{ data: s.head.data }, length: 1 }
+		for c := s.head.stackCell; c != nil; c = c.stackCell {
+			r.Put(c.data)
+		}
+		r.head.data, r.tail.data = r.tail.data, r.head.data
+	default:
+		r = &Fifo{	head: s.head.stackCell.Push(s.tail.data),
+								tail: s.tail.stackCell.Push(s.head.data),
+								length: s.length,
+							}
 	}
-	s.head.data, s.tail.data = s.tail.data, s.head.data
+	return
 }
 
 /*
@@ -153,39 +211,75 @@ func (s *Fifo) Copy(n int) (r *Fifo) {
 		if n > s.length {
 			n = s.length
 		}
-		r = &Fifo{ head: new(stackCell), length: n }
-		tail := r.head
-		for source := s.head; n > 0 && source != nil; n-- {
-			tail.stackCell = &stackCell{ data: source.data }
-			tail = tail.stackCell
-			source = source.stackCell
+		r = new(Fifo)
+		var v	interface{}
+		for ; n > 0; n-- {
+			v, s = s.Pop()
+			r.Put(v)
 		}
-		r.head = r.head.stackCell
-		r.tail = tail
 	}
  	return
 }
 
 /*
-	Move to the Nth cell from the start of the queue, or return an error if there are fewer than N cells.
+	Make a new queue in which the elements in the source queue are reversed.
 */
-func (s *Fifo) Move(n int) {
-	if s == nil {
+func (s *Fifo) Reverse() (r *Fifo) {
+	switch {
+	case s == nil:
 		panic(LIST_UNINITIALIZED)
+	case s.tail == nil:
+		r = s.copyHeader()
+		r.head, r.tail = r.tail, r.head
+		r.reverseTail()
+		r.head, r.tail = r.tail, r.head
+	case s.head == nil:
+		r = s.reverseTail()
+	default:
+		r.head, r.tail = r.tail, r.head
 	}
-	s.head = s.head.Move(n)
-	s.length -= n
+	return
 }
 
 /*
-	Move to the Nth cell from the front of the queue and create a new cell with the same value.
+	Move to the Nth cell from the start of the queue, or return an error if there are fewer than N cells.
 */
-func (s *Fifo) Pick(n int) {
-	if s == nil {
+func (s *Fifo) Move(n int) (r *Fifo) {
+	switch {
+	case s == nil:
 		panic(LIST_UNINITIALIZED)
+	case n > s.length:
+		panic(LIST_TOO_SHALLOW)
 	}
-	v := s.head.Move(n).data
-	s.tail.stackCell = &stackCell{ data: v }
-	s.tail = s.tail.stackCell
-	s.length++
+	for r = s.copyHeader(); n > 0; n-- {
+		r = r.Drop()
+	}
+	return
+}
+
+/*
+	Move to the Nth cell from the front of the queue and create a new cell with the same value which is appended to the queue.
+*/
+func (s *Fifo) Pick(n int) (r *Fifo) {
+	switch {
+	case s == nil:
+		panic(LIST_UNINITIALIZED)
+	case n > s.length:
+		panic(LIST_TOO_SHALLOW)
+	}
+	r = s.Move(n)
+	return s.Put(r.Peek())
+}
+
+/*
+	Create a new queue common with the current queue from the Nth+1 element. The Nth item of the current queue becames
+	the first item of the new queue and then successive elements are filled with corresponding values starting with
+	that at the front of the current queue.
+*/
+func (s *Fifo) Roll(n int) (r *Fifo) {
+
+
+
+
+	return
 }

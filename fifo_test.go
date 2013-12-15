@@ -1,9 +1,34 @@
 package greenspun
 
-import (
-//	"fmt"
-	"testing"
-)
+import "testing"
+
+func TestFifoQueue(t *testing.T) {
+	ConfirmQueue := func(r *Fifo, s ...interface{}) {
+		if q := Queue(s...); !q.Equal(r) {
+			t.Fatalf("Queue(%v) should be %v but is %v", s, r, q)
+		}
+	}
+
+	ConfirmQueue(new(Fifo))
+	ConfirmQueue(&Fifo{ head: stack(1), tail: nil, length: 1 }, 1)
+	ConfirmQueue(&Fifo{ head: stack(1, 2), tail: nil, length: 2 }, 1, 2)
+	ConfirmQueue(&Fifo{ head: stack(1, 2, 3), tail: nil, length: 3 }, 1, 2, 3)
+	ConfirmQueue(&Fifo{ head: stack(1), tail: stack(2), length: 2 }, 1, 2)
+	ConfirmQueue(&Fifo{ head: stack(1, 2), tail: stack(3), length: 3 }, 1, 2, 3)
+}
+
+func TestFifoReverseTail(t *testing.T) {
+	ConfirmReverseTail := func(f, r *Fifo) {
+		if q := f.reverseTail(); !q.Equal(r) {
+			t.Fatalf("%v.reverseTail() should be %v but is %v", f, r, q)
+		}
+	}
+
+	ConfirmReverseTail(&Fifo{}, &Fifo{})
+	ConfirmReverseTail(&Fifo{ head: stack(0), length: 1 }, &Fifo{ head: stack(0), length: 1 })
+	ConfirmReverseTail(&Fifo{ tail: stack(0), length: 1 }, &Fifo{ head: stack(0), length: 1 })
+	ConfirmReverseTail(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, &Fifo{ head: stack(0), tail: stack(1), length: 2 })
+}
 
 func TestFifoString(t *testing.T) {
 	ConfirmString := func(s *Fifo, r string) {
@@ -14,12 +39,21 @@ func TestFifoString(t *testing.T) {
 
 	ConfirmString(nil, "()")
 	ConfirmString(new(Fifo), "()")
-	ConfirmString(&Fifo{ length: 1, head: stack(1) }, "(1)")
-	ConfirmString(&Fifo{ length: 2, head: stack(1, 2) }, "(1 2)")
-	ConfirmString(&Fifo{ length: 3, head: stack(1, 2, 3) }, "(1 2 3)")
+
 	ConfirmString(Queue(1), "(1)")
+	ConfirmString(&Fifo{ length: 1, head: stack(1) }, "(1)")
+	ConfirmString(&Fifo{ length: 1, tail: stack(1) }, "(1)")
+
 	ConfirmString(Queue(1, 2), "(1 2)")
+	ConfirmString(&Fifo{ length: 2, head: stack(1, 2) }, "(1 2)")
+	ConfirmString(&Fifo{ length: 2, head: stack(1), tail: stack(2) }, "(1 2)")
+	ConfirmString(&Fifo{ length: 2, tail: stack(2, 1) }, "(1 2)")
+
 	ConfirmString(Queue(1, 2, 3), "(1 2 3)")
+	ConfirmString(&Fifo{ length: 3, tail: stack(3, 2, 1) }, "(1 2 3)")
+	ConfirmString(&Fifo{ length: 3, head: stack(1), tail: stack(3, 2) }, "(1 2 3)")
+	ConfirmString(&Fifo{ length: 3, head: stack(1, 2), tail: stack(3) }, "(1 2 3)")
+	ConfirmString(&Fifo{ length: 3, head: stack(1, 2, 3) }, "(1 2 3)")
 }
 
 func TestFifoEqual(t *testing.T) {
@@ -60,6 +94,45 @@ func TestFifoEqual(t *testing.T) {
 	ConfirmEqual(Queue(1, 2, 3), stack(1, 2, 3), true)
 	ConfirmEqual(Queue(2, 1, 3), stack(1, 2, 3), false)
 	ConfirmEqual(Queue(3, 2, 1), stack(3, 2, 1), true)
+
+	ConfirmEqual(&Fifo{ head: stack(0), length: 1 }, &Fifo{ head: stack(0), length: 1 }, true)
+	ConfirmEqual(&Fifo{ head: stack(0), length: 1 }, Queue(0), true)
+	ConfirmEqual(&Fifo{ tail: stack(0), length: 1 }, &Fifo{ head: stack(0), length: 1 }, true)
+	ConfirmEqual(&Fifo{ tail: stack(0), length: 1 }, Queue(0), true)
+
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, &Fifo{ head: stack(0, 1), length: 2 }, true)
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, &Fifo{ head: stack(1, 0), length: 2 }, false)
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, Queue(0, 1), true)
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, Queue(1, 0), false)
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, &Fifo{ tail: stack(1, 0), length: 2 }, true)
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, &Fifo{ tail: stack(0, 1), length: 2 }, false)
+
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, &Fifo{ head: stack(0, 1, 2), length: 3 }, true)
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, Queue(0, 1, 2), true)
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, &Fifo{ tail: stack(2, 1, 0), length: 3 }, true)
+
+	ConfirmEqual(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, &Fifo{ head: stack(0, 1, 2, 3), length: 4 }, true)
+	ConfirmEqual(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, Queue(0, 1, 2, 3), true)
+	ConfirmEqual(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, &Fifo{ tail: stack(3, 2, 1, 0), length: 4 }, true)
+
+	ConfirmEqual(&Fifo{ head: stack(0), length: 1 }, stack(), false)
+	ConfirmEqual(&Fifo{ head: stack(0), length: 1 }, stack(0), true)
+	ConfirmEqual(&Fifo{ head: stack(0), length: 1 }, stack(0, 1), false)
+
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, stack(0), false)
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, stack(0, 1), true)
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, stack(1, 0), false)
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, stack(0, 1, 2), false)
+
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, stack(0, 1), false)
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, stack(0, 1, 2), true)
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, stack(1, 0, 2), false)
+	ConfirmEqual(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, stack(0, 1, 2, 3), false)
+
+	ConfirmEqual(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, stack(0, 1, 2), false)
+	ConfirmEqual(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, stack(0, 1, 2, 3), true)
+	ConfirmEqual(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, stack(0, 2, 1, 3), false)
+	ConfirmEqual(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, stack(0, 1, 2, 3, 4), false)
 }
 
 func TestFifoPut(t *testing.T) {
@@ -111,12 +184,11 @@ func TestFifoPop(t *testing.T) {
 	}
 
 	ConfirmPop := func(s *Fifo, r interface{}, n *Fifo) {
-		vs := s.String()
-		switch x := s.Pop(); {
-		case x != r:
-			t.Fatalf("%v.Pop() should be %v but is %v", vs, r, x)
-		case !s.Equal(n):
-			t.Fatalf("%v.Pop() should leave %v but leaves %v", vs, n, s)
+		switch v, x := s.Pop(); {
+		case v != r:
+			t.Fatalf("%v.Pop() should be %v but is %v", s, r, v)
+		case !x.Equal(n):
+			t.Fatalf("%v.Pop() should leave %v but leaves %v", s, n, x)
 		}
 	}
 

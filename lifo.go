@@ -8,6 +8,8 @@ package greenspun
 
 	Whilst bare spaghetti stack structures are immutable containers, the Lifo implements Lisp's
 	Rplaca and Rplacd functions and allows stack elements to be modified in situ.
+
+	TODO: consider ditching mutability and making methods return new lifo headers
 */
 
 type Lifo struct {
