@@ -17,6 +17,42 @@ func TestFifoQueue(t *testing.T) {
 	ConfirmQueue(&Fifo{ head: stack(1, 2), tail: stack(3), length: 3 }, 1, 2, 3)
 }
 
+func TestCopyHeader(t *testing.T) {
+	if x := (*Fifo)(nil).copyHeader(); x != nil {
+		t.Fatalf("a nil header should produce a nil header")
+	}
+
+	ConfirmCopyHeader := func(s *Fifo) {
+		switch x := s.copyHeader(); {
+		case !x.head.Equal(s.head):
+			t.Fatalf("%v.head != %v", s, x.head)
+		case !x.tail.Equal(s.tail):
+			t.Fatalf("%v.tail != %v", s, x.tail)
+		case x.length != s.length:
+			t.Fatalf("%v.length != %v", s, x.length)
+		case !x.Equal(s):
+			t.Fatalf("%v.copyHeader() != %v", s, x)
+		}
+	}
+
+	ConfirmCopyHeader(Queue())
+
+	ConfirmCopyHeader(Queue(0))
+	ConfirmCopyHeader(&Fifo{ head: stack(0), length: 1 })
+	ConfirmCopyHeader(&Fifo{ tail: stack(0), length: 1 })
+
+	ConfirmCopyHeader(Queue(0, 1))
+	ConfirmCopyHeader(&Fifo{ head: stack(0, 1), length: 2 })
+	ConfirmCopyHeader(&Fifo{ head: stack(0), tail: stack(1), length: 2 })
+	ConfirmCopyHeader(&Fifo{ tail: stack(1, 0), length: 2 })
+
+	ConfirmCopyHeader(Queue(0, 1, 2))
+	ConfirmCopyHeader(&Fifo{ head: stack(0, 1, 2), length: 3 })
+	ConfirmCopyHeader(&Fifo{ head: stack(0, 1), tail: stack(2), length: 3 })
+	ConfirmCopyHeader(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 })
+	ConfirmCopyHeader(&Fifo{ tail: stack(2, 1, 0), length: 3 })
+}
+
 func TestFifoReverseTail(t *testing.T) {
 	ConfirmReverseTail := func(f, r *Fifo) {
 		fs := f.String()

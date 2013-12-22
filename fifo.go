@@ -3,7 +3,6 @@ package greenspun
 import (
 	"fmt"
 	"strings"
-	"sync"
 )
 
 /*
@@ -21,13 +20,7 @@ type Fifo struct {
 	head			*stackCell
 	tail			*stackCell
 	length		int
-	sync.Mutex
-}
-
-func (s *Fifo) CriticalSection(f func()) {
-	s.Lock()
-	f()
-	s.Unlock()
+	Mutex
 }
 
 func Queue(items... interface{}) (r *Fifo) {
@@ -41,8 +34,11 @@ func Queue(items... interface{}) (r *Fifo) {
 	return
 }
 
-func (s *Fifo) copyHeader() *Fifo {
-	return &Fifo{ head: s.head, tail: s.tail, length: s.length }
+func (s *Fifo) copyHeader() (r *Fifo) {
+	if s != nil {
+		r = &Fifo{ head: s.head, tail: s.tail, length: s.length }
+	}
+	return
 }
 
 /*
@@ -50,7 +46,8 @@ func (s *Fifo) copyHeader() *Fifo {
 	reverseTail() is an optimisation used when the front stack is empty to reverse the back
 	stack elements and create a new front stack.
 
-	This is a destructive operation and uses the header mutex.
+	This is a destructive operation and uses the header mutex. This is an optimisation to
+	minimise the number of reversal operations.
 
 	Normally when a reversal occurs it's associated with an operation which will create a new
 	header, therefore we return a copy of the modified queue header as a convenience.
