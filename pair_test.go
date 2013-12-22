@@ -214,6 +214,24 @@ func TestPairPair(t *testing.T) {
 	ConfirmPairPair(Cons(List(0, 1), List(2, 3)), List(0, 1), List(2, 3))
 }
 
+func TestPairNextPair(t *testing.T) {
+	RefuteNextPair := func(c *Pair) {
+		vc := fmt.Sprintf("%v", c)
+		defer ConfirmPanic(t, "%v.NextPair() should panic", vc)()
+		c.NextPair()
+	}
+
+	ConfirmNextPair := func(c *Pair, r *Pair) {
+		if x := c.NextPair(); !x.Equal(r) {
+			t.Fatalf("%v.Next() should be %v but is %v", c, r, x)
+		}
+	}
+
+	RefuteNextPair(nil)
+	RefuteNextPair(List())
+	ConfirmNextPair(List(0, 1), List(1))
+}
+
 func TestPairNext(t *testing.T) {
 	RefuteNext := func(c *Pair) {
 		vc := fmt.Sprintf("%v", c)
@@ -222,7 +240,7 @@ func TestPairNext(t *testing.T) {
 	}
 
 	ConfirmNext := func(c *Pair, r *Pair) {
-		if x := c.Next(); !x.Equal(r) {
+		if x := c.Next(); !r.Equal(x) {
 			t.Fatalf("%v.Next() should be %v but is %v", c, r, x)
 		}
 	}

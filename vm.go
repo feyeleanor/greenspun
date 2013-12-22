@@ -1,6 +1,9 @@
 package greenspun
 
-//import "fmt"
+import (
+// "fmt"
+//	"sync"
+)
 
 //	This type embodies the core of the SECD virtual machine for implementing functional languages
 //
@@ -34,7 +37,7 @@ func (vm *VM) Locate(env, slot int) interface{} {
 
 //	Advance the control register to the next instruction
 func (vm *VM) Advance() {
-	vm.C = vm.C.Next()
+	vm.C = vm.C.NextPair()
 }
 
 

@@ -46,7 +46,7 @@ func (c *Pair) String() string {
 			default:
 				head = fmt.Sprintf("%v", v.head)
 			}
-			if v.tail != nil && v.Next() == nil {
+			if v.tail != nil && v.NextPair() == nil {
 				terms = append(terms, head, ".", fmt.Sprintf("%v", v.tail))
 				return
 			}
@@ -123,8 +123,8 @@ func (c *Pair) Peek() interface{} {
 
 	If the current cell is nil then panic.
 */
-func (c *Pair) Pop() (interface{}, *Pair) {
-	return c.Car(), c.Next()
+func (c *Pair) Pop() (v interface{}, r *Pair) {
+	return c.Car(), c.NextPair()
 }
 
 //	Combine the first two items at the front of the list into a Cons Pair and make this the front of the list
@@ -143,9 +143,13 @@ func (c *Pair) PairPair() (l, r *Pair) {
 	return c.Car().(*Pair), c.Cdr().(*Pair)
 }
 
-func (c *Pair) Next() (r *Pair) {
+func (c *Pair) NextPair() (r *Pair) {
 	r, _ = c.Cdr().(*Pair)
 	return
+}
+
+func (c *Pair) Next() (r Sequence) {
+	return c.NextPair()
 }
 
 func (c *Pair) Car() interface{} {
@@ -181,11 +185,11 @@ func (c *Pair) Cadr() (r interface{}) {
 }
 
 func (c *Pair) Cdar() interface{} {
-	return c.Next().Car()
+	return c.NextPair().Car()
 }
 
 func (c *Pair) Cddr() interface{} {
-	return c.Next().Cdr()
+	return c.NextPair().Cdr()
 }
 
 func (c *Pair) Rplaca(i interface{}) *Pair {
@@ -211,7 +215,7 @@ func (c *Pair) Move(n int) (r *Pair) {
 	case n < 0:
 		panic(ARGUMENT_NEGATIVE_INDEX)
 	default:
-		for r = c; n > 0 && r.tail != nil; r = r.Next() {
+		for r = c; n > 0 && r.tail != nil; r = r.NextPair() {
 			n--
 		}
 
@@ -224,7 +228,7 @@ func (c *Pair) Move(n int) (r *Pair) {
 
 func (c *Pair) End() (r *Pair) {
 	r = c
-	for n := c.Next(); !n.IsNil() && n != c; n = n.Next() {
+	for n := c.NextPair(); n != nil && n != c; n = n.NextPair() {
 		r = n
 	}
 	return
@@ -269,35 +273,31 @@ func (c *Pair) Each(f interface{}) {
 	var i		int
 
 	switch f := f.(type) {
-	case func():
-		for ; c != nil; c = c.Next() {
-			f()
-		}
 	case func(interface{}):
-		for ; c != nil; c = c.Next() {
+		for ; c != nil; c = c.NextPair() {
 			f(c.Car())
 		}
 	case func(int, interface{}):
-		for ; c != nil; c = c.Next() {
+		for ; c != nil; c = c.NextPair() {
 			f(i, c.Car())
 			i++
 		}
 	case func(interface{}, interface{}):
-		for ; c != nil; c = c.Next() {
+		for ; c != nil; c = c.NextPair() {
 			f(i, c.Car())
 			i++
 		}
 	case func(*Pair):
-		for ; c != nil; c = c.Next() {
+		for ; c != nil; c = c.NextPair() {
 			f(c)
 		}
 	case func(int, *Pair):
-		for ; c != nil; c = c.Next() {
+		for ; c != nil; c = c.NextPair() {
 			f(i, c)
 			i++
 		}
 	case func(interface{}, *Pair):
-		for ; c != nil; c = c.Next() {
+		for ; c != nil; c = c.NextPair() {
 			f(i, c)
 			i++
 		}
@@ -338,20 +338,6 @@ func (c *Pair) Step(start, n int, f interface{}) {
 			f(i, c.Car())
 			i++
 		}
-	case func(*Pair):
-		for ; c != nil; c = c.Move(n) {
-			f(c)
-		}
-	case func(int, *Pair):
-		for i := 0; c != nil; c = c.Move(n) {
-			f(i, c)
-			i++
-		}
-	case func(interface{}, *Pair):
-		for i := 0; c != nil; c = c.Move(n) {
-			f(i, c)
-			i++
-		}
 	}
 }
 
@@ -364,7 +350,7 @@ func (c *Pair) append(v interface{}) (r *Pair) {
 func (c *Pair) constructList(f func(anchor *Pair)) *Pair {
 	anchor := &Pair{}
 	f(anchor)
-	return anchor.Next()
+	return anchor.NextPair()
 }
 
 func (c *Pair) Map(f interface{}) (r *Pair) {
@@ -380,18 +366,6 @@ func (c *Pair) Map(f interface{}) (r *Pair) {
 			})
 		case func(interface{}, interface{}) interface{}:
 			c.Each(func(k, v interface{}) {
-				cursor = cursor.append(f(k, v))
-			})
-		case func(*Pair) interface{}:
-			c.Each(func(v *Pair) {
-				cursor = cursor.append(f(v))
-			})
-		case func(int, *Pair) interface{}:
-			c.Each(func(i int, v *Pair) {
-				cursor = cursor.append(f(i, v))
-			})
-		case func(interface{}, *Pair) interface{}:
-			c.Each(func(k interface{}, v *Pair) {
 				cursor = cursor.append(f(k, v))
 			})
 		}
@@ -413,18 +387,6 @@ func (c *Pair) Reduce(seed, f interface{}) (r interface{}) {
 		c.Each(func(k, v interface{}) {
 			r = f(k, r, v)
 		})
-	case func(seed interface{}, value *Pair) interface{}:
-		c.Each(func(v *Pair) {
-			r = f(r, v)
-		})
-	case func(index int, seed interface{}, value *Pair) interface{}:
-		c.Each(func(i int, v *Pair) {
-			r = f(i, r, v)
-		})
-	case func(key, seed interface{}, value *Pair) interface{}:
-		c.Each(func(k interface{}, v *Pair) {
-			r = f(k, r, v)
-		})
 	}
 	return
 }
@@ -432,35 +394,23 @@ func (c *Pair) Reduce(seed, f interface{}) (r interface{}) {
 func (c *Pair) While(condition bool, f interface{}) (i int) {
 	switch f := f.(type) {
 	case func(interface{}) bool:
-		for r := c; r != nil && f(r.Car()) == condition; r = r.Next() {
+		for r := c; r != nil && f(r.Car()) == condition; r = r.NextPair() {
 			i++
 		}
 	case func(int, interface{}) bool:
-		for r := c; r != nil && f(i, r.Car()) == condition; r = r.Next() {
+		for r := c; r != nil && f(i, r.Car()) == condition; r = r.NextPair() {
 			i++
 		}
 	case func(interface{}, interface{}) bool:
-		for r := c; r != nil && f(i, r.Car()) == condition; r = r.Next() {
-			i++
-		}
-	case func(*Pair) bool:
-		for r := c; r != nil && f(r) == condition; r = r.Next() {
-			i++
-		}
-	case func(int, *Pair) bool:
-		for r := c; r != nil && f(i, r) == condition; r = r.Next() {
-			i++
-		}
-	case func(interface{}, *Pair) bool:
-		for r := c; r != nil && f(i, r) == condition; r = r.Next() {
+		for r := c; r != nil && f(i, r.Car()) == condition; r = r.NextPair() {
 			i++
 		}
 	case Equatable:
-		for r := c; r != nil && f.Equal(r.Car()) == condition; r = r.Next() {
+		for r := c; r != nil && f.Equal(r.Car()) == condition; r = r.NextPair() {
 			i++
 		}
 	case interface{}:
-		for r := c; r != nil && (f == r.Car()) == condition; r = r.Next() {
+		for r := c; r != nil && (f == r.Car()) == condition; r = r.NextPair() {
 			i++
 		}
 	}
@@ -484,7 +434,7 @@ func (c *Pair) Partition(offset int) (x, y *Pair) {
 	}
 
 	if y = c.Move(offset); y != nil {
-		r := y.Next()
+		r := y.NextPair()
 		y.Rplacd(nil)
 		y = r
 	}
@@ -518,7 +468,7 @@ func (c *Pair) Repeat(count int) (r *Pair) {
 
 func (c *Pair) Zip(n *Pair) (r *Pair) {
 	return c.constructList(func(cursor *Pair) {
-		for ; c != nil || n != nil; c, n = c.Next(), n.Next() {
+		for ; c != nil || n != nil; c, n = c.NextPair(), n.NextPair() {
 			cursor = cursor.append(Cons(c.Car(), n.Car()))
 		}
 	})

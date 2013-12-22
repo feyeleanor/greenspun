@@ -50,26 +50,6 @@ func (s *stackCell) String() (r string) {
 }
 
 /*
-	Check the equality of two cells based upon their contents
-*/
-func (s *stackCell) MatchValue(o *stackCell) (r bool) {
-	switch {
-	case s == nil && o == nil:
-		r = true
-	case s != nil && o != nil:
-		if v, ok := s.data.(Equatable); ok {
-			r = v.Equal(o.data)
-		} else if v, ok := o.data.(Equatable); ok {
-			r = v.Equal(s.data)
-		} else {
-			r = s.data == o.data
-		}
-	}
-	return
-}
-
-
-/*
 	Check the equality of two lists of cells based upon their contents.
 	Because lists are immutable, when two lists are confirmed to be identical then code using them can
 	discard one and perform all of its operations in terms of the other.
@@ -85,7 +65,7 @@ func (s *stackCell) Equal(o interface{}) (r bool) {
 		default:
 			x, y := s.stackCell, o.stackCell
 			for r = true ; r && x != nil && y != nil; x, y = x.stackCell, y.stackCell {
-				r = x.MatchValue(y)
+				r = MatchValue(x, y)
 			}
 			if r {
 				r = x == nil && y == nil
@@ -143,6 +123,13 @@ func (s *stackCell) Peek() interface{} {
 		panic(LIST_EMPTY)
 	}
 	return s.data
+}
+
+func (s *stackCell) Next() (r Sequence) {
+	if s != nil {
+		r = s.stackCell
+	}
+	return
 }
 
 /*
@@ -225,6 +212,22 @@ func (s *stackCell) Copy(n int) (r *stackCell) {
 	}
 	return r.stackCell
 }
+
+/*
+	Make a new stack containing where each cell contains the same value as is stored at the same depth
+	in the existing stack.
+
+	If the current cell is nil then this is a no-op.
+*/
+func (s *stackCell) Clone() (r *stackCell) {
+	r = new(stackCell)
+	for x := r; s != nil; s = s.stackCell {
+		x.stackCell = stack(s.data)
+		x = x.stackCell
+	}
+	return r.stackCell
+}
+
 
 /*
 	Return the Nth cell from the top of the stack.

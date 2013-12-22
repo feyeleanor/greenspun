@@ -21,20 +21,6 @@ func TestStackString(t *testing.T) {
 	ConfirmString(stack(1, 2, 3), "(1 2 3)")
 }
 
-func TestStackMatchValue(t *testing.T) {
-	ConfirmMatchValue := func(s, o *stackCell, r bool) {
-		if x := s.MatchValue(o); x != r {
-			t.Fatalf("%v.MatchValue(%v) should be %v but is %v", s, o, r, x)
-		}
-	}
-
-	ConfirmMatchValue(nil, nil, true)
-	ConfirmMatchValue(nil, stack(0), false)
-	ConfirmMatchValue(stack(0), nil, false)
-	ConfirmMatchValue(stack(0), stack(0), true)
-	ConfirmMatchValue(stack(0, 1), stack(0, -1), true)
-}
-
 func TestStackEqual(t *testing.T) {
 	ConfirmEqual := func(x, y *stackCell, r bool) {
 		switch {
@@ -248,6 +234,20 @@ func TestStackCopy(t *testing.T) {
 	ConfirmCopy(stack(0, 1, 2), 2, stack(0, 1))
 	ConfirmCopy(stack(0, 1, 2), 3, stack(0, 1, 2))
 	ConfirmCopy(stack(0, 1, 2), 4, stack(0, 1, 2))
+}
+
+func TestStackClone(t *testing.T) {
+	ConfirmClone := func(s, r *stackCell) {
+		if x := s.Clone(); !x.Equal(r) {
+			t.Fatalf("%v.Clone() should be %v but is %v", s, r, x)
+		}
+	}
+
+	ConfirmClone(nil, nil)
+	ConfirmClone(stack(), stack())
+	ConfirmClone(stack(0), stack(0))
+	ConfirmClone(stack(0, 1), stack(0, 1))
+	ConfirmClone(stack(0, 1, 2), stack(0, 1, 2))
 }
 
 func TestStackMove(t *testing.T) {
