@@ -210,9 +210,21 @@ func TestFifoPeek(t *testing.T) {
 
 	RefutePeek(nil)
 	RefutePeek(Queue())
-	ConfirmPeek(Queue(0), 0)
-	ConfirmPeek(Queue(1, 0), 1)
-	ConfirmPeek(Queue(2, 1, 0), 2)
+
+	ConfirmPeek(Queue(1), 1)
+	ConfirmPeek(&Fifo{ head: stack(1), length: 1 }, 1)
+	ConfirmPeek(&Fifo{ tail: stack(1), length: 1 }, 1)
+
+	ConfirmPeek(Queue(1, 2), 1)
+	ConfirmPeek(&Fifo{ head: stack(1, 2), length: 2 }, 1)
+	ConfirmPeek(&Fifo{ head: stack(1), tail: stack(2), length: 2 }, 1)
+	ConfirmPeek(&Fifo{ tail: stack(2, 1), length: 2 }, 1)
+
+	ConfirmPeek(Queue(1, 2, 3), 1)
+	ConfirmPeek(&Fifo{ head: stack(1, 2, 3), length: 3 }, 1)
+	ConfirmPeek(&Fifo{ head: stack(1, 2), tail: stack(3), length: 3 }, 1)
+	ConfirmPeek(&Fifo{ head: stack(1), tail: stack(3, 2), length: 3 }, 1)
+	ConfirmPeek(&Fifo{ tail: stack(3, 2, 1), length: 3 }, 1)
 }
 
 func TestFifoPop(t *testing.T) {
@@ -234,8 +246,26 @@ func TestFifoPop(t *testing.T) {
 	RefutePop(nil)
 	RefutePop(Queue())
 	ConfirmPop(Queue(0), 0, Queue())
-	ConfirmPop(Queue(1, 0), 1, Queue(0))
-	ConfirmPop(Queue(2, 1, 0), 2, Queue(1, 0))
+	ConfirmPop(&Fifo{ head: stack(0), length: 1 }, 0, Queue())
+	ConfirmPop(&Fifo{ tail: stack(0), length: 1 }, 0, Queue())
+
+	ConfirmPop(Queue(0, 1), 0, Queue(1))
+	ConfirmPop(&Fifo{ head: stack(0, 1), length: 2 }, 0, Queue(1))
+	ConfirmPop(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, 0, Queue(1))
+	ConfirmPop(&Fifo{ tail: stack(1, 0), length: 2 }, 0, Queue(1))
+
+	ConfirmPop(Queue(0, 1, 2), 0, Queue(1, 2))
+	ConfirmPop(&Fifo{ head: stack(0, 1, 2), length: 3 }, 0, Queue(1, 2))
+	ConfirmPop(&Fifo{ head: stack(0, 1), tail: stack(2), length: 3 }, 0, Queue(1, 2))
+	ConfirmPop(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, 0, Queue(1, 2))
+	ConfirmPop(&Fifo{ tail: stack(2, 1, 0), length: 3 }, 0, Queue(1, 2))
+
+	ConfirmPop(Queue(0, 1, 2, 3), 0, Queue(1, 2, 3))
+	ConfirmPop(&Fifo{ head: stack(0, 1, 2, 3), length: 4 }, 0, Queue(1, 2, 3))
+	ConfirmPop(&Fifo{ head: stack(0, 1, 2), tail: stack(3), length: 4 }, 0, Queue(1, 2, 3))
+	ConfirmPop(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, 0, Queue(1, 2, 3))
+	ConfirmPop(&Fifo{ head: stack(0), tail: stack(3, 2, 1), length: 4 }, 0, Queue(1, 2, 3))
+	ConfirmPop(&Fifo{ tail: stack(3, 2, 1, 0), length: 4 }, 0, Queue(1, 2, 3))
 }
 
 func TestFifoLen(t * testing.T) {
