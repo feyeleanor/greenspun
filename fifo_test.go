@@ -327,8 +327,28 @@ func TestFifoDup(t *testing.T) {
 
 	RefuteDup(nil)
 	RefuteDup(Queue())
-	ConfirmDup(Queue(1), Queue(1, 1))
-	ConfirmDup(Queue(1, 2), Queue(1, 2, 1))
+
+	ConfirmDup(Queue(0), Queue(0, 0))
+	ConfirmDup(&Fifo{ head: stack(0), length: 1 }, Queue(0, 0))
+	ConfirmDup(&Fifo{ tail: stack(0), length: 1 }, Queue(0, 0))
+
+	ConfirmDup(Queue(0, 1), Queue(0, 1, 0))
+	ConfirmDup(&Fifo{ head: stack(0, 1), length: 2 }, Queue(0, 1, 0))
+	ConfirmDup(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, Queue(0, 1, 0))
+	ConfirmDup(&Fifo{ tail: stack(1, 0), length: 2 }, Queue(0, 1, 0))
+
+	ConfirmDup(Queue(0, 1, 2), Queue(0, 1, 2, 0))
+	ConfirmDup(&Fifo{ head: stack(0, 1, 2), length: 3 }, Queue(0, 1, 2, 0))
+	ConfirmDup(&Fifo{ head: stack(0, 1), tail: stack(2), length: 3 }, Queue(0, 1, 2, 0))
+	ConfirmDup(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, Queue(0, 1, 2, 0))
+	ConfirmDup(&Fifo{ tail: stack(2, 1, 0), length: 3 }, Queue(0, 1, 2, 0))
+
+	ConfirmDup(Queue(0, 1, 2, 3), Queue(0, 1, 2, 3, 0))
+	ConfirmDup(&Fifo{ head: stack(0, 1, 2, 3), length: 4 }, Queue(0, 1, 2, 3, 0))
+	ConfirmDup(&Fifo{ head: stack(0, 1, 2), tail: stack(3), length: 4 }, Queue(0, 1, 2, 3, 0))
+	ConfirmDup(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, Queue(0, 1, 2, 3, 0))
+	ConfirmDup(&Fifo{ head: stack(0), tail: stack(3, 2, 1), length: 4 }, Queue(0, 1, 2, 3, 0))
+	ConfirmDup(&Fifo{ tail: stack(3, 2, 1, 0), length: 4 }, Queue(0, 1, 2, 3, 0))
 }
 
 func TestFifoSwap(t *testing.T) {
