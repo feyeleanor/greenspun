@@ -153,7 +153,7 @@ func (s *Fifo) Equal(o interface{}) (r bool) {
 	return
 }
 
-func (s *Fifo) Put(item interface{}) (r *Fifo) {
+func (s *Fifo) Append(item interface{}) (r *Fifo) {
 	if s == nil {
 		r = new(Fifo)
 	} else {
@@ -209,7 +209,7 @@ func (s *Fifo) Dup() *Fifo {
 		panic(LIST_TOO_SHALLOW)
 	}
 	s.reverseTail()
-	return s.Put(s.Peek())
+	return s.Append(s.Peek())
 }
 
 func (s *Fifo) Swap() (r *Fifo) {
@@ -256,7 +256,7 @@ func (s *Fifo) Copy(n int) (r *Fifo) {
 		var v	interface{}
 		for ; n > 0; n-- {
 			v, s = s.Pop()
-			r = r.Put(v)
+			r = r.Append(v)
 		}
 	}
  	return
@@ -296,7 +296,7 @@ func (s *Fifo) Pick(n int) (r *Fifo) {
 		r = s
 	default:
 		r = s.Move(n)
-		r = s.Put(r.Peek())
+		r = s.Append(r.Peek())
 	}
 	return
 }
@@ -314,7 +314,7 @@ func (s *Fifo) Roll(n int) (r *Fifo) {
 
 		for ; n > 0; n-- {
 			v, s = s.Pop()
-			r = r.Put(v)
+			r = r.Append(v)
 		}
 		r = r.reverseTail()
 
@@ -322,7 +322,7 @@ func (s *Fifo) Roll(n int) (r *Fifo) {
 		r = &Fifo{ head: &stackCell{ data: v, stackCell: r.head }, tail: r.tail, length: r.length + 1 }
 		for ; s.head != nil || s.tail != nil; {
 			v, s = s.Pop()
-			r = r.Put(v)
+			r = r.Append(v)
 		}
 	}
  	return
