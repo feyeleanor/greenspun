@@ -65,6 +65,8 @@ func TestFifoReverseTail(t *testing.T) {
 	ConfirmReverseTail(&Fifo{ head: stack(0), length: 1 }, &Fifo{ head: stack(0), length: 1 })
 	ConfirmReverseTail(&Fifo{ tail: stack(0), length: 1 }, &Fifo{ head: stack(0), length: 1 })
 	ConfirmReverseTail(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, &Fifo{ head: stack(0), tail: stack(1), length: 2 })
+	ConfirmReverseTail(&Fifo{ head: stack(0, 1), tail: stack(2), length: 3 }, &Fifo{ head: stack(0, 1), tail: stack(2), length: 3 })
+	ConfirmReverseTail(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, &Fifo{ head: stack(0), tail: stack(2, 1), length: 3 })
 }
 
 func TestFifoString(t *testing.T) {
@@ -460,8 +462,23 @@ func TestFifoCopy(t *testing.T) {
 
 func TestFifoMove(t *testing.T) {
 	ConfirmMove := func(s *Fifo, n int, r *Fifo) {
-		if x := s.Move(n); !x.Equal(r) {
+		x := s.Move(n)
+		if !x.Equal(r) {
 			t.Fatalf("%v.Move(%v) should be %v but is %v", s, n, r, x)
+		}
+
+		if s != nil {
+			l := s.length - n
+			if l < 0 {
+				l = 0
+			}
+			switch {
+			case x == nil && l == 0:
+			case x == nil && l != 0:
+				t.Fatalf("%v.Move(%v).length should be %v but is 0", s, n, l)
+			case x.length != l:
+				t.Fatalf("%v.Move(%v).length should be %v but is %v", s, n, l, x.length)
+			}
 		}
 	}
 
@@ -521,29 +538,60 @@ func TestFifoMove(t *testing.T) {
 	ConfirmMove(&Fifo{ head: stack(0, 1), tail: stack(2), length: 3 }, 3, Queue())
 	ConfirmMove(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, 3, Queue())
 	ConfirmMove(&Fifo{ tail: stack(2, 1, 0), length: 3 }, 3, Queue())
+
+	
+	ConfirmMove(Queue(0, 1, 2, 3), 0, Queue(0, 1, 2, 3))
+	ConfirmMove(&Fifo{ head: stack(0, 1, 2, 3), length: 4 }, 0, Queue(0, 1, 2, 3))
+	ConfirmMove(&Fifo{ head: stack(0, 1, 2), tail: stack(3), length: 4 }, 0, Queue(0, 1, 2, 3))
+	ConfirmMove(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, 0, Queue(0, 1, 2, 3))
+	ConfirmMove(&Fifo{ head: stack(0), tail: stack(3, 2, 1), length: 4 }, 0, Queue(0, 1, 2, 3))
+	ConfirmMove(&Fifo{ tail: stack(3, 2, 1, 0), length: 4 }, 0, Queue(0, 1, 2, 3))
+
+	ConfirmMove(Queue(0, 1, 2, 3), 1, Queue(1, 2, 3))
+	ConfirmMove(&Fifo{ head: stack(0, 1, 2, 3), length: 4 }, 1, Queue(1, 2, 3))
+	ConfirmMove(&Fifo{ head: stack(0, 1, 2), tail: stack(3), length: 4 }, 1, Queue(1, 2, 3))
+	ConfirmMove(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, 1, Queue(1, 2, 3))
+	ConfirmMove(&Fifo{ head: stack(0), tail: stack(3, 2, 1), length: 4 }, 1, Queue(1, 2, 3))
+	ConfirmMove(&Fifo{ tail: stack(3, 2, 1, 0), length: 4 }, 1, Queue(1, 2, 3))
+
+	ConfirmMove(Queue(0, 1, 2, 3), 2, Queue(2, 3))
+	ConfirmMove(&Fifo{ head: stack(0, 1, 2, 3), length: 4 }, 2, Queue(2, 3))
+	ConfirmMove(&Fifo{ head: stack(0, 1, 2), tail: stack(3), length: 4 }, 2, Queue(2, 3))
+	ConfirmMove(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, 2, Queue(2, 3))
+	ConfirmMove(&Fifo{ head: stack(0), tail: stack(3, 2, 1), length: 4 }, 2, Queue(2, 3))
+	ConfirmMove(&Fifo{ tail: stack(3, 2, 1, 0), length: 4 }, 2, Queue(2, 3))
+
+	ConfirmMove(Queue(0, 1, 2, 3), 3, Queue(3))
+	ConfirmMove(&Fifo{ head: stack(0, 1, 2, 3), length: 4 }, 3, Queue(3))
+	ConfirmMove(&Fifo{ head: stack(0, 1, 2), tail: stack(3), length: 4 }, 3, Queue(3))
+	ConfirmMove(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, 3, Queue(3))
+	ConfirmMove(&Fifo{ head: stack(0), tail: stack(3, 2, 1), length: 4 }, 3, Queue(3))
+	ConfirmMove(&Fifo{ tail: stack(3, 2, 1, 0), length: 4 }, 3, Queue(3))
+
+	ConfirmMove(Queue(0, 1, 2, 3), 4, Queue())
+	ConfirmMove(&Fifo{ head: stack(0, 1, 2, 3), length: 4 }, 4, Queue())
+	ConfirmMove(&Fifo{ head: stack(0, 1, 2), tail: stack(3), length: 4 }, 4, Queue())
+	ConfirmMove(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, 4, Queue())
+	ConfirmMove(&Fifo{ head: stack(0), tail: stack(3, 2, 1), length: 4 }, 4, Queue())
+	ConfirmMove(&Fifo{ tail: stack(3, 2, 1, 0), length: 4 }, 4, Queue())
 }
 
 func TestFifoPick(t *testing.T) {
-	RefutePick := func(s *Fifo, x int) {
-		defer ConfirmPanic(t, "%v.Pick(%v) should panic", s, x)()
-		s.Pick(x)
-	}
-
 	ConfirmPick := func(s *Fifo, n int, r *Fifo) {
 		if x := s.Pick(n); !x.Equal(r) {
 			t.Fatalf("%v.Pick(%v) should be %v but is %v", s, n, r, x)
 		}
 	}
 
-	RefutePick(nil, 0)
-	RefutePick(nil, 1)
+	ConfirmPick(nil, 0, nil)
+	ConfirmPick(nil, 1, nil)
 
-	RefutePick(Queue(), 0)
-	RefutePick(Queue(), 1)
+	ConfirmPick(Queue(), 0, nil)
+	ConfirmPick(Queue(), 1, nil)
 
 	ConfirmPick(Queue(0), 0, Queue(0, 0))
 	ConfirmPick(&Fifo{ head: stack(0), length: 1 }, 0, Queue(0, 0))
-	RefutePick(Queue(0), 1)
+	ConfirmPick(Queue(0), 1, Queue(0))
 	
 	ConfirmPick(Queue(0, 1), 0, Queue(0, 1, 0))
 	ConfirmPick(&Fifo{ head: stack(0, 1), length: 2 }, 0, Queue(0, 1, 0))
@@ -555,10 +603,10 @@ func TestFifoPick(t *testing.T) {
 	ConfirmPick(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, 1, Queue(0, 1, 1))
 	ConfirmPick(&Fifo{ tail: stack(1, 0), length: 2 }, 1, Queue(0, 1, 1))
 	
-	RefutePick(Queue(0, 1), 2)
-	RefutePick(&Fifo{ head: stack(0, 1), length: 2 }, 2)
-	RefutePick(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, 2)
-	RefutePick(&Fifo{ tail: stack(1, 0), length: 2 }, 2)
+	ConfirmPick(Queue(0, 1), 2, Queue(0, 1))
+	ConfirmPick(&Fifo{ head: stack(0, 1), length: 2 }, 2, Queue(0, 1))
+	ConfirmPick(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, 2, Queue(0, 1))
+	ConfirmPick(&Fifo{ tail: stack(1, 0), length: 2 }, 2, Queue(0, 1))
 
 	ConfirmPick(Queue(0, 1, 2), 0, Queue(0, 1, 2, 0))
 	ConfirmPick(&Fifo{ head: stack(0, 1, 2), length: 3 }, 0, Queue(0, 1, 2, 0))
@@ -578,9 +626,147 @@ func TestFifoPick(t *testing.T) {
 	ConfirmPick(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, 2, Queue(0, 1, 2, 2))
 	ConfirmPick(&Fifo{ tail: stack(2, 1, 0), length: 3 }, 2, Queue(0, 1, 2, 2))
 	
-	RefutePick(Queue(0, 1, 2), 3)
-	RefutePick(&Fifo{ head: stack(0, 1, 2), length: 3 }, 3)
-	RefutePick(&Fifo{ head: stack(0, 1), tail: stack(2), length: 3 }, 3)
-	RefutePick(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, 3)
-	RefutePick(&Fifo{ tail: stack(2, 1, 0), length: 3 }, 3)
+	ConfirmPick(Queue(0, 1, 2), 3, Queue(0, 1, 2))
+	ConfirmPick(&Fifo{ head: stack(0, 1, 2), length: 3 }, 3, Queue(0, 1, 2))
+	ConfirmPick(&Fifo{ head: stack(0, 1), tail: stack(2), length: 3 }, 3, Queue(0, 1, 2))
+	ConfirmPick(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, 3, Queue(0, 1, 2))
+	ConfirmPick(&Fifo{ tail: stack(2, 1, 0), length: 3 }, 3, Queue(0, 1, 2))
+}
+
+func TestFifoRoll(t *testing.T) {
+	ConfirmRoll := func(s *Fifo, n int, r *Fifo) {
+		if x := s.Roll(n); !x.Equal(r) {
+			t.Fatalf("%v.Roll(%v) should be %v but is %v", s, n, r, x)
+		}
+	}
+
+	ConfirmRoll(nil, 0, nil)
+	ConfirmRoll(nil, 1, nil)
+
+	ConfirmRoll(Queue(), 0, nil)
+	ConfirmRoll(Queue(), 1, nil)
+
+	ConfirmRoll(Queue(0), 0, Queue(0))
+	ConfirmRoll(&Fifo{ head: stack(0), length: 1 }, 0, Queue(0))
+	ConfirmRoll(&Fifo{ tail: stack(0), length: 1 }, 0, Queue(0))
+
+	ConfirmRoll(Queue(0), 1, Queue(0))
+	ConfirmRoll(&Fifo{ head: stack(0), length: 1 }, 1, Queue(0))
+	ConfirmRoll(&Fifo{ tail: stack(0), length: 1 }, 1, Queue(0))
+	
+	ConfirmRoll(Queue(0, 1), 0, Queue(0, 1))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), length: 2 }, 0, Queue(0, 1))
+	ConfirmRoll(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, 0, Queue(0, 1))
+	ConfirmRoll(&Fifo{ tail: stack(1, 0), length: 2 }, 0, Queue(0, 1))
+
+	ConfirmRoll(Queue(0, 1), 1, Queue(1, 0))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), length: 2 }, 1, Queue(1, 0))
+	ConfirmRoll(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, 1, Queue(1, 0))
+	ConfirmRoll(&Fifo{ tail: stack(1, 0), length: 2 }, 1, Queue(1, 0))
+	
+	ConfirmRoll(Queue(0, 1), 2, Queue(0, 1))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), length: 2 }, 2, Queue(0, 1))
+	ConfirmRoll(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, 2, Queue(0, 1))
+	ConfirmRoll(&Fifo{ tail: stack(1, 0), length: 2 }, 2, Queue(0, 1))
+
+	ConfirmRoll(Queue(0, 1, 2), 0, Queue(0, 1, 2))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2), length: 3 }, 0, Queue(0, 1, 2))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), tail: stack(2), length: 3 }, 0, Queue(0, 1, 2))
+	ConfirmRoll(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, 0, Queue(0, 1, 2))
+	ConfirmRoll(&Fifo{ tail: stack(2, 1, 0), length: 3 }, 0, Queue(0, 1, 2))
+
+	ConfirmRoll(Queue(0, 1, 2), 1, Queue(1, 0, 2))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2), length: 3 }, 1, Queue(1, 0, 2))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), tail: stack(2), length: 3 }, 1, Queue(1, 0, 2))
+	ConfirmRoll(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, 1, Queue(1, 0, 2))
+	ConfirmRoll(&Fifo{ tail: stack(2, 1, 0), length: 3 }, 1, Queue(1, 0, 2))
+
+	ConfirmRoll(Queue(0, 1, 2), 2, Queue(2, 0, 1))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2), length: 3 }, 2, Queue(2, 0, 1))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), tail: stack(2), length: 3 }, 2, Queue(2, 0, 1))
+	ConfirmRoll(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, 2, Queue(2, 0, 1))
+	ConfirmRoll(&Fifo{ tail: stack(2, 1, 0), length: 3 }, 2, Queue(2, 0, 1))
+	
+	ConfirmRoll(Queue(0, 1, 2), 3, Queue(0, 1, 2))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2), length: 3 }, 3, Queue(0, 1, 2))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), tail: stack(2), length: 3 }, 3, Queue(0, 1, 2))
+	ConfirmRoll(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, 3, Queue(0, 1, 2))
+	ConfirmRoll(&Fifo{ tail: stack(2, 1, 0), length: 3 }, 3, Queue(0, 1, 2))
+
+	ConfirmRoll(Queue(0, 1, 2, 3), 0, Queue(0, 1, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3), length: 4 }, 0, Queue(0, 1, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2), tail: stack(3), length: 4 }, 0, Queue(0, 1, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, 0, Queue(0, 1, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0), tail: stack(3, 2, 1), length: 4 }, 0, Queue(0, 1, 2, 3))
+	ConfirmRoll(&Fifo{ tail: stack(3, 2, 1, 0), length: 4 }, 0, Queue(0, 1, 2, 3))
+
+	ConfirmRoll(Queue(0, 1, 2, 3), 1, Queue(1, 0, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3), length: 4 }, 1, Queue(1, 0, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2), tail: stack(3), length: 4 }, 1, Queue(1, 0, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, 1, Queue(1, 0, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0), tail: stack(3, 2, 1), length: 4 }, 1, Queue(1, 0, 2, 3))
+	ConfirmRoll(&Fifo{ tail: stack(3, 2, 1, 0), length: 4 }, 1, Queue(1, 0, 2, 3))
+
+	ConfirmRoll(Queue(0, 1, 2, 3), 2, Queue(2, 0, 1, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3), length: 4 }, 2, Queue(2, 0, 1, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2), tail: stack(3), length: 4 }, 2, Queue(2, 0, 1, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, 2, Queue(2, 0, 1, 3))
+	ConfirmRoll(&Fifo{ head: stack(0), tail: stack(3, 2, 1), length: 4 }, 2, Queue(2, 0, 1, 3))
+	ConfirmRoll(&Fifo{ tail: stack(3, 2, 1, 0), length: 4 }, 2, Queue(2, 0, 1, 3))
+
+	ConfirmRoll(Queue(0, 1, 2, 3), 3, Queue(3, 0, 1, 2))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3), length: 4 }, 3, Queue(3, 0, 1, 2))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2), tail: stack(3), length: 4 }, 3, Queue(3, 0, 1, 2))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, 3, Queue(3, 0, 1, 2))
+	ConfirmRoll(&Fifo{ head: stack(0), tail: stack(3, 2, 1), length: 4 }, 3, Queue(3, 0, 1, 2))
+	ConfirmRoll(&Fifo{ tail: stack(3, 2, 1, 0), length: 4 }, 3, Queue(3, 0, 1, 2))
+
+	ConfirmRoll(Queue(0, 1, 2, 3), 4, Queue(0, 1, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3), length: 4 }, 4, Queue(0, 1, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2), tail: stack(3), length: 4 }, 4, Queue(0, 1, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, 4, Queue(0, 1, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0), tail: stack(3, 2, 1), length: 4 }, 4, Queue(0, 1, 2, 3))
+	ConfirmRoll(&Fifo{ tail: stack(3, 2, 1, 0), length: 4 }, 4, Queue(0, 1, 2, 3))
+
+	ConfirmRoll(Queue(0, 1, 2, 3, 4), 0, Queue(0, 1, 2, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3, 4), length: 5 }, 0, Queue(0, 1, 2, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3), tail: stack(4), length: 5 }, 0, Queue(0, 1, 2, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2), tail: stack(4, 3), length: 5 }, 0, Queue(0, 1, 2, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), tail: stack(4, 3, 2), length: 5 }, 0, Queue(0, 1, 2, 3, 4))
+	ConfirmRoll(&Fifo{ tail: stack(4, 3, 2, 1, 0), length: 5 }, 0, Queue(0, 1, 2, 3, 4))
+
+	ConfirmRoll(Queue(0, 1, 2, 3, 4), 1, Queue(1, 0, 2, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3, 4), length: 5 }, 1, Queue(1, 0, 2, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3), tail: stack(4), length: 5 }, 1, Queue(1, 0, 2, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2), tail: stack(4, 3), length: 5 }, 1, Queue(1, 0, 2, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), tail: stack(4, 3, 2), length: 5 }, 1, Queue(1, 0, 2, 3, 4))
+	ConfirmRoll(&Fifo{ tail: stack(4, 3, 2, 1, 0), length: 5 }, 1, Queue(1, 0, 2, 3, 4))
+
+	ConfirmRoll(Queue(0, 1, 2, 3, 4), 2, Queue(2, 0, 1, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3, 4), length: 5 }, 2, Queue(2, 0, 1, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3), tail: stack(4), length: 5 }, 2, Queue(2, 0, 1, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2), tail: stack(4, 3), length: 5 }, 2, Queue(2, 0, 1, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), tail: stack(4, 3, 2), length: 5 }, 2, Queue(2, 0, 1, 3, 4))
+	ConfirmRoll(&Fifo{ tail: stack(4, 3, 2, 1, 0), length: 5 }, 2, Queue(2, 0, 1, 3, 4))
+
+	ConfirmRoll(Queue(0, 1, 2, 3, 4), 3, Queue(3, 0, 1, 2, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3, 4), length: 5 }, 3, Queue(3, 0, 1, 2, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3), tail: stack(4), length: 5 }, 3, Queue(3, 0, 1, 2, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2), tail: stack(4, 3), length: 5 }, 3, Queue(3, 0, 1, 2, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), tail: stack(4, 3, 2), length: 5 }, 3, Queue(3, 0, 1, 2, 4))
+	ConfirmRoll(&Fifo{ tail: stack(4, 3, 2, 1, 0), length: 5 }, 3, Queue(3, 0, 1, 2, 4))
+
+	ConfirmRoll(Queue(0, 1, 2, 3, 4), 4, Queue(4, 0, 1, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3, 4), length: 5 }, 4, Queue(4, 0, 1, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3), tail: stack(4), length: 5 }, 4, Queue(4, 0, 1, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2), tail: stack(4, 3), length: 5 }, 4, Queue(4, 0, 1, 2, 3))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), tail: stack(4, 3, 2), length: 5 }, 4, Queue(4, 0, 1, 2, 3))
+	ConfirmRoll(&Fifo{ tail: stack(4, 3, 2, 1, 0), length: 5 }, 4, Queue(4, 0, 1, 2, 3))
+
+	ConfirmRoll(Queue(0, 1, 2, 3, 4), 5, Queue(0, 1, 2, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3, 4), length: 5 }, 5, Queue(0, 1, 2, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2, 3), tail: stack(4), length: 5 }, 5, Queue(0, 1, 2, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1, 2), tail: stack(4, 3), length: 5 }, 5, Queue(0, 1, 2, 3, 4))
+	ConfirmRoll(&Fifo{ head: stack(0, 1), tail: stack(4, 3, 2), length: 5 }, 5, Queue(0, 1, 2, 3, 4))
+	ConfirmRoll(&Fifo{ tail: stack(4, 3, 2, 1, 0), length: 5 }, 5, Queue(0, 1, 2, 3, 4))
 }

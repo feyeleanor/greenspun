@@ -214,8 +214,7 @@ func (s *stackCell) Copy(n int) (r *stackCell) {
 }
 
 /*
-	Make a new stack containing where each cell contains the same value as is stored at the same depth
-	in the existing stack.
+	Make a new stack where each cell contains the same value as is stored at the same depth in the existing stack.
 
 	If the current cell is nil then this is a no-op.
 */

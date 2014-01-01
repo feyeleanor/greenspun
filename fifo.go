@@ -64,6 +64,7 @@ func (s *Fifo) reverseTail() *Fifo {
 		})
 		s.CriticalSection(func() {
 			s.head = n.head
+			s.tail = nil
 		})
 	}
 	return s.copyHeader()
@@ -194,9 +195,11 @@ func (s *Fifo) IsNil() (r bool) {
 }
 
 func (s *Fifo) Drop() (r *Fifo) {
-	if s.length > 0 {
-		s.reverseTail()
-		_, r = s.Pop()
+	if s != nil && s.length > 0 {
+		s = s.reverseTail()
+		if s.head != nil && s.length > 0 {
+			r = &Fifo{ head: s.head.stackCell, tail: s.tail, length: s.length - 1 }
+		}
 	}
 	return
 }
@@ -270,11 +273,14 @@ func (s *Fifo) Reverse() *Fifo {
 }
 
 /*
-	Move to the Nth cell from the start of the queue, or return an error if there are fewer than N cells.
+	Move to the Nth cell from the start of the queue, or return nil if there are fewer than N cells.
 */
 func (s *Fifo) Move(n int) (r *Fifo) {
-	if s != nil {
-		for r = s.copyHeader(); n > 0 && r != nil; n-- {
+	switch {
+	case s == nil, n >= s.length:
+		r = nil
+	default:
+		for r = s.copyHeader(); n > 0; n-- {
 			r = r.Drop()
 		}
 	}
@@ -286,11 +292,38 @@ func (s *Fifo) Move(n int) (r *Fifo) {
 */
 func (s *Fifo) Pick(n int) (r *Fifo) {
 	switch {
-	case s == nil:
-		panic(LIST_UNINITIALIZED)
-	case n > s.length:
-		panic(LIST_TOO_SHALLOW)
+	case s == nil, n >= s.length:
+		r = s
+	default:
+		r = s.Move(n)
+		r = s.Put(r.Peek())
 	}
-	r = s.Move(n)
-	return s.Put(r.Peek())
+	return
+}
+
+/*
+	Move to the Nth cell from the front of the queue and copy its value, then make a new queue in which this is the first element
+	and the succeeding elements are the section 0..N-1 followed by N+1 onwards.
+*/
+func (s *Fifo) Roll(n int) (r *Fifo) {
+	switch {
+	case s == nil, n >= s.length, n == 0:
+		r = s
+	default:
+		var v	interface{}
+
+		for ; n > 0; n-- {
+			v, s = s.Pop()
+			r = r.Put(v)
+		}
+		r = r.reverseTail()
+
+		v, s = s.Pop()
+		r = &Fifo{ head: &stackCell{ data: v, stackCell: r.head }, tail: r.tail, length: r.length + 1 }
+		for ; s.head != nil || s.tail != nil; {
+			v, s = s.Pop()
+			r = r.Put(v)
+		}
+	}
+ 	return
 }
