@@ -290,3 +290,22 @@ func (s *stackCell) Reverse() (r *stackCell) {
 	})
 	return
 }
+
+/*
+	Create two new stacks
+*/
+func (s *stackCell) Partition(n int) (l, r *stackCell) {
+	if n < 1 {
+		r = s
+	} else {
+		l = new(stackCell)
+		for x := l; n > 0 && s != nil; n-- {
+			x.stackCell = stack(s.data)
+			x = x.stackCell
+			s = s.stackCell
+		}
+		l = l.stackCell
+		r = s
+	}
+	return
+}

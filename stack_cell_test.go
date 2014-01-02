@@ -359,3 +359,35 @@ func TestStackReverse(t *testing.T) {
 	ConfirmReverse(stack(0, 1), stack(1, 0))
 	ConfirmReverse(stack(0, 1, 2), stack(2, 1, 0))
 }
+
+func TestStackPartition(t *testing.T) {
+	ConfirmPartition := func(s *stackCell, n int, l, r *stackCell) {
+		switch x, y := s.Partition(n); {
+		case !l.Equal(x):
+			t.Fatalf("%v.Partition(%v) l should be %v but is %v", s, n, l, x)
+		case !r.Equal(y):
+			t.Fatalf("%v.Partition(%v) r should be %v but is %v", s, n, r, y)
+		}
+	}
+
+	ConfirmPartition(nil, 0, nil, nil)
+	ConfirmPartition(nil, 1, nil, nil)
+
+	ConfirmPartition(stack(0), 0, nil, stack(0))
+	ConfirmPartition(stack(0), 1, stack(0), nil)
+
+	ConfirmPartition(stack(0, 1), 0, nil, stack(0, 1))
+	ConfirmPartition(stack(0, 1), 1, stack(0), stack(1))
+	ConfirmPartition(stack(0, 1), 2, stack(0, 1), nil)
+
+	ConfirmPartition(stack(0, 1, 2), 0, nil, stack(0, 1, 2))
+	ConfirmPartition(stack(0, 1, 2), 1, stack(0), stack(1, 2))
+	ConfirmPartition(stack(0, 1, 2), 2, stack(0, 1), stack(2))
+	ConfirmPartition(stack(0, 1, 2), 3, stack(0, 1, 2), nil)
+
+	ConfirmPartition(stack(0, 1, 2, 3), 0, nil, stack(0, 1, 2, 3))
+	ConfirmPartition(stack(0, 1, 2, 3), 1, stack(0), stack(1, 2, 3))
+	ConfirmPartition(stack(0, 1, 2, 3), 2, stack(0, 1), stack(2, 3))
+	ConfirmPartition(stack(0, 1, 2, 3), 3, stack(0, 1, 2), stack(3))
+	ConfirmPartition(stack(0, 1, 2, 3), 4, stack(0, 1, 2, 3), nil)
+}
