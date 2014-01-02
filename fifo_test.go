@@ -219,21 +219,45 @@ func TestFifoAppend(t *testing.T) {
 		}
 	}
 
-	ConfirmAppend(nil, 1, Queue(1))
-	ConfirmAppend(Queue(1), 1, Queue(1, 1))
-	ConfirmAppend(&Fifo{ head: stack(1), length: 1 }, 1, Queue(1, 1))
-	ConfirmAppend(&Fifo{ tail: stack(1), length: 1 }, 1, Queue(1, 1))
+	ConfirmAppend(nil, 0, Queue(0))
+	ConfirmAppend(Queue(1), 0, Queue(1, 0))
+	ConfirmAppend(&Fifo{ head: stack(1), length: 1 }, 0, Queue(1, 0))
+	ConfirmAppend(&Fifo{ tail: stack(1), length: 1 }, 0, Queue(1, 0))
 
-	ConfirmAppend(Queue(1, 2), 1, Queue(1, 2, 1))
-	ConfirmAppend(&Fifo{ head: stack(1, 2), length: 2 }, 1, Queue(1, 2, 1))
-	ConfirmAppend(&Fifo{ head: stack(1), tail: stack(2), length: 2 }, 1, Queue(1, 2, 1))
-	ConfirmAppend(&Fifo{ tail: stack(2, 1), length: 2 }, 1, Queue(1, 2, 1))
+	ConfirmAppend(Queue(1, 2), 0, Queue(1, 2, 0))
+	ConfirmAppend(&Fifo{ head: stack(1, 2), length: 2 }, 0, Queue(1, 2, 0))
+	ConfirmAppend(&Fifo{ head: stack(1), tail: stack(2), length: 2 }, 0, Queue(1, 2, 0))
+	ConfirmAppend(&Fifo{ tail: stack(2, 1), length: 2 }, 0, Queue(1, 2, 0))
 
-	ConfirmAppend(Queue(1, 2, 3), 1, Queue(1, 2, 3, 1))
-	ConfirmAppend(&Fifo{ head: stack(1, 2, 3), length: 3 }, 1, Queue(1, 2, 3, 1))
-	ConfirmAppend(&Fifo{ head: stack(1, 2), tail: stack(3), length: 3 }, 1, Queue(1, 2, 3, 1))
-	ConfirmAppend(&Fifo{ head: stack(1), tail: stack(3, 2), length: 3 }, 1, Queue(1, 2, 3, 1))
-	ConfirmAppend(&Fifo{ tail: stack(3, 2, 1), length: 3 }, 1, Queue(1, 2, 3, 1))
+	ConfirmAppend(Queue(1, 2, 3), 0, Queue(1, 2, 3, 0))
+	ConfirmAppend(&Fifo{ head: stack(1, 2, 3), length: 3 }, 0, Queue(1, 2, 3, 0))
+	ConfirmAppend(&Fifo{ head: stack(1, 2), tail: stack(3), length: 3 }, 0, Queue(1, 2, 3, 0))
+	ConfirmAppend(&Fifo{ head: stack(1), tail: stack(3, 2), length: 3 }, 0, Queue(1, 2, 3, 0))
+	ConfirmAppend(&Fifo{ tail: stack(3, 2, 1), length: 3 }, 0, Queue(1, 2, 3, 0))
+}
+
+func TestFifoPrepend(t *testing.T) {
+	ConfirmPrepend := func(s *Fifo, v interface{}, r *Fifo) {
+		if x := s.Prepend(v); !x.Equal(r) {
+			t.Fatalf("%v.Prepend(%v) should be %v but is %v", s, v, r, x)
+		}
+	}
+
+	ConfirmPrepend(nil, 0, Queue(0))
+	ConfirmPrepend(Queue(1), 0, Queue(0, 1))
+	ConfirmPrepend(&Fifo{ head: stack(1), length: 1 }, 0, Queue(0, 1))
+	ConfirmPrepend(&Fifo{ tail: stack(1), length: 1 }, 0, Queue(0, 1))
+
+	ConfirmPrepend(Queue(1, 2), 0, Queue(0, 1, 2))
+	ConfirmPrepend(&Fifo{ head: stack(1, 2), length: 2 }, 0, Queue(0, 1, 2))
+	ConfirmPrepend(&Fifo{ head: stack(1), tail: stack(2), length: 2 }, 0, Queue(0, 1, 2))
+	ConfirmPrepend(&Fifo{ tail: stack(2, 1), length: 2 }, 0, Queue(0, 1, 2))
+
+	ConfirmPrepend(Queue(1, 2, 3), 0, Queue(0, 1, 2, 3))
+	ConfirmPrepend(&Fifo{ head: stack(1, 2, 3), length: 3 }, 0, Queue(0, 1, 2, 3))
+	ConfirmPrepend(&Fifo{ head: stack(1, 2), tail: stack(3), length: 3 }, 0, Queue(0, 1, 2, 3))
+	ConfirmPrepend(&Fifo{ head: stack(1), tail: stack(3, 2), length: 3 }, 0, Queue(0, 1, 2, 3))
+	ConfirmPrepend(&Fifo{ tail: stack(3, 2, 1), length: 3 }, 0, Queue(0, 1, 2, 3))
 }
 
 func TestFifoPeek(t *testing.T) {

@@ -199,6 +199,17 @@ func (s *Fifo) Append(item interface{}) (r *Fifo) {
 	return
 }
 
+func (s *Fifo) Prepend(item interface{}) (r *Fifo) {
+	if s == nil {
+		r = new(Fifo)
+	} else {
+		r = s.copyHeader()
+	}
+	r.head = r.head.Push(item)
+	r.length++
+	return
+}
+
 func (s *Fifo) Peek() (v interface{}) {
 	if s.length == 0 {
 		panic(LIST_EMPTY)
