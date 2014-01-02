@@ -420,6 +420,14 @@ func TestFifoSwap(t *testing.T) {
 	ConfirmSwap(&Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 }, Queue(3, 1, 2, 0))
 	ConfirmSwap(&Fifo{ head: stack(0), tail: stack(3, 2, 1), length: 4 }, Queue(3, 1, 2, 0))
 	ConfirmSwap(&Fifo{ tail: stack(3, 2, 1, 0), length: 4 }, Queue(3, 1, 2, 0))
+
+	ConfirmSwap(Queue(0, 1, 2, 3, 4), Queue(4, 1, 2, 3, 0))
+	ConfirmSwap(&Fifo{ head: stack(0, 1, 2, 3, 4), length: 5 }, Queue(4, 1, 2, 3, 0))
+	ConfirmSwap(&Fifo{ head: stack(0, 1, 2, 3), tail: stack(4), length: 5 }, Queue(4, 1, 2, 3, 0))
+	ConfirmSwap(&Fifo{ head: stack(0, 1, 2), tail: stack(4, 3), length: 5 }, Queue(4, 1, 2, 3, 0))
+	ConfirmSwap(&Fifo{ head: stack(0, 1), tail: stack(4, 3, 2), length: 5 }, Queue(4, 1, 2, 3, 0))
+	ConfirmSwap(&Fifo{ head: stack(0), tail: stack(4, 3, 2, 1), length: 5 }, Queue(4, 1, 2, 3, 0))
+	ConfirmSwap(&Fifo{ tail: stack(4, 3, 2, 1, 0), length: 5 }, Queue(4, 1, 2, 3, 0))
 }
 
 func TestFifoCopy(t *testing.T) {

@@ -248,29 +248,11 @@ func (s *Fifo) Dup() *Fifo {
 
 func (s *Fifo) Swap() (r *Fifo) {
 	switch {
-	case s == nil:
-		r = nil
-	case s.length < 2:
+	case s == nil, s.length < 2:
 		r = s
-	case s.head == nil && s.tail == nil:
-		r = new(Fifo)
-	case s.head == nil:
-		v, t := s.tail.Pop()
-		r = &Fifo{ tail: t, length: s.length - 1 }
-		r.reverseTail()
-		r.tail = &stackCell{ data: r.head.data }
-		r.length++
-		r.head = &stackCell{ data: v, stackCell: r.head.stackCell }
-	case s.tail == nil:
-		v, h := s.head.Pop()
-		t := h.Reverse()
-		r = &Fifo{ head: &stackCell{ data: t.data }, tail: &stackCell{ data: v, stackCell: t.stackCell }, length: s.length }
-		
 	default:
-		r = &Fifo{	head: s.head.stackCell.Push(s.tail.data),
-								tail: s.tail.stackCell.Push(s.head.data),
-								length: s.length,
-							}
+		r = s.balance()
+		r.head.data, r.tail.data = r.tail.data, r.head.data
 	}
 	return
 }
