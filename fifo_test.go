@@ -69,6 +69,44 @@ func TestFifoReverseTail(t *testing.T) {
 	ConfirmReverseTail(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, &Fifo{ head: stack(0), tail: stack(2, 1), length: 3 })
 }
 
+func TestFifoBalance(t *testing.T) {
+	ConfirmBalance := func(f, r *Fifo) {
+		switch x := f.balance(); {
+		case x.length != r.length:
+			t.Fatalf("%v.balance() should be %v long but is %v long", f, r.length, x.length)
+		case !x.head.Equal(r.head):
+			t.Fatalf("%v.balance() head should be %v but is %v", f, r.head, x.head)
+		case !x.tail.Equal(r.tail):
+			t.Fatalf("%v.balance() tail should be %v but is %v", f, r.tail, x.tail)
+		}
+	}
+
+	ConfirmBalance(&Fifo{}, &Fifo{})
+
+	ConfirmBalance(&Fifo{ head: stack(0), length: 1 }, &Fifo{ head: stack(0), length: 1 })
+	ConfirmBalance(&Fifo{ tail: stack(0), length: 1 }, &Fifo{ head: stack(0), length: 1 })
+
+	ConfirmBalance(&Fifo{ head: stack(0, 1), length: 2 }, &Fifo{ head: stack(0), tail: stack(1), length: 2 })
+	ConfirmBalance(&Fifo{ head: stack(0), tail: stack(1), length: 2 }, &Fifo{ head: stack(0), tail: stack(1), length: 2 })
+	ConfirmBalance(&Fifo{ tail: stack(1, 0), length: 2 }, &Fifo{ head: stack(0), tail: stack(1), length: 2 })
+
+	ConfirmBalance(&Fifo{ head: stack(0, 1, 2), length: 3 }, &Fifo{ head: stack(0), tail: stack(2, 1), length: 3 })
+	ConfirmBalance(&Fifo{ head: stack(0, 1), tail: stack(2), length: 3 }, &Fifo{ head: stack(0, 1), tail: stack(2), length: 3 })
+	ConfirmBalance(&Fifo{ head: stack(0), tail: stack(2, 1), length: 3 }, &Fifo{ head: stack(0), tail: stack(2, 1), length: 3 })
+	ConfirmBalance(&Fifo{ tail: stack(2, 1, 0), length: 3 }, &Fifo{ head: stack(0, 1), tail: stack(2), length: 3 })
+
+	ConfirmBalance(&Fifo{ head: stack(0, 1, 2, 3), length: 4 }, &Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 })
+	ConfirmBalance(&Fifo{ head: stack(0, 1, 2), tail: stack(3), length: 4 }, &Fifo{ head: stack(0, 1, 2), tail: stack(3), length: 4 })
+	ConfirmBalance(&Fifo{ head: stack(0), tail: stack(3, 2, 1), length: 4 }, &Fifo{ head: stack(0), tail: stack(3, 2, 1), length: 4 })
+	ConfirmBalance(&Fifo{ tail: stack(3, 2, 1, 0), length: 4 }, &Fifo{ head: stack(0, 1), tail: stack(3, 2), length: 4 })
+
+	ConfirmBalance(&Fifo{ head: stack(0, 1, 2, 3, 4), length: 5 }, &Fifo{ head: stack(0, 1), tail: stack(4, 3, 2), length: 5 })
+	ConfirmBalance(&Fifo{ head: stack(0, 1, 2, 3), tail: stack(4), length: 5 }, &Fifo{ head: stack(0, 1, 2, 3), tail: stack(4), length: 5 })
+	ConfirmBalance(&Fifo{ head: stack(0, 1, 2), tail: stack(4, 3), length: 5 }, &Fifo{ head: stack(0, 1, 2), tail: stack(4, 3), length: 5 })
+	ConfirmBalance(&Fifo{ head: stack(0, 1), tail: stack(4, 3, 2), length: 5 }, &Fifo{ head: stack(0, 1), tail: stack(4, 3, 2), length: 5 })
+	ConfirmBalance(&Fifo{ tail: stack(4, 3, 2, 1, 0), length: 5 }, &Fifo{ head: stack(0, 1, 2), tail: stack(4, 3), length: 5 })
+}
+
 func TestFifoString(t *testing.T) {
 	ConfirmString := func(s *Fifo, r string) {
 		if s.String() != r {

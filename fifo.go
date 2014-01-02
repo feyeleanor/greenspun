@@ -70,6 +70,41 @@ func (s *Fifo) reverseTail() *Fifo {
 	return s.copyHeader()
 }
 
+/*
+	A functional queue contains two stacks representing the front and back of the queue.
+	balance() is an optimisation used when the front or rear stack is empty to reverse the
+	tail half of the complementary stack elements and create a new stack header.
+
+	This is a destructive operation and uses the header mutex. This is an optimisation to
+	minimise the number of balance operations.
+
+	Normally when a balance occurs it's associated with an operation which will create a new
+	header, therefore we return a copy of the modified queue header as a convenience.
+*/
+func (s *Fifo) balance() (r *Fifo) {
+	switch {
+	case s == nil:
+		panic(LIST_UNINITIALIZED)
+	case s.head == nil:
+		r = &Fifo{ length: s.length }
+		r.tail, r.head = s.tail.Pivot(r.length / 2)
+		s.CriticalSection(func() {
+			s.head = r.head
+			s.tail = r.tail
+		})
+	case s.tail == nil && s.length > 1:
+		r = &Fifo{ length: s.length }
+		r.head, r.tail = s.head.Pivot(r.length / 2)
+		s.CriticalSection(func() {
+			s.head = r.head
+			s.tail = r.tail
+		})
+	default:
+		r = s
+	}
+	return
+}
+
 func (s *Fifo) String() (r string) {
 	if s != nil {
 		l := s.length
@@ -168,7 +203,7 @@ func (s *Fifo) Peek() (v interface{}) {
 	if s.length == 0 {
 		panic(LIST_EMPTY)
 	}
-	s.reverseTail()
+	s.balance()
 	return s.head.data
 }
 
@@ -176,8 +211,7 @@ func (s *Fifo) Pop() (v interface{}, r *Fifo) {
 	if s.length == 0 {
 		panic(LIST_EMPTY)
 	}
-	s.reverseTail()
-	r = s.copyHeader()
+	r = s.balance()
 	r.length--
 	v, r.head = r.head.Pop()
 	return
@@ -196,7 +230,7 @@ func (s *Fifo) IsNil() (r bool) {
 
 func (s *Fifo) Drop() (r *Fifo) {
 	if s != nil && s.length > 0 {
-		s = s.reverseTail()
+		s = s.balance()
 		if s.head != nil && s.length > 0 {
 			r = &Fifo{ head: s.head.stackCell, tail: s.tail, length: s.length - 1 }
 		}
@@ -208,7 +242,7 @@ func (s *Fifo) Dup() *Fifo {
 	if s.length == 0 {
 		panic(LIST_TOO_SHALLOW)
 	}
-	s.reverseTail()
+	s = s.balance()
 	return s.Append(s.Peek())
 }
 
@@ -316,7 +350,7 @@ func (s *Fifo) Roll(n int) (r *Fifo) {
 			v, s = s.Pop()
 			r = r.Append(v)
 		}
-		r = r.reverseTail()
+		r = r.balance()
 
 		v, s = s.Pop()
 		r = &Fifo{ head: &stackCell{ data: v, stackCell: r.head }, tail: r.tail, length: r.length + 1 }
