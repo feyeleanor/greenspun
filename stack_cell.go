@@ -295,17 +295,30 @@ func (s *stackCell) Reverse() (r *stackCell) {
 	Create two new stacks
 */
 func (s *stackCell) Partition(n int) (l, r *stackCell) {
-	if n < 1 {
-		r = s
-	} else {
-		l = new(stackCell)
-		for x := l; n > 0 && s != nil; n-- {
-			x.stackCell = stack(s.data)
-			x = x.stackCell
-			s = s.stackCell
-		}
-		l = l.stackCell
-		r = s
+	l = new(stackCell)
+	for x := l; n > 0 && s != nil; n-- {
+		x.stackCell = stack(s.data)
+		x = x.stackCell
+		s = s.stackCell
+	}
+	l = l.stackCell
+	r = s
+	return
+}
+
+/*
+	Create two new stacks, one from the start and one from the end where n is the pivot point
+*/
+func (s *stackCell) Pivot(n int) (l, r *stackCell) {
+	l = new(stackCell)
+	for x := l; n > 0 && s != nil; n-- {
+		x.stackCell = stack(s.data)
+		x = x.stackCell
+		s = s.stackCell
+	}
+	l = l.stackCell
+	for ; s != nil; s = s.stackCell {
+		r = r.Push(s.data)
 	}
 	return
 }

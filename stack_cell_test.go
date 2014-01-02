@@ -390,4 +390,50 @@ func TestStackPartition(t *testing.T) {
 	ConfirmPartition(stack(0, 1, 2, 3), 2, stack(0, 1), stack(2, 3))
 	ConfirmPartition(stack(0, 1, 2, 3), 3, stack(0, 1, 2), stack(3))
 	ConfirmPartition(stack(0, 1, 2, 3), 4, stack(0, 1, 2, 3), nil)
+
+	ConfirmPartition(stack(0, 1, 2, 3, 4), 0, nil, stack(0, 1, 2, 3, 4))
+	ConfirmPartition(stack(0, 1, 2, 3, 4), 1, stack(0), stack(1, 2, 3, 4))
+	ConfirmPartition(stack(0, 1, 2, 3, 4), 2, stack(0, 1), stack(2, 3, 4))
+	ConfirmPartition(stack(0, 1, 2, 3, 4), 3, stack(0, 1, 2), stack(3, 4))
+	ConfirmPartition(stack(0, 1, 2, 3, 4), 4, stack(0, 1, 2, 3), stack(4))
+	ConfirmPartition(stack(0, 1, 2, 3, 4), 5, stack(0, 1, 2, 3, 4), nil)
+}
+
+func TestStackPivot(t *testing.T) {
+	ConfirmPivot := func(s *stackCell, n int, l, r *stackCell) {
+		switch x, y := s.Pivot(n); {
+		case !l.Equal(x):
+			t.Fatalf("%v.Pivot(%v) l should be %v but is %v", s, n, l, x)
+		case !r.Equal(y):
+			t.Fatalf("%v.Pivot(%v) r should be %v but is %v", s, n, r, y)
+		}
+	}
+
+	ConfirmPivot(nil, 0, nil, nil)
+	ConfirmPivot(nil, 1, nil, nil)
+
+	ConfirmPivot(stack(0), 0, nil, stack(0))
+	ConfirmPivot(stack(0), 1, stack(0), nil)
+
+	ConfirmPivot(stack(0, 1), 0, nil, stack(1, 0))
+	ConfirmPivot(stack(0, 1), 1, stack(0), stack(1))
+	ConfirmPivot(stack(0, 1), 2, stack(0, 1), nil)
+
+	ConfirmPivot(stack(0, 1, 2), 0, nil, stack(2, 1, 0))
+	ConfirmPivot(stack(0, 1, 2), 1, stack(0), stack(2, 1))
+	ConfirmPivot(stack(0, 1, 2), 2, stack(0, 1), stack(2))
+	ConfirmPivot(stack(0, 1, 2), 3, stack(0, 1, 2), nil)
+
+	ConfirmPivot(stack(0, 1, 2, 3), 0, nil, stack(3, 2, 1, 0))
+	ConfirmPivot(stack(0, 1, 2, 3), 1, stack(0), stack(3, 2, 1))
+	ConfirmPivot(stack(0, 1, 2, 3), 2, stack(0, 1), stack(3, 2))
+	ConfirmPivot(stack(0, 1, 2, 3), 3, stack(0, 1, 2), stack(3))
+	ConfirmPivot(stack(0, 1, 2, 3), 4, stack(0, 1, 2, 3), nil)
+
+	ConfirmPivot(stack(0, 1, 2, 3, 4), 0, nil, stack(4, 3, 2, 1, 0))
+	ConfirmPivot(stack(0, 1, 2, 3, 4), 1, stack(0), stack(4, 3, 2, 1))
+	ConfirmPivot(stack(0, 1, 2, 3, 4), 2, stack(0, 1), stack(4, 3, 2))
+	ConfirmPivot(stack(0, 1, 2, 3, 4), 3, stack(0, 1, 2), stack(4, 3))
+	ConfirmPivot(stack(0, 1, 2, 3, 4), 4, stack(0, 1, 2, 3), stack(4))
+	ConfirmPivot(stack(0, 1, 2, 3, 4), 5, stack(0, 1, 2, 3, 4), nil)
 }
