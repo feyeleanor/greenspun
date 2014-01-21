@@ -17,7 +17,7 @@ var listErrText = map[ListError] string {
 	LIST_EMPTY:					"list empty",
 	LIST_TOO_SHALLOW:		"list contains too few items",
 	LIST_UNINITIALIZED:	"list needs to be initialised",
-	LIST_REQUIRED:				"a list is required",
+	LIST_REQUIRED:			"a list is required",
 }
 
 
@@ -49,8 +49,12 @@ func (s ArgumentError) Error() string {
 
 const(
 	ARGUMENT_NEGATIVE_INDEX = ArgumentError(iota)
+	ARGUMENT_INDEX_TOO_LARGE
+	ARGUMENT_OUT_OF_BOUNDS
 )
 
 var argErrText = map[ArgumentError] string {
 	ARGUMENT_NEGATIVE_INDEX:	"positive index required",
+	ARGUMENT_INDEX_TOO_LARGE:	"index exceeds allowed range",
+	ARGUMENT_OUT_OF_BOUNDS:		"index lies outside allowed range",
 }

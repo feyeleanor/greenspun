@@ -20,3 +20,14 @@ type Environment interface {
 type Executable interface {
 	Eval(e Environment) interface{}
 }
+
+func Equal(lhs, rhs interface{}) (r bool) {
+	if d, ok := lhs.(Equatable); ok {
+		r = d.Equal(rhs)
+	} else if d, ok = rhs.(Equatable); ok {
+		r = d.Equal(lhs)
+	} else {
+		r = lhs == rhs
+	}
+	return
+}
