@@ -1,25 +1,6 @@
 package greenspun
 
-type sparseArray	map[int] *arrayElement
-
-func (s sparseArray) Equal(o interface{}) (r bool) {
-	switch o := o.(type) {
-	case sparseArray:
-		if len(s) == len(o) {
-			for k, vo := range o {
-				if va, ok := s[k]; ok {
-					r = va.Equal(vo)
-				}
-				if !r {
-					break
-				}
-			}
-		}
-	case nil:
-		r = s == nil
-	}
-	return
-}
+//import "fmt"
 
 /*
 	The SparseArray is a sparse, persistent integer-indexed data store. Internally elements are
@@ -31,14 +12,14 @@ func (s sparseArray) Equal(o interface{}) (r bool) {
 	with a conventional slice.
 */
 type SparseArray struct {
-	elements		sparseArray
+	elements		arrayHash
 	length			int
 	version			int
 	Default			interface{}
 }
 
-func NewSparseArray(n int, d interface{}, items ...sparseArray) (r *SparseArray) {
-	r = &SparseArray{ elements: make(sparseArray), length: n, Default: d }
+func NewSparseArray(n int, d interface{}, items ...arrayHash) (r *SparseArray) {
+	r = &SparseArray{ elements: make(arrayHash), length: n, Default: d }
 	for _, cells := range items {
 		for k, v := range cells {
 			if r.length <= k {
@@ -56,8 +37,11 @@ func (s *SparseArray) String() (r string) {
 }
 */
 
-func (s *SparseArray) Len() int {
-	return s.length
+func (s *SparseArray) Len() (r int) {
+	if s != nil {
+		r = s.length
+	}
+	return
 }
 
 func (s *SparseArray) Equal(o interface{}) (r bool) {
@@ -121,27 +105,80 @@ func (s *SparseArray) Equal(o interface{}) (r bool) {
 	return
 }
 
-func (s *SparseArray) Set(i int, v interface{}) *SparseArray {
-	e := s.elements[i]
-	s.elements[i] = &arrayElement{ data: v, version: s.version, arrayElement: e }
-	if i > s.length {
-		s.length++
-	}
-	s.version++
-	return s
-}
-
 func (s *SparseArray) At(i int) (r interface{}) {
-	if i < 0 || i >= s.length {
+	if s == nil || i < 0 || i >= s.length {
 		panic(ARGUMENT_OUT_OF_BOUNDS)
 	}
 
 	if e, ok := s.elements[i]; ok && e != nil {
-		r = e
+		r = e.data
 	} else {
 		r = s.Default
 	}
 	return
+}
+
+func (s *SparseArray) Set(i int, v interface{}) *SparseArray {
+	switch {
+	case i < 0:
+		panic(ARGUMENT_OUT_OF_BOUNDS)
+	case s == nil:
+		a := NewSparseArray(0, nil)
+		*s = *a
+	default:
+		s.version++
+	}
+
+	switch e, ok := s.elements[i]; {
+	case ok:
+		s.elements[i] = &arrayElement{ data: v, version: s.version, arrayElement: e }
+	case v != s.Default:
+		s.elements[i] = &arrayElement{ data: v, version: s.version }
+	}
+	if i >= s.length {
+		s.length = i + 1
+	}
+	return s
+}
+
+func rescueOutOfBounds() {
+	switch x := recover(); x {
+	case nil, ARGUMENT_OUT_OF_BOUNDS:
+		return
+	default:
+		panic(x)
+	}
+}
+
+/*
+	Iterate through all cells in order, applying the supplied closure.
+*/
+func (s *SparseArray) Each(f interface{}) {
+	defer rescueOutOfBounds()
+	var i	int
+
+	switch f := f.(type) {
+	case func():
+		for {
+			f()
+			i++
+		}
+	case func(interface{}):
+		for {
+			f(s.At(i))
+			i++
+		}
+	case func(int, interface{}):
+		for {
+			f(i, s.At(i))
+			i++
+		}
+	case func(interface{}, interface{}):
+		for {
+			f(i, s.At(i))
+			i++
+		}
+	}
 }
 
 func (s *SparseArray) Insert(i int, items... interface{}) (r *SparseArray) {
@@ -176,7 +213,7 @@ func (s *SparseArray) Insert(i int, items... interface{}) (r *SparseArray) {
 }
 
 func (s *SparseArray) Delete(i, n int) (r *SparseArray) {
-	r = &SparseArray{ elements: make(sparseArray), version: s.version + 1, Default: s.Default }
+	r = &SparseArray{ elements: make(arrayHash), version: s.version + 1, Default: s.Default }
 	if n < s.length {
 		r.length = s.length - n
 		last := i + n - 1
@@ -212,7 +249,7 @@ func (s *SparseArray) Revert(version int) (r *SparseArray) {
 	if version < 0 {
 		panic(ARGUMENT_OUT_OF_BOUNDS)
 	}
-	r = &SparseArray{ elements: make(sparseArray), Default: s.Default, version: version }
+	r = &SparseArray{ elements: make(arrayHash), Default: s.Default, version: version }
 	for k, v := range s.elements {
 		for ; v != nil && v.version > r.version; v = v.arrayElement {}
 		if v != nil {
