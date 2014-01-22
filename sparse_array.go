@@ -1,47 +1,13 @@
 package greenspun
 
-type arrayElement struct {
-	data					interface{}
-	version				int
-	*arrayElement
-}
+type sparseArray	map[int] *arrayElement
 
-func (a *arrayElement) Equal(o interface{}) (r bool) {
+func (s sparseArray) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case *arrayElement:
-		if a == nil {
-			r = o == nil || o.data == nil
-		} else if o == nil {
-			r = a.data == nil
-		} else if v, ok := o.data.(Equatable); ok {
-			r = v.Equal(a.data)
-		} else if v, ok = a.data.(Equatable); ok {
-			r = v.Equal(o.data)
-		} else {
-			r = a.data == o.data
-		}
-	case nil:
-		r = a == nil || a.data == nil
-	default:
-		if v, ok := o.(Equatable); ok {
-			r = v.Equal(a.data)
-		} else if v, ok = a.data.(Equatable); ok {
-			r = v.Equal(o)
-		} else {
-			r = a.data == o
-		}
-	}
-	return
-}
-
-type arrayCells	map[int] *arrayElement
-
-func (a arrayCells) Equal(o interface{}) (r bool) {
-	switch o := o.(type) {
-	case arrayCells:
-		if len(a) == len(o) {
+	case sparseArray:
+		if len(s) == len(o) {
 			for k, vo := range o {
-				if va, ok := (a)[k]; ok {
+				if va, ok := s[k]; ok {
 					r = va.Equal(vo)
 				}
 				if !r {
@@ -50,7 +16,7 @@ func (a arrayCells) Equal(o interface{}) (r bool) {
 			}
 		}
 	case nil:
-		r = a == nil
+		r = s == nil
 	}
 	return
 }
@@ -65,14 +31,14 @@ func (a arrayCells) Equal(o interface{}) (r bool) {
 	with a conventional slice.
 */
 type SparseArray struct {
-	elements		arrayCells
+	elements		sparseArray
 	length			int
 	version			int
 	Default			interface{}
 }
 
-func NewSparseArray(n int, d interface{}, items ...arrayCells) (r *SparseArray) {
-	r = &SparseArray{ elements: make(arrayCells), length: n, Default: d }
+func NewSparseArray(n int, d interface{}, items ...sparseArray) (r *SparseArray) {
+	r = &SparseArray{ elements: make(sparseArray), length: n, Default: d }
 	for _, cells := range items {
 		for k, v := range cells {
 			if r.length <= k {
@@ -106,19 +72,20 @@ func (s *SparseArray) Equal(o interface{}) (r bool) {
 			r = false
 		case s.length != o.length:
 			r = false
+		case s.length == 0:
+			r = true
 		default:
-			if len(s.elements) != len(o.elements) {
+			concrete_keys := make(map[int] bool)
+
+			if s.length == o.length && len(s.elements) != s.length && len(o.elements) != o.length {
 				if r = Equal(s.Default, o.Default); !r {
-					break
+					return
 				}
 			}
 
-			r = true
-			tested_keys := make(map[int] bool)
-
 			for k, vo := range o.elements {
 				if vs, ok := s.elements[k]; ok {
-					tested_keys[k] = true
+					concrete_keys[k] = true
 					r = vo.Equal(vs)
 				} else {
 					r = Equal(vo, s.Default)
@@ -129,18 +96,23 @@ func (s *SparseArray) Equal(o interface{}) (r bool) {
 			}
 
 			for k, vs := range s.elements {
-				if _, ok := tested_keys[k]; !ok {
+				if _, ok := concrete_keys[k]; !ok {
 					if vo, ok := o.elements[k]; ok {
+						concrete_keys[k] = true
 						r = vs.Equal(vo)
 					} else {
 						r = Equal(vs, o.Default)
 					}
 				} else {
-					delete(tested_keys, k)
+					delete(concrete_keys, k)
 				}
 				if !r {
 					return
 				}
+			}
+
+			if len(concrete_keys) > 0 {
+				r = Equal(s.Default, o.Default)
 			}
 		}
 	case nil:
@@ -204,7 +176,7 @@ func (s *SparseArray) Insert(i int, items... interface{}) (r *SparseArray) {
 }
 
 func (s *SparseArray) Delete(i, n int) (r *SparseArray) {
-	r = &SparseArray{ elements: make(arrayCells), version: s.version + 1, Default: s.Default }
+	r = &SparseArray{ elements: make(sparseArray), version: s.version + 1, Default: s.Default }
 	if n < s.length {
 		r.length = s.length - n
 		last := i + n - 1
@@ -240,7 +212,7 @@ func (s *SparseArray) Revert(version int) (r *SparseArray) {
 	if version < 0 {
 		panic(ARGUMENT_OUT_OF_BOUNDS)
 	}
-	r = &SparseArray{ elements: make(arrayCells), Default: s.Default, version: version }
+	r = &SparseArray{ elements: make(sparseArray), Default: s.Default, version: version }
 	for k, v := range s.elements {
 		for ; v != nil && v.version > r.version; v = v.arrayElement {}
 		if v != nil {

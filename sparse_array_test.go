@@ -32,7 +32,7 @@ func TestArrayElementEqual(t *testing.T) {
 }
 
 func TestArrayCellsEqual(t *testing.T) {
-	ConfirmEqual := func(a arrayCells, v interface{}, r bool) {
+	ConfirmEqual := func(a sparseArray, v interface{}, r bool) {
 		if x := a.Equal(v); x != r {
 			t.Fatalf("%v.Equal(%v) should be %v but is %v", a, v, r, x)
 		}
@@ -44,22 +44,22 @@ func TestArrayCellsEqual(t *testing.T) {
 	}
 
 	ConfirmEqual(nil, nil, true)
-	ConfirmEqual(arrayCells{ 0: nil }, nil, false)
-	ConfirmEqual(arrayCells{ 0: nil }, arrayCells{ 0: nil }, true)
-	ConfirmEqual(arrayCells{ 0: &arrayElement{ data: 1 } }, arrayCells{ 0: nil }, false)
-	ConfirmEqual(arrayCells{ 0: &arrayElement{ data: nil } }, arrayCells{ 0: nil }, true)
-	ConfirmEqual(arrayCells{ 0: &arrayElement{ data: 1 } }, arrayCells{ 0: &arrayElement{ data: 1 } }, true)
-	ConfirmEqual(arrayCells{ 0: &arrayElement{ data: 1 } }, arrayCells{ 1: &arrayElement{ data: 1 } }, false)
+	ConfirmEqual(sparseArray{ 0: nil }, nil, false)
+	ConfirmEqual(sparseArray{ 0: nil }, sparseArray{ 0: nil }, true)
+	ConfirmEqual(sparseArray{ 0: &arrayElement{ data: 1 } }, sparseArray{ 0: nil }, false)
+	ConfirmEqual(sparseArray{ 0: &arrayElement{ data: nil } }, sparseArray{ 0: nil }, true)
+	ConfirmEqual(sparseArray{ 0: &arrayElement{ data: 1 } }, sparseArray{ 0: &arrayElement{ data: 1 } }, true)
+	ConfirmEqual(sparseArray{ 0: &arrayElement{ data: 1 } }, sparseArray{ 1: &arrayElement{ data: 1 } }, false)
 }
 
 func TestNewSparseArray(t *testing.T) {
-	ConfirmNewArray := func(n int, d interface{}, v []arrayCells, r *SparseArray) {
+	ConfirmNewArray := func(n int, d interface{}, v []sparseArray, r *SparseArray) {
 		if x := NewSparseArray(n, d, v...); !x.Equal(r) {
 			t.Fatalf("NewSparseArray(%v, %v, %v) should be %v but is %v", n, d, v, r, x)
 		}
 	}
 
-	ConfirmNewArray(0, nil, []arrayCells{}, &SparseArray{ elements: make(arrayCells), length: 0, version: 0, Default: nil })
+	ConfirmNewArray(0, nil, []sparseArray{}, &SparseArray{ elements: make(sparseArray), length: 0, version: 0, Default: nil })
 }
 
 func TestSparseArrayString(t *testing.T) {
@@ -82,40 +82,80 @@ func TestSparseArrayEqual(t *testing.T) {
 	ConfirmEqual(&SparseArray{}, new(SparseArray), true)
 	ConfirmEqual(new(SparseArray), &SparseArray{}, true)
 
-	ConfirmEqual(	&SparseArray{	length: 1, elements:	arrayCells{ 0: &arrayElement{ data: 0 } } },
-								&SparseArray{	length: 1, elements:	arrayCells{ 0: &arrayElement{ data: 0 } } },
+	ConfirmEqual(&SparseArray{ length: 1, Default: 0 }, &SparseArray{ length: 1, Default: 0 }, true)
+	ConfirmEqual(&SparseArray{ length: 2, Default: 0 }, &SparseArray{ length: 2, Default: 0 }, true)
+	ConfirmEqual(&SparseArray{ length: 3, Default: 0 }, &SparseArray{ length: 3, Default: 0 }, true)
+
+	ConfirmEqual(&SparseArray{ length: 1, Default: 0 }, &SparseArray{ length: 1, Default: 1 }, false)
+	ConfirmEqual(&SparseArray{ length: 2, Default: 0 }, &SparseArray{ length: 2, Default: 1 }, false)
+	ConfirmEqual(&SparseArray{ length: 3, Default: 0 }, &SparseArray{ length: 3, Default: 1 }, false)
+
+	ConfirmEqual(	&SparseArray{	length: 1, elements:	sparseArray{ 0: &arrayElement{ data: 0 } } },
+								&SparseArray{	length: 1, elements:	sparseArray{ 0: &arrayElement{ data: 0 } } },
 								true )
 
-	ConfirmEqual(	&SparseArray{	length: 1, elements:	arrayCells{ 0: &arrayElement{ data: 0 } } },
-								&SparseArray{	length: 1, elements:	arrayCells{ 1: &arrayElement{ data: 0 } } },
+	ConfirmEqual(	&SparseArray{	length: 1, elements:	sparseArray{ 0: &arrayElement{ data: 0 } } },
+								&SparseArray{	length: 1, elements:	sparseArray{ 1: &arrayElement{ data: 0 } } },
 								false )
 
-	ConfirmEqual(	&SparseArray{	length: 1, elements:	arrayCells{ 1: &arrayElement{ data: 0 } } },
-								&SparseArray{	length: 1, elements:	arrayCells{ 0: &arrayElement{ data: 0 } } },
+	ConfirmEqual(	&SparseArray{	length: 1, elements:	sparseArray{ 1: &arrayElement{ data: 0 } } },
+								&SparseArray{	length: 1, elements:	sparseArray{ 0: &arrayElement{ data: 0 } } },
 								false )
 
-	ConfirmEqual(	&SparseArray{	length: 1, elements:	arrayCells{ 0: &arrayElement{ data: 0 } } },
+	ConfirmEqual(	&SparseArray{	length: 1, elements:	sparseArray{ 0: &arrayElement{ data: 0 } } },
 								&SparseArray{	length: 0 },
 								false )
 
 	ConfirmEqual(	&SparseArray{	length: 0 },
-								&SparseArray{	length: 1, elements:	arrayCells{ 0: &arrayElement{ data: 0 } } },
+								&SparseArray{	length: 1, elements:	sparseArray{ 0: &arrayElement{ data: 0 } } },
 								false )
 
-	ConfirmEqual(	&SparseArray{	length: 2, elements:	arrayCells{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
-								&SparseArray{	length: 2, elements:	arrayCells{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
+	ConfirmEqual(	&SparseArray{	length: 2, elements:	sparseArray{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
+								&SparseArray{	length: 2, elements:	sparseArray{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
 								true )
 
-	ConfirmEqual(	&SparseArray{	length: 2, elements:	arrayCells{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
-								&SparseArray{	length: 2, elements:	arrayCells{ 0: &arrayElement{ data: 0 }, 3: &arrayElement{ data: 1 } } },
+	ConfirmEqual(	&SparseArray{	length: 2, elements:	sparseArray{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
+								&SparseArray{	length: 2, elements:	sparseArray{ 0: &arrayElement{ data: 0 }, 3: &arrayElement{ data: 1 } } },
 								false )
 
-	ConfirmEqual(	&SparseArray{	length: 2, elements:	arrayCells{ 0: &arrayElement{ data: 0 }, 3: &arrayElement{ data: 1 } } },
-								&SparseArray{	length: 2, elements:	arrayCells{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
+	ConfirmEqual(	&SparseArray{	length: 2, elements:	sparseArray{ 0: &arrayElement{ data: 0 }, 3: &arrayElement{ data: 1 } } },
+								&SparseArray{	length: 2, elements:	sparseArray{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
 								false )
 
-	ConfirmEqual(	&SparseArray{	length: 3, elements:	arrayCells{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 }, 2: &arrayElement{ data: 2 } } },
-								&SparseArray{	length: 3, elements:	arrayCells{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 }, 2: &arrayElement{ data: 2 } } },
+	ConfirmEqual(	&SparseArray{	length: 2, elements: sparseArray{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
+								&SparseArray{	length: 2, Default: 1, elements:	sparseArray{ 0: &arrayElement{ data: 0 } } },
+								true )
+
+	ConfirmEqual(	&SparseArray{	length: 2, Default: 1, elements: sparseArray{ 0: &arrayElement{ data: 0 } } },
+								&SparseArray{	length: 2, elements:	sparseArray{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
+								true )
+
+	ConfirmEqual(	&SparseArray{	length: 2, elements: sparseArray{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
+								&SparseArray{	length: 2, Default: 2, elements:	sparseArray{ 0: &arrayElement{ data: 0 } } },
+								false )
+
+	ConfirmEqual(	&SparseArray{	length: 2, elements: sparseArray{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 2 } } },
+								&SparseArray{	length: 2, Default: 1, elements:	sparseArray{ 0: &arrayElement{ data: 0 } } },
+								false )
+
+	ConfirmEqual(	&SparseArray{	length: 2, Default: 2, elements: sparseArray{ 0: &arrayElement{ data: 0 } } },
+								&SparseArray{	length: 2, elements:	sparseArray{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
+								false )
+
+	ConfirmEqual(	&SparseArray{	length: 2, Default: 1, elements: sparseArray{ 0: &arrayElement{ data: 0 } } },
+								&SparseArray{	length: 2, elements:	sparseArray{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 2 } } },
+								false )
+
+	ConfirmEqual(	&SparseArray{	length: 2, elements:	sparseArray{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
+								&SparseArray{	length: 2, elements:	sparseArray{ 0: &arrayElement{ data: 0 }, 3: &arrayElement{ data: 1 } } },
+								false )
+
+	ConfirmEqual(	&SparseArray{	length: 2, elements:	sparseArray{ 0: &arrayElement{ data: 0 }, 3: &arrayElement{ data: 1 } } },
+								&SparseArray{	length: 2, elements:	sparseArray{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
+								false )
+
+	ConfirmEqual(	&SparseArray{	length: 3, elements:	sparseArray{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 }, 2: &arrayElement{ data: 2 } } },
+								&SparseArray{	length: 3, elements:	sparseArray{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 }, 2: &arrayElement{ data: 2 } } },
 								true )
 }
 
