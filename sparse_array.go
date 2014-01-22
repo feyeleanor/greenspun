@@ -181,6 +181,21 @@ func (s *SparseArray) Each(f interface{}) {
 	}
 }
 
+func (s *SparseArray) Move(x, y, n int) (r *SparseArray) {
+	if s != nil {
+		r = &SparseArray{ length: s.length, version: s.version, Default: s.Default, elements: s.elements }
+		if y + n >= r.length {
+			r.length = y + n
+		}
+		for n > 0 {
+			n--
+			r.Set(y + n, r.At(x + n))
+			delete(r.elements, x + n)
+		}
+	}
+	return
+}
+
 func (s *SparseArray) Insert(i int, items... interface{}) (r *SparseArray) {
 	//	Inserting elements means creating a new SparseArray header and copying the
 	//	current elements across with those from the insertion point onwards shifted
@@ -193,21 +208,29 @@ func (s *SparseArray) Insert(i int, items... interface{}) (r *SparseArray) {
 	}
 
 	n := len(items)
-	if i < s.length {
-		r = NewSparseArray(s.length + n, s.Default)
+
+	if s == nil {
+		r = NewSparseArray(i + n, nil)		
 	} else {
-		r = NewSparseArray(i + n, s.Default)
-	}
-	r.version = s.version + 1
-	for k, v := range items {
-		r.elements[n + k] = &arrayElement{ data: v, version: r.version }
-	}
-	for k, v := range s.elements {
-		if k >= i {
-			r.elements[k + n] = v
+		if i < s.length {
+			r = NewSparseArray(s.length + n, s.Default)
+			r.version = s.version + 1
 		} else {
-			r.elements[k] = v
+			r = NewSparseArray(i + n, s.Default)
+			r.version = s.version + 1
 		}
+
+		for k, v := range s.elements {
+			if k >= i {
+				r.elements[k + n] = v
+			} else {
+				r.elements[k] = v
+			}
+		}
+	}
+
+	for k, v := range items {
+		r.elements[i + k] = &arrayElement{ data: v, version: r.version }
 	}
 	return
 }
@@ -230,9 +253,7 @@ func (s *SparseArray) Delete(i, n int) (r *SparseArray) {
 }
 
 func (s *SparseArray) Copy() (r *SparseArray) {
-	//	A copy can be made by inserting zero elements into an existing array, creating
-	//	a new header with an incremented version number
-	return s.Insert(0)
+	return
 }
 
 func (s *SparseArray) Commit() (r *SparseArray) {

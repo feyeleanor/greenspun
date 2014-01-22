@@ -264,7 +264,36 @@ func TestSparseArrayEach(t *testing.T) {
 	})
 }
 
+func TestSparseArrayMove(t *testing.T) {
+}
+
 func TestSparseArrayInsert(t *testing.T) {
+	ConfirmInsert := func(l *SparseArray, i int, v []interface{}, r *SparseArray) {
+		if x := l.Insert(i, v...); !r.Equal(x) {
+			t.Fatalf("%v.Insert(%v, %v) should be %v but is %v", l, i, v, r, x)
+		}
+	}
+
+	ConfirmInsert(nil, 0, []interface{}{ 0 }, NewSparseArray(1, nil, denseArrayHash(0)))
+	ConfirmInsert(nil, 1, []interface{}{ 0 }, NewSparseArray(2, nil, denseArrayHash(nil, 0)))
+	ConfirmInsert(nil, 2, []interface{}{ 0 }, NewSparseArray(3, nil, denseArrayHash(nil, nil, 0)))
+
+	ConfirmInsert(nil, 0, []interface{}{ 0, 1 }, NewSparseArray(2, nil, denseArrayHash(0, 1)))
+	ConfirmInsert(nil, 1, []interface{}{ 0, 1 }, NewSparseArray(3, nil, denseArrayHash(nil, 0, 1)))
+	ConfirmInsert(nil, 2, []interface{}{ 0, 1 }, NewSparseArray(4, nil, denseArrayHash(nil, nil, 0, 1)))
+
+	ConfirmInsert(NewSparseArray(1, 0, denseArrayHash(0)), 0, []interface{}{ 1 }, NewSparseArray(2, 0, denseArrayHash(1, 0)))
+	ConfirmInsert(NewSparseArray(1, 0, denseArrayHash(0)), 1, []interface{}{ 1 }, NewSparseArray(2, 0, denseArrayHash(0, 1)))
+	ConfirmInsert(NewSparseArray(1, 0, denseArrayHash(0)), 2, []interface{}{ 1 }, NewSparseArray(3, 0, denseArrayHash(0, 0, 1)))
+
+	ConfirmInsert(NewSparseArray(1, 0, denseArrayHash(0)), 0, []interface{}{ 1, 2 }, NewSparseArray(3, 0, denseArrayHash(1, 2, 0)))
+	ConfirmInsert(NewSparseArray(1, 0, denseArrayHash(0)), 1, []interface{}{ 1, 2 }, NewSparseArray(3, 0, denseArrayHash(0, 1, 2)))
+	ConfirmInsert(NewSparseArray(1, 0, denseArrayHash(0)), 2, []interface{}{ 1, 2 }, NewSparseArray(4, 0, denseArrayHash(0, 0, 1, 2)))
+
+	ConfirmInsert(NewSparseArray(2, 0, denseArrayHash(0, 1)), 0, []interface{}{ 1, 2 }, NewSparseArray(4, 0, denseArrayHash(1, 2, 0, 1)))
+	ConfirmInsert(NewSparseArray(2, 0, denseArrayHash(0, 1)), 1, []interface{}{ 1, 2 }, NewSparseArray(4, 0, denseArrayHash(0, 1, 2, 1)))
+	ConfirmInsert(NewSparseArray(2, 0, denseArrayHash(0, 1)), 2, []interface{}{ 1, 2 }, NewSparseArray(4, 0, denseArrayHash(0, 1, 1, 2)))
+	ConfirmInsert(NewSparseArray(2, 0, denseArrayHash(0, 1)), 3, []interface{}{ 1, 2 }, NewSparseArray(5, 0, denseArrayHash(0, 1, 0, 1, 2)))
 }
 
 func TestSparseArrayDelete(t *testing.T) {
