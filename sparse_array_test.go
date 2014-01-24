@@ -297,6 +297,75 @@ func TestSparseArrayInsert(t *testing.T) {
 }
 
 func TestSparseArrayDelete(t *testing.T) {
+	ConfirmDelete := func(l *SparseArray, i, n int, r *SparseArray) {
+		if x := l.Delete(i, n); !r.Equal(x) {
+			t.Fatalf("%v.Delete(%v, %v) should be %v but is %v", l, i, n, r, x)
+		}
+	}
+
+	ConfirmDelete(nil, 0, 1, nil)
+	ConfirmDelete(nil, 0, 2, nil)
+	ConfirmDelete(nil, 1, 1, nil)
+	ConfirmDelete(nil, 1, 2, nil)
+
+	ConfirmDelete(NewSparseArray(1, 0, denseArrayHash(0)), 0, 0, NewSparseArray(0, 0, denseArrayHash(0)))
+	ConfirmDelete(NewSparseArray(1, 0, denseArrayHash(0)), 0, 1, NewSparseArray(0, 0))
+
+	ConfirmDelete(NewSparseArray(1, 0, denseArrayHash(0)), 1, 0, NewSparseArray(0, 0, denseArrayHash(0)))
+	ConfirmDelete(NewSparseArray(1, 0, denseArrayHash(0)), 1, 1, NewSparseArray(0, 0, denseArrayHash(0)))
+
+	ConfirmDelete(NewSparseArray(2, 0, denseArrayHash(0, 1)), 0, 0, NewSparseArray(2, 0, denseArrayHash(0, 1)))
+	ConfirmDelete(NewSparseArray(2, 0, denseArrayHash(0, 1)), 0, 1, NewSparseArray(1, 0, denseArrayHash(1)))
+	ConfirmDelete(NewSparseArray(2, 0, denseArrayHash(0, 1)), 0, 2, NewSparseArray(0, 0))
+
+	ConfirmDelete(NewSparseArray(2, 0, denseArrayHash(0, 1)), 1, 0, NewSparseArray(2, 0, denseArrayHash(0, 1)))
+	ConfirmDelete(NewSparseArray(2, 0, denseArrayHash(0, 1)), 1, 1, NewSparseArray(1, 0, denseArrayHash(0)))
+	ConfirmDelete(NewSparseArray(2, 0, denseArrayHash(0, 1)), 1, 2, NewSparseArray(1, 0, denseArrayHash(0)))
+
+	ConfirmDelete(NewSparseArray(2, 0, denseArrayHash(0, 1)), 2, 0, NewSparseArray(2, 0, denseArrayHash(0, 1)))
+	ConfirmDelete(NewSparseArray(2, 0, denseArrayHash(0, 1)), 2, 1, NewSparseArray(2, 0, denseArrayHash(0, 1)))
+	ConfirmDelete(NewSparseArray(2, 0, denseArrayHash(0, 1)), 2, 2, NewSparseArray(2, 0, denseArrayHash(0, 1)))
+
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 0, 0, NewSparseArray(3, 0, denseArrayHash(0, 1)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 0, 1, NewSparseArray(2, 0, denseArrayHash(1)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 0, 2, NewSparseArray(1, 0))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 0, 3, NewSparseArray(0, 0))
+
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 1, 0, NewSparseArray(3, 0, denseArrayHash(0, 1)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 1, 1, NewSparseArray(2, 0, denseArrayHash(0)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 1, 2, NewSparseArray(1, 0))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 1, 3, NewSparseArray(1, 0))
+
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 2, 0, NewSparseArray(3, 0, denseArrayHash(0, 1)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 2, 1, NewSparseArray(2, 0, denseArrayHash(0, 1)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 2, 2, NewSparseArray(2, 0, denseArrayHash(0, 1)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 2, 3, NewSparseArray(2, 0, denseArrayHash(0, 1)))
+
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 3, 0, NewSparseArray(3, 0, denseArrayHash(0, 1)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 3, 1, NewSparseArray(3, 0, denseArrayHash(0, 1)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 3, 2, NewSparseArray(3, 0, denseArrayHash(0, 1)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 3, 3, NewSparseArray(3, 0, denseArrayHash(0, 1)))
+
+
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 0, 0, NewSparseArray(3, 0, denseArrayHash(0, 1, 0)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 0, 1, NewSparseArray(2, 0, denseArrayHash(1, 0)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 0, 2, NewSparseArray(1, 0, denseArrayHash(0)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 0, 3, NewSparseArray(0, 0))
+
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 1, 0, NewSparseArray(3, 0, denseArrayHash(0, 1, 0)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 1, 1, NewSparseArray(2, 0, denseArrayHash(0, 0)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 1, 2, NewSparseArray(1, 0, denseArrayHash(0)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 1, 3, NewSparseArray(1, 0, denseArrayHash(0)))
+
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 2, 0, NewSparseArray(3, 0, denseArrayHash(0, 1, 0)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 2, 1, NewSparseArray(2, 0, denseArrayHash(0, 1)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 2, 2, NewSparseArray(2, 0, denseArrayHash(0, 1)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 2, 3, NewSparseArray(2, 0, denseArrayHash(0, 1)))
+
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 3, 0, NewSparseArray(3, 0, denseArrayHash(0, 1, 0)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 3, 1, NewSparseArray(3, 0, denseArrayHash(0, 1, 0)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 3, 2, NewSparseArray(3, 0, denseArrayHash(0, 1, 0)))
+	ConfirmDelete(NewSparseArray(3, 0, denseArrayHash(0, 1)), 3, 3, NewSparseArray(3, 0, denseArrayHash(0, 1, 0)))
 }
 
 func TestSparseArrayCopy(t *testing.T) {

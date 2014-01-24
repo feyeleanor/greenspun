@@ -235,17 +235,36 @@ func (s *SparseArray) Insert(i int, items... interface{}) (r *SparseArray) {
 	return
 }
 
-func (s *SparseArray) Delete(i, n int) (r *SparseArray) {
-	r = &SparseArray{ elements: make(arrayHash), version: s.version + 1, Default: s.Default }
-	if n < s.length {
-		r.length = s.length - n
-		last := i + n - 1
-		for k, v := range s.elements {
-			switch {
-			case k < i:
-				r.elements[k] = v
-			case k > last:
-				r.elements[k - n] = v
+func (s *SparseArray) Delete(i int, params ...int) (r *SparseArray) {
+	if i < 0 {
+		panic(ARGUMENT_NEGATIVE_INDEX)
+	}
+
+	if s != nil {
+		r = s
+		var n	int
+		if len(params) > 0 {
+			n = params[0]
+		} else {
+			n = 1
+		}
+		switch {
+		case n < 0:
+			n = 0
+		case i + n > s.length:
+			n = s.length - i
+		}
+		if n > 0 {
+			r = &SparseArray{ elements: make(arrayHash), version: s.version + 1, Default: s.Default, length: s.length - n }
+			last := i + n - 1
+			for k, v := range s.elements {
+				switch {
+				case k < i:
+					r.elements[k] = v
+				case k > last:
+					r.elements[k - n] = v
+				default:
+				}
 			}
 		}
 	}
