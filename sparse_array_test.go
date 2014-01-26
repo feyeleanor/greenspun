@@ -369,10 +369,59 @@ func TestSparseArrayDelete(t *testing.T) {
 }
 
 func TestSparseArrayCopy(t *testing.T) {
+	ConfirmCopy := func(l, r *SparseArray) {
+		x := l.Copy()
+		if !r.Equal(x) {
+			t.Fatalf("%v.Copy() should be %v but is %v", l, r, x)
+		}
+		if x != nil {
+			if x.version != 0 {
+				t.Fatalf("%v.Copy() version should be 0 but is %v", l, x.version)
+			}
+			for i, v := range x.elements {
+				switch {
+				case v.version != 0:
+					t.Fatalf("%v.Copy()[%v] version should be 0 but is %v", l, i, v.version)
+				case v.arrayElement != nil:
+					t.Fatalf("%v.Copy()[%v] should be a terminal node but is", l, i, v.arrayElement)
+				}
+			}
+		}
+	}
+
+	ConfirmCopy(nil, nil)
+	ConfirmCopy(NewSparseArray(3, 0, denseArrayHash(0, 1, 2)), NewSparseArray(3, 0, denseArrayHash(0, 1, 2)))
+	a := NewSparseArray(0, 0)
+	a = a.Set(2, 1).Set(2, 3).Set(1, 4).Set(2, 5).Set(3, 2)
+	ConfirmCopy(a, NewSparseArray(4, 0, denseArrayHash(0, 4, 5, 2)))
 }
 
 func TestSparseArrayCommit(t *testing.T) {
+	ConfirmCommit := func(l, r *SparseArray) {
+		switch x := l.Commit(); {
+		case !r.Equal(x):
+			t.Fatalf("%v.Commit() should be %v but is %v", l, r, x)
+		case x != nil && x.version != 0:
+			t.Fatalf("%v.Commit() version should be 0 but is %v", l, x.version)
+		}
+	}
+
+	ConfirmCommit(nil, nil)
+	ConfirmCommit(NewSparseArray(5, 0), NewSparseArray(5, 0, denseArrayHash(0, 0, 0, 0, 0)))
+	ConfirmCommit(NewSparseArray(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), NewSparseArray(5, 0, denseArrayHash(0, 1, 2, 3, 4)))
 }
 
-func TestSparseArrayRevert(t *testing.T) {
+func TestSparseArrayRollback(t *testing.T) {
+	ConfirmRollback := func(l *SparseArray, v int, r *SparseArray) {
+		switch x := l.Rollback(v); {
+		case !r.Equal(x):
+			t.Fatalf("%v.Rollback() should be %v but is %v", l, r, x)
+		case x != nil && x.version != v:
+			t.Fatalf("%v.Rollback(%:[1]v) version should be %:[1]v but is %v", l, v, x.version)
+		}
+	}
+
+	ConfirmRollback(nil, 0, nil)
+	ConfirmRollback(NewSparseArray(5, 0), 0, NewSparseArray(5, 0, denseArrayHash(0, 0, 0, 0, 0)))
+	ConfirmRollback(NewSparseArray(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 0, NewSparseArray(5, 0))
 }

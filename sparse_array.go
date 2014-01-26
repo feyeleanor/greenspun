@@ -272,31 +272,41 @@ func (s *SparseArray) Delete(i int, params ...int) (r *SparseArray) {
 }
 
 func (s *SparseArray) Copy() (r *SparseArray) {
+	if s != nil {
+		r = &SparseArray{ elements: make(arrayHash), length: s.length, Default: s.Default }
+		for k, v := range s.elements {
+			r.elements[k] = &arrayElement{ data: v.data }
+		}
+	}
 	return
 }
 
 func (s *SparseArray) Commit() (r *SparseArray) {
 	//	Create a new header which treats the current state of the SparseArray as a base
 	//	state for future operations
-	r = NewSparseArray(s.length, s.Default)
-	for k, v := range s.elements {
-		r.elements[k] = &arrayElement{ data: v }
+	if s != nil {
+		r = NewSparseArray(s.length, s.Default)
+		for k, v := range s.elements {
+			r.elements[k] = &arrayElement{ data: v }
+		}
 	}
 	return
 }
 
-func (s *SparseArray) Revert(version int) (r *SparseArray) {
+func (s *SparseArray) Rollback(version int) (r *SparseArray) {
 	if version < 0 {
 		panic(ARGUMENT_OUT_OF_BOUNDS)
 	}
-	r = &SparseArray{ elements: make(arrayHash), Default: s.Default, version: version }
-	for k, v := range s.elements {
-		for ; v != nil && v.version > r.version; v = v.arrayElement {}
-		if v != nil {
-			r.elements[k] = v
-		}
-		if r.length <= k {
-			r.length = k + 1
+	if s != nil {
+		r = &SparseArray{ elements: make(arrayHash), Default: s.Default, version: version }
+		for k, v := range s.elements {
+			for ; v != nil && v.version > r.version; v = v.arrayElement {}
+			if v != nil {
+				r.elements[k] = v
+			}
+			if r.length <= k {
+				r.length = k + 1
+			}
 		}
 	}
 	return r
