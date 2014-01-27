@@ -12,14 +12,15 @@ package greenspun
 	with a conventional slice.
 */
 type SparseArray struct {
-	elements		arrayHash
-	length			int
-	version			int
-	Default			interface{}
+	elements			arrayHash
+	length				int
+	version				int
+	defaultValue	*arrayElement
+	*SparseArray
 }
 
 func NewSparseArray(n int, d interface{}, items ...arrayHash) (r *SparseArray) {
-	r = &SparseArray{ elements: make(arrayHash), length: n, Default: d }
+	r = &SparseArray{ elements: make(arrayHash), length: n, defaultValue: &arrayElement{ data: d } }
 	for _, cells := range items {
 		for k, v := range cells {
 			if r.length <= k {
@@ -62,7 +63,7 @@ func (s *SparseArray) Equal(o interface{}) (r bool) {
 			concrete_keys := make(map[int] bool)
 
 			if s.length == o.length && len(s.elements) != s.length && len(o.elements) != o.length {
-				if r = Equal(s.Default, o.Default); !r {
+				if r = Equal(s.Default(), o.Default()); !r {
 					return
 				}
 			}
@@ -72,7 +73,7 @@ func (s *SparseArray) Equal(o interface{}) (r bool) {
 					concrete_keys[k] = true
 					r = vo.Equal(vs)
 				} else {
-					r = Equal(vo, s.Default)
+					r = Equal(vo, s.Default())
 				}
 				if !r {
 					return
@@ -85,7 +86,7 @@ func (s *SparseArray) Equal(o interface{}) (r bool) {
 						concrete_keys[k] = true
 						r = vs.Equal(vo)
 					} else {
-						r = Equal(vs, o.Default)
+						r = Equal(vs, o.Default())
 					}
 				} else {
 					delete(concrete_keys, k)
@@ -96,11 +97,26 @@ func (s *SparseArray) Equal(o interface{}) (r bool) {
 			}
 
 			if len(concrete_keys) > 0 {
-				r = Equal(s.Default, o.Default)
+				r = Equal(s.Default(), o.Default())
 			}
 		}
 	case nil:
 		r = s == nil
+	}
+	return
+}
+
+func (s *SparseArray) Default() (r interface{}) {
+	if s != nil {
+		r = s.defaultValue.data
+	}
+	return
+}
+
+func (s *SparseArray) SetDefault(v interface{}) (r *SparseArray) {
+	if s != nil {
+		r = &SparseArray{ elements: s.elements, version: s.version + 1, length: s.length }
+		r.defaultValue = &arrayElement{ data: v, version: r.version, arrayElement: s.defaultValue }
 	}
 	return
 }
@@ -113,7 +129,7 @@ func (s *SparseArray) At(i int) (r interface{}) {
 	if e, ok := s.elements[i]; ok && e != nil {
 		r = e.data
 	} else {
-		r = s.Default
+		r = s.Default()
 	}
 	return
 }
@@ -129,10 +145,9 @@ func (s *SparseArray) Set(i int, v interface{}) *SparseArray {
 		s.version++
 	}
 
-	switch e, ok := s.elements[i]; {
-	case ok:
+	if e, ok := s.elements[i]; ok {
 		s.elements[i] = &arrayElement{ data: v, version: s.version, arrayElement: e }
-	case v != s.Default:
+	} else {
 		s.elements[i] = &arrayElement{ data: v, version: s.version }
 	}
 	if i >= s.length {
@@ -159,9 +174,8 @@ func (s *SparseArray) Each(f interface{}) {
 
 	switch f := f.(type) {
 	case func():
-		for {
+		for i = s.length; i > 0; i-- {
 			f()
-			i++
 		}
 	case func(interface{}):
 		for {
@@ -183,7 +197,7 @@ func (s *SparseArray) Each(f interface{}) {
 
 func (s *SparseArray) Move(x, y, n int) (r *SparseArray) {
 	if s != nil {
-		r = &SparseArray{ length: s.length, version: s.version, Default: s.Default, elements: s.elements }
+		r = &SparseArray{ length: s.length, version: s.version, defaultValue: s.defaultValue, elements: s.elements }
 		if y + n >= r.length {
 			r.length = y + n
 		}
@@ -213,10 +227,10 @@ func (s *SparseArray) Insert(i int, items... interface{}) (r *SparseArray) {
 		r = NewSparseArray(i + n, nil)		
 	} else {
 		if i < s.length {
-			r = NewSparseArray(s.length + n, s.Default)
+			r = NewSparseArray(s.length + n, s.Default())
 			r.version = s.version + 1
 		} else {
-			r = NewSparseArray(i + n, s.Default)
+			r = NewSparseArray(i + n, s.Default())
 			r.version = s.version + 1
 		}
 
@@ -255,7 +269,7 @@ func (s *SparseArray) Delete(i int, params ...int) (r *SparseArray) {
 			n = s.length - i
 		}
 		if n > 0 {
-			r = &SparseArray{ elements: make(arrayHash), version: s.version + 1, Default: s.Default, length: s.length - n }
+			r = &SparseArray{ elements: make(arrayHash), version: s.version + 1, defaultValue: s.defaultValue, length: s.length - n }
 			last := i + n - 1
 			for k, v := range s.elements {
 				switch {
@@ -273,7 +287,7 @@ func (s *SparseArray) Delete(i int, params ...int) (r *SparseArray) {
 
 func (s *SparseArray) Copy() (r *SparseArray) {
 	if s != nil {
-		r = &SparseArray{ elements: make(arrayHash), length: s.length, Default: s.Default }
+		r = &SparseArray{ elements: make(arrayHash), length: s.length, defaultValue: s.defaultValue }
 		for k, v := range s.elements {
 			r.elements[k] = &arrayElement{ data: v.data }
 		}
@@ -285,7 +299,7 @@ func (s *SparseArray) Commit() (r *SparseArray) {
 	//	Create a new header which treats the current state of the SparseArray as a base
 	//	state for future operations
 	if s != nil {
-		r = NewSparseArray(s.length, s.Default)
+		r = NewSparseArray(s.length, s.Default())
 		for k, v := range s.elements {
 			r.elements[k] = &arrayElement{ data: v }
 		}
@@ -298,7 +312,7 @@ func (s *SparseArray) Rollback(version int) (r *SparseArray) {
 		panic(ARGUMENT_OUT_OF_BOUNDS)
 	}
 	if s != nil {
-		r = &SparseArray{ elements: make(arrayHash), Default: s.Default, version: version }
+		r = &SparseArray{ elements: make(arrayHash), defaultValue: s.defaultValue, version: version }
 		for k, v := range s.elements {
 			for ; v != nil && v.version > r.version; v = v.arrayElement {}
 			if v != nil {

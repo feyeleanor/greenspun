@@ -9,16 +9,16 @@ func TestNewSparseArray(t *testing.T) {
 		}
 	}
 
-	ConfirmNewArray(0, nil, []arrayHash{}, &SparseArray{ elements: make(arrayHash), length: 0, version: 0, Default: nil })
+	ConfirmNewArray(0, nil, []arrayHash{}, &SparseArray{ elements: make(arrayHash), length: 0, version: 0, defaultValue: nil })
 
 	ConfirmNewArray(0, nil, []arrayHash{ arrayHash{ 0: &arrayElement{ data: 0 } } },
-									&SparseArray{ elements: arrayHash{ 0: &arrayElement{ data: 0 } }, length: 1, version: 0, Default: nil })
+									&SparseArray{ elements: arrayHash{ 0: &arrayElement{ data: 0 } }, length: 1, version: 0, defaultValue: nil })
 
 	ConfirmNewArray(0, 10, []arrayHash{ arrayHash{ 0: &arrayElement{ data: 0 }, 3: &arrayElement{ data: 0 } } },
-									&SparseArray{ elements: arrayHash{ 0: &arrayElement{ data: 0 }, 3: &arrayElement{ data: 0 } } , length: 4, version: 0, Default: 10 })
+									&SparseArray{ elements: arrayHash{ 0: &arrayElement{ data: 0 }, 3: &arrayElement{ data: 0 } }, length: 4, version: 0, defaultValue: &arrayElement{ data: 10 } })
 
 	ConfirmNewArray(0, 10, []arrayHash{ arrayHash{ 0: &arrayElement{ data: 0 }, 3: &arrayElement{ data: 0 } }, arrayHash{ 0: &arrayElement{ data: 1 }, 9: &arrayElement{ data: 0 } } },
-									&SparseArray{ elements: arrayHash{ 0: &arrayElement{ data: 1 }, 3: &arrayElement{ data: 0 }, 9: &arrayElement{ data: 0 } } , length: 10, version: 0, Default: 10 })
+									&SparseArray{ elements: arrayHash{ 0: &arrayElement{ data: 1 }, 3: &arrayElement{ data: 0 }, 9: &arrayElement{ data: 0 } }, length: 10, version: 0, defaultValue: &arrayElement{ data: 10 } })
 }
 
 func TestSparseArrayString(t *testing.T) {
@@ -41,14 +41,14 @@ func TestSparseArrayEqual(t *testing.T) {
 	ConfirmEqual(&SparseArray{}, new(SparseArray), true)
 	ConfirmEqual(new(SparseArray), &SparseArray{}, true)
 
-	ConfirmEqual(&SparseArray{ length: 1, Default: 0 }, &SparseArray{ length: 1, Default: 0 }, true)
-	ConfirmEqual(&SparseArray{ length: 1, Default: 0 }, &SparseArray{ length: 1, Default: 1 }, false)
+	ConfirmEqual(&SparseArray{ length: 1, defaultValue: &arrayElement{ data: 0 } }, &SparseArray{ length: 1, defaultValue: &arrayElement{ data: 0 } }, true)
+	ConfirmEqual(&SparseArray{ length: 1, defaultValue: &arrayElement{ data: 0 } }, &SparseArray{ length: 1, defaultValue: &arrayElement{ data: 1 } }, false)
 
-	ConfirmEqual(&SparseArray{ length: 2, Default: 0 }, &SparseArray{ length: 2, Default: 0 }, true)
-	ConfirmEqual(&SparseArray{ length: 2, Default: 0 }, &SparseArray{ length: 2, Default: 1 }, false)
+	ConfirmEqual(&SparseArray{ length: 2, defaultValue: &arrayElement{ data: 0 } }, &SparseArray{ length: 2, defaultValue: &arrayElement{ data: 0 } }, true)
+	ConfirmEqual(&SparseArray{ length: 2, defaultValue: &arrayElement{ data: 0 } }, &SparseArray{ length: 2, defaultValue: &arrayElement{ data: 1 } }, false)
 
-	ConfirmEqual(&SparseArray{ length: 3, Default: 0 }, &SparseArray{ length: 3, Default: 0 }, true)
-	ConfirmEqual(&SparseArray{ length: 3, Default: 0 }, &SparseArray{ length: 3, Default: 1 }, false)
+	ConfirmEqual(&SparseArray{ length: 3, defaultValue: &arrayElement{ data: 0 } }, &SparseArray{ length: 3, defaultValue: &arrayElement{ data: 0 } }, true)
+	ConfirmEqual(&SparseArray{ length: 3, defaultValue: &arrayElement{ data: 0 } }, &SparseArray{ length: 3, defaultValue: &arrayElement{ data: 1 } }, false)
 
 	ConfirmEqual(	&SparseArray{	length: 1, elements: arrayHash{ 0: &arrayElement{ data: 0 } } },
 								&SparseArray{	length: 1, elements: arrayHash{ 0: &arrayElement{ data: 0 } } },
@@ -83,26 +83,26 @@ func TestSparseArrayEqual(t *testing.T) {
 								false )
 
 	ConfirmEqual(	&SparseArray{	length: 2, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
-								&SparseArray{	length: 2, Default: 1, elements:	arrayHash{ 0: &arrayElement{ data: 0 } } },
+								&SparseArray{	length: 2, defaultValue: &arrayElement{ data: 1 }, elements:	arrayHash{ 0: &arrayElement{ data: 0 } } },
 								true )
 
-	ConfirmEqual(	&SparseArray{	length: 2, Default: 1, elements: arrayHash{ 0: &arrayElement{ data: 0 } } },
+	ConfirmEqual(	&SparseArray{	length: 2, defaultValue: &arrayElement{ data: 1 }, elements: arrayHash{ 0: &arrayElement{ data: 0 } } },
 								&SparseArray{	length: 2, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
 								true )
 
 	ConfirmEqual(	&SparseArray{	length: 2, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
-								&SparseArray{	length: 2, Default: 2, elements: arrayHash{ 0: &arrayElement{ data: 0 } } },
+								&SparseArray{	length: 2, defaultValue: &arrayElement{ data: 2 }, elements: arrayHash{ 0: &arrayElement{ data: 0 } } },
 								false )
 
 	ConfirmEqual(	&SparseArray{	length: 2, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 2 } } },
-								&SparseArray{	length: 2, Default: 1, elements: arrayHash{ 0: &arrayElement{ data: 0 } } },
+								&SparseArray{	length: 2, defaultValue: &arrayElement{ data: 1 }, elements: arrayHash{ 0: &arrayElement{ data: 0 } } },
 								false )
 
-	ConfirmEqual(	&SparseArray{	length: 2, Default: 2, elements: arrayHash{ 0: &arrayElement{ data: 0 } } },
+	ConfirmEqual(	&SparseArray{	length: 2, defaultValue: &arrayElement{ data: 2 }, elements: arrayHash{ 0: &arrayElement{ data: 0 } } },
 								&SparseArray{	length: 2, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 } } },
 								false )
 
-	ConfirmEqual(	&SparseArray{	length: 2, Default: 1, elements: arrayHash{ 0: &arrayElement{ data: 0 } } },
+	ConfirmEqual(	&SparseArray{	length: 2, defaultValue: &arrayElement{ data: 1 }, elements: arrayHash{ 0: &arrayElement{ data: 0 } } },
 								&SparseArray{	length: 2, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 2 } } },
 								false )
 
@@ -118,20 +118,20 @@ func TestSparseArrayEqual(t *testing.T) {
 								&SparseArray{	length: 3, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 }, 2: &arrayElement{ data: 2 } } },
 								true )
 
-	ConfirmEqual(	&SparseArray{	length: 3, Default: 1, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 2: &arrayElement{ data: 2 } } },
+	ConfirmEqual(	&SparseArray{	length: 3, defaultValue: &arrayElement{ data: 1 }, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 2: &arrayElement{ data: 2 } } },
 								&SparseArray{	length: 3, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 }, 2: &arrayElement{ data: 2 } } },
 								true )
 
-	ConfirmEqual(	&SparseArray{	length: 3, Default: 2, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 2: &arrayElement{ data: 2 } } },
+	ConfirmEqual(	&SparseArray{	length: 3, defaultValue: &arrayElement{ data: 2 }, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 2: &arrayElement{ data: 2 } } },
 								&SparseArray{	length: 3, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 }, 2: &arrayElement{ data: 2 } } },
 								false )
 
 	ConfirmEqual(	&SparseArray{	length: 3, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 }, 2: &arrayElement{ data: 2 } } },
-								&SparseArray{	length: 3, Default: 1, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 2: &arrayElement{ data: 2 } } },
+								&SparseArray{	length: 3, defaultValue: &arrayElement{ data: 1 }, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 2: &arrayElement{ data: 2 } } },
 								true )
 
 	ConfirmEqual(	&SparseArray{	length: 3, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 1: &arrayElement{ data: 1 }, 2: &arrayElement{ data: 2 } } },
-								&SparseArray{	length: 3, Default: 2, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 2: &arrayElement{ data: 2 } } },
+								&SparseArray{	length: 3, defaultValue: &arrayElement{ data: 2 }, elements: arrayHash{ 0: &arrayElement{ data: 0 }, 2: &arrayElement{ data: 2 } } },
 								false )
 }
 
@@ -225,6 +225,8 @@ func TestSparseArrayEach(t *testing.T) {
 			t.Fatalf("%v.Each() should have iterated %v times not %v times", c, l, count)
 		}
 	}
+
+	ConfirmEach(s, func() { count++ })
 
 	ConfirmEach(s, func(i interface{}) {
 		if i != count {
