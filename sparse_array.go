@@ -115,8 +115,9 @@ func (s *SparseArray) Default() (r interface{}) {
 
 func (s *SparseArray) SetDefault(v interface{}) (r *SparseArray) {
 	if s != nil {
-		r = &SparseArray{ elements: s.elements, version: s.version + 1, length: s.length }
-		r.defaultValue = &arrayElement{ data: v, version: r.version, arrayElement: s.defaultValue }
+		r = s
+		r.version++
+		r.defaultValue = &arrayElement{ data: v, version: r.version + 1, arrayElement: s.defaultValue }
 	}
 	return
 }
@@ -134,26 +135,26 @@ func (s *SparseArray) At(i int) (r interface{}) {
 	return
 }
 
-func (s *SparseArray) Set(i int, v interface{}) *SparseArray {
+func (s *SparseArray) Set(i int, v interface{}) (r *SparseArray) {
 	switch {
 	case i < 0:
 		panic(ARGUMENT_OUT_OF_BOUNDS)
 	case s == nil:
-		a := NewSparseArray(0, nil)
-		*s = *a
+		r = NewSparseArray(0, nil)
 	default:
-		s.version++
+		r = s
+		r.version++
 	}
 
-	if e, ok := s.elements[i]; ok {
-		s.elements[i] = &arrayElement{ data: v, version: s.version, arrayElement: e }
+	if e, ok := r.elements[i]; ok {
+		r.elements[i] = &arrayElement{ data: v, version: r.version, arrayElement: e }
 	} else {
-		s.elements[i] = &arrayElement{ data: v, version: s.version }
+		r.elements[i] = &arrayElement{ data: v, version: r.version }
 	}
-	if i >= s.length {
-		s.length = i + 1
+	if i >= r.length {
+		r.length = i + 1
 	}
-	return s
+	return
 }
 
 func rescueOutOfBounds() {
