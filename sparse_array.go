@@ -32,6 +32,13 @@ func NewSparseArray(n int, d interface{}, items ...arrayHash) (r *SparseArray) {
 	return
 }
 
+func (s *SparseArray) copyHeader() (r *SparseArray) {
+	if s != nil {
+		r = &SparseArray{ s.elements, s.length, s.version, s.defaultValue, s.SparseArray }
+	}
+	return
+}
+
 /*
 func (s *SparseArray) String() (r string) {
 	return
@@ -135,6 +142,9 @@ func (s *SparseArray) At(i int) (r interface{}) {
 	return
 }
 
+/*
+	For Set() operations we preserve the array header so long as the length of the array doesn't change.
+*/
 func (s *SparseArray) Set(i int, v interface{}) (r *SparseArray) {
 	switch {
 	case i < 0:
@@ -142,7 +152,12 @@ func (s *SparseArray) Set(i int, v interface{}) (r *SparseArray) {
 	case s == nil:
 		r = NewSparseArray(0, nil)
 	default:
-		r = s
+		if i >= s.length {
+			r = s.copyHeader()
+			r.length = i + 1
+		} else {
+			r = s
+		}
 		r.version++
 	}
 
