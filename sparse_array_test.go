@@ -9,16 +9,16 @@ func TestNewSparseArray(t *testing.T) {
 		}
 	}
 
-	ConfirmNewArray(0, nil, []arrayHash{}, &SparseArray{ elements: make(arrayHash), length: 0, version: 0, defaultValue: nil })
+	ConfirmNewArray(0, nil, []arrayHash{}, &SparseArray{ elements: make(arrayHash), length: 0, currentVersion: 0, defaultValue: nil })
 
 	ConfirmNewArray(0, nil, []arrayHash{ arrayHash{ 0: &arrayElement{ data: 0 } } },
-									&SparseArray{ elements: arrayHash{ 0: &arrayElement{ data: 0 } }, length: 1, version: 0, defaultValue: nil })
+									&SparseArray{ elements: arrayHash{ 0: &arrayElement{ data: 0 } }, length: 1, currentVersion: 0, defaultValue: nil })
 
 	ConfirmNewArray(0, 10, []arrayHash{ arrayHash{ 0: &arrayElement{ data: 0 }, 3: &arrayElement{ data: 0 } } },
-									&SparseArray{ elements: arrayHash{ 0: &arrayElement{ data: 0 }, 3: &arrayElement{ data: 0 } }, length: 4, version: 0, defaultValue: &arrayElement{ data: 10 } })
+									&SparseArray{ elements: arrayHash{ 0: &arrayElement{ data: 0 }, 3: &arrayElement{ data: 0 } }, length: 4, currentVersion: 0, defaultValue: &arrayElement{ data: 10 } })
 
 	ConfirmNewArray(0, 10, []arrayHash{ arrayHash{ 0: &arrayElement{ data: 0 }, 3: &arrayElement{ data: 0 } }, arrayHash{ 0: &arrayElement{ data: 1 }, 9: &arrayElement{ data: 0 } } },
-									&SparseArray{ elements: arrayHash{ 0: &arrayElement{ data: 1 }, 3: &arrayElement{ data: 0 }, 9: &arrayElement{ data: 0 } }, length: 10, version: 0, defaultValue: &arrayElement{ data: 10 } })
+									&SparseArray{ elements: arrayHash{ 0: &arrayElement{ data: 1 }, 3: &arrayElement{ data: 0 }, 9: &arrayElement{ data: 0 } }, length: 10, currentVersion: 0, defaultValue: &arrayElement{ data: 10 } })
 }
 
 func TestSparseArrayString(t *testing.T) {
@@ -377,13 +377,13 @@ func TestSparseArrayCopy(t *testing.T) {
 			t.Fatalf("%v.Copy() should be %v but is %v", l, r, x)
 		}
 		if x != nil {
-			if x.version != 0 {
-				t.Fatalf("%v.Copy() version should be 0 but is %v", l, x.version)
+			if x.currentVersion != 0 {
+				t.Fatalf("%v.Copy() currentVersion should be 0 but is %v", l, x.currentVersion)
 			}
 			for i, v := range x.elements {
 				switch {
 				case v.version != 0:
-					t.Fatalf("%v.Copy()[%v] version should be 0 but is %v", l, i, v.version)
+					t.Fatalf("%v.Copy()[%v] currentVersion should be 0 but is %v", l, i, v.version)
 				case v.arrayElement != nil:
 					t.Fatalf("%v.Copy()[%v] should be a terminal node but is", l, i, v.arrayElement)
 				}
@@ -405,8 +405,8 @@ func TestSparseArrayCommit(t *testing.T) {
 		switch x := l.Commit(); {
 		case !r.Equal(x):
 			t.Fatalf("%v.Commit() should be %v but is %v", l, r, x)
-		case x != nil && x.version != 0:
-			t.Fatalf("%v.Commit() version should be 0 but is %v", l, x.version)
+		case x != nil && x.currentVersion != 0:
+			t.Fatalf("%v.Commit() currentVersion should be 0 but is %v", l, x.currentVersion)
 		}
 	}
 
@@ -424,8 +424,8 @@ func TestSparseArrayRollback(t *testing.T) {
 		switch x := l.Rollback(v); {
 		case !r.Equal(x):
 			t.Fatalf("%v.Rollback() should be %v but is %v", l, r, x)
-		case x != nil && x.version != v:
-			t.Fatalf("%v.Rollback(%:[1]v) version should be %:[1]v but is %v", l, v, x.version)
+		case x != nil && x.currentVersion != v:
+			t.Fatalf("%v.Rollback(%:[1]v) currentVersion should be %:[1]v but is %v", l, v, x.currentVersion)
 		}
 	}
 
