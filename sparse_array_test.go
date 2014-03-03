@@ -392,10 +392,12 @@ func TestSparseArrayCopy(t *testing.T) {
 	}
 
 	ConfirmCopy(nil, nil)
-	ConfirmCopy(NewSparseArray(3, 0, denseArrayHash(0, 1, 2)), NewSparseArray(3, 0, denseArrayHash(0, 1, 2)))
-	a := NewSparseArray(0, 0)
-	a = a.Set(2, 1).Set(2, 3).Set(1, 4).Set(2, 5).Set(3, 2)
-	ConfirmCopy(a, NewSparseArray(4, 0, denseArrayHash(0, 4, 5, 2)))
+
+	ConfirmCopy(NewSparseArray(3, 0, denseArrayHash(0, 1, 2)),
+							NewSparseArray(3, 0, denseArrayHash(0, 1, 2)))
+
+	ConfirmCopy(NewSparseArray(0, 0).Set(2, 1).Set(2, 3).Set(1, 4).Set(2, 5).Set(3, 2),
+							NewSparseArray(4, 0, denseArrayHash(0, 4, 5, 2)))
 }
 
 func TestSparseArrayCommit(t *testing.T) {
@@ -413,6 +415,10 @@ func TestSparseArrayCommit(t *testing.T) {
 	ConfirmCommit(NewSparseArray(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), NewSparseArray(5, 0, denseArrayHash(0, 1, 2, 3, 4)))
 }
 
+func TestSparseArrayUndo(t *testing.T) {
+	t.Fatalf("implement tests")
+}
+
 func TestSparseArrayRollback(t *testing.T) {
 	ConfirmRollback := func(l *SparseArray, v int, r *SparseArray) {
 		switch x := l.Rollback(v); {
@@ -425,5 +431,15 @@ func TestSparseArrayRollback(t *testing.T) {
 
 	ConfirmRollback(nil, 0, nil)
 	ConfirmRollback(NewSparseArray(5, 0), 0, NewSparseArray(5, 0, denseArrayHash(0, 0, 0, 0, 0)))
-	ConfirmRollback(NewSparseArray(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 0, NewSparseArray(5, 0))
+	ConfirmRollback(NewSparseArray(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 0, NewSparseArray(0, 0))
+	ConfirmRollback(NewSparseArray(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 1, NewSparseArray(0, 0).Set(1, 1))
+
+	ConfirmRollback(NewSparseArray(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 0, NewSparseArray(0, 0))
+	ConfirmRollback(NewSparseArray(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 1, NewSparseArray(0, 0, denseArrayHash(0, 1)))
+	ConfirmRollback(NewSparseArray(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 1, NewSparseArray(0, 0, denseArrayHash(0, 1)))
+	ConfirmRollback(NewSparseArray(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 2, NewSparseArray(0, 0, denseArrayHash(0, 1, 2)))
+	ConfirmRollback(NewSparseArray(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 3, NewSparseArray(0, 0, denseArrayHash(0, 1, 2, 3)))
+	ConfirmRollback(NewSparseArray(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 4, NewSparseArray(0, 0, denseArrayHash(0, 1, 2, 3, 4)))
+
+	ConfirmRollback(NewSparseArray(5, 0).Set(1, 1).Set(2, 2), 0, NewSparseArray(0, 0, denseArrayHash(0, 0, 0, 0, 0)))
 }

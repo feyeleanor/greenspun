@@ -1,7 +1,5 @@
 package greenspun
 
-//import "fmt"
-
 /*
 	The SparseArray is a sparse, persistent integer-indexed data store. Internally elements are
 	stored in a hash table which provides uniform access, and each access is represented by a
@@ -14,11 +12,15 @@ package greenspun
 type SparseArray struct {
 	elements			arrayHash
 	length				int
+	created				int
 	version				int
 	defaultValue	*arrayElement
 	*SparseArray
 }
 
+//	NewSparseArray returns a SparseArray initialized with a default value and a minimum number
+//	of elements. If optional arrayHash parameters are provided these will result in values being
+//	assigned to cells and if necessary the length of the SparseArray adjusted to reflect this.
 func NewSparseArray(n int, d interface{}, items ...arrayHash) (r *SparseArray) {
 	r = &SparseArray{ elements: make(arrayHash), length: n, defaultValue: &arrayElement{ data: d } }
 	for _, cells := range items {
@@ -34,7 +36,15 @@ func NewSparseArray(n int, d interface{}, items ...arrayHash) (r *SparseArray) {
 
 func (s *SparseArray) copyHeader() (r *SparseArray) {
 	if s != nil {
-		r = &SparseArray{ s.elements, s.length, s.version, s.defaultValue, s.SparseArray }
+		r = &SparseArray{ s.elements, s.length, s.created, s.version, s.defaultValue, s.SparseArray }
+	}
+	return
+}
+
+func (s *SparseArray) newHeader() (r *SparseArray) {
+	if s != nil {
+		created := s.version + 1
+		r = &SparseArray{ s.elements, s.length, created, created, s.defaultValue, s }
 	}
 	return
 }
@@ -122,9 +132,8 @@ func (s *SparseArray) Default() (r interface{}) {
 
 func (s *SparseArray) SetDefault(v interface{}) (r *SparseArray) {
 	if s != nil {
-		r = s
-		r.version++
-		r.defaultValue = &arrayElement{ data: v, version: r.version + 1, arrayElement: s.defaultValue }
+		r = s.newHeader()
+		r.defaultValue = &arrayElement{ data: v, version: r.version, arrayElement: s.defaultValue }
 	}
 	return
 }
@@ -152,13 +161,14 @@ func (s *SparseArray) Set(i int, v interface{}) (r *SparseArray) {
 	case s == nil:
 		r = NewSparseArray(0, nil)
 	default:
-		if i >= s.length {
-			r = s.copyHeader()
+		switch {
+		case i >= s.length:
+			r = s.newHeader()
 			r.length = i + 1
-		} else {
+		default:
 			r = s
+			r.version++
 		}
-		r.version++
 	}
 
 	if e, ok := r.elements[i]; ok {
@@ -213,7 +223,7 @@ func (s *SparseArray) Each(f interface{}) {
 
 func (s *SparseArray) Move(x, y, n int) (r *SparseArray) {
 	if s != nil {
-		r = &SparseArray{ length: s.length, version: s.version, defaultValue: s.defaultValue, elements: s.elements }
+		r = s.copyHeader()
 		if y + n >= r.length {
 			r.length = y + n
 		}
@@ -244,11 +254,11 @@ func (s *SparseArray) Insert(i int, items... interface{}) (r *SparseArray) {
 	} else {
 		if i < s.length {
 			r = NewSparseArray(s.length + n, s.Default())
-			r.version = s.version + 1
 		} else {
 			r = NewSparseArray(i + n, s.Default())
-			r.version = s.version + 1
 		}
+		r.created = s.version + 1
+		r.version = r.created
 
 		for k, v := range s.elements {
 			if k >= i {
@@ -303,7 +313,7 @@ func (s *SparseArray) Delete(i int, params ...int) (r *SparseArray) {
 
 func (s *SparseArray) Copy() (r *SparseArray) {
 	if s != nil {
-		r = &SparseArray{ elements: make(arrayHash), length: s.length, defaultValue: s.defaultValue }
+		r = NewSparseArray(s.length, s.defaultValue)	// { elements: make(arrayHash), length: s.length, defaultValue: s.defaultValue }
 		for k, v := range s.elements {
 			r.elements[k] = &arrayElement{ data: v.data }
 		}
@@ -311,33 +321,47 @@ func (s *SparseArray) Copy() (r *SparseArray) {
 	return
 }
 
+//	Commit creates a new SparseArray which is identical to the current state of a give SparseArray
+//
 func (s *SparseArray) Commit() (r *SparseArray) {
-	//	Create a new header which treats the current state of the SparseArray as a base
-	//	state for future operations
 	if s != nil {
 		r = NewSparseArray(s.length, s.Default())
 		for k, v := range s.elements {
-			r.elements[k] = &arrayElement{ data: v }
+			r.elements[k] = v.Commit()
 		}
 	}
 	return
 }
 
+//	Undo returns the previous state of a given SparseArray
+func (s *SparseArray) Undo() (r *SparseArray) {
+	return
+}
+
+//
 func (s *SparseArray) Rollback(version int) (r *SparseArray) {
 	if version < 0 {
 		panic(ARGUMENT_OUT_OF_BOUNDS)
 	}
+
+	for ; s != nil && s.created > version; s = s.SparseArray {}
+
 	if s != nil {
-		r = &SparseArray{ elements: make(arrayHash), defaultValue: s.defaultValue, version: version }
+		r = &SparseArray{ elements: make(arrayHash), defaultValue: s.defaultValue, created: version, version: version }
 		for k, v := range s.elements {
-			for ; v != nil && v.version > r.version; v = v.arrayElement {}
-			if v != nil {
-				r.elements[k] = v
-			}
-			if r.length <= k {
-				r.length = k + 1
+			if x := v.AtVersion(version); x != nil {
+				if x.data != s.defaultValue {
+					r.elements[k] = x
+				}
+				if end := k + 1; r.length < end {
+					r.length = end
+				}
 			}
 		}
+
+		if l := len(s.elements); l < s.length {
+			r.length = s.length
+		}
 	}
-	return r
+	return
 }
