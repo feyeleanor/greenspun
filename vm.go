@@ -9,9 +9,9 @@ import (
 //
 type VM struct {
 	S		*Lifo	"stack"
-	E		*Pair				"environment"
-	C		*Pair				"control"
-	D		Lifo		"dump"
+	E		*Pair	"environment"
+	C		*Pair	"control"
+	D		Lifo	"dump"
 }
 
 func NewVM(env, code *Pair) *VM {

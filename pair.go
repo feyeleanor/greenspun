@@ -13,8 +13,8 @@ import (
 */
 
 type Pair struct {
-	head		interface{}
-	tail		interface{}
+	head		interface{}		"data contained in the current cell"
+	tail		interface{}		"the next cell or a second item contained in the current cell"
 }
 
 func Cons(head, tail interface{}) (c *Pair) {

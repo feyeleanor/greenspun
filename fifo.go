@@ -17,10 +17,10 @@ import (
 
 
 type Fifo struct {
-	head			*stackCell
-	tail			*stackCell
-	length		int
-	Mutex
+	head			*stackCell		"a list of items stored at the front of the Fifo"
+	tail			*stackCell		"a list of items stored at the rear of the Fifo"
+	length		int						"the number of items contained in the Fifo"
+	Mutex										"a mutex for controlling access to the Fifo in parallel operation"
 }
 
 func Queue(items... interface{}) (r *Fifo) {

@@ -21,8 +21,8 @@ import "fmt"
 */
 
 type stackCell struct {
-	data	interface{}
-	*stackCell	
+	data	interface{}		"value stored at the top of the stack"
+	*stackCell					"the next item in the stack"
 }
 
 /*

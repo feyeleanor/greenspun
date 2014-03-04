@@ -13,8 +13,8 @@ package greenspun
 */
 
 type Lifo struct {
-	*stackCell
-	depth		int
+	depth		int		"the number of items contained in the Lifo"
+	*stackCell		"the first data item in the Lifo"
 }
 
 func Stack(items... interface{}) *Lifo {

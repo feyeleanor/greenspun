@@ -1,8 +1,8 @@
 package greenspun
 
 type Lambda	struct {
-	Formals		*Pair
-	Body			*Pair
+	Formals		*Pair		"a list of formal parameters to be bound by the lambda"
+	Body			*Pair		"the operations to be executed by the lambda"
 }
 
 func (l Lambda) Eval(e Environment) interface{} {
