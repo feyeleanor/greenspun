@@ -1,33 +1,33 @@
 package greenspun
 
 /*
-	The SparseArray is a sparse, persistent integer-indexed data store. Internally elements are
+	The SparseSlice is a sparse, persistent integer-indexed data store. Internally elements are
 	stored in a hash table which provides uniform access, and each access is represented by a
 	stack of versioned values.
 
-	Because SparseArray is sparse we allow a default value to be set which will be returned when
+	The SparseSlice contains a creationVersion field which is initialised when a new header is
+	created, and a currentVersion which is incremented whenever an element is modified.
+
+	Because SparseSlice is sparse we allow a default value to be set which will be returned when
 	a value within bounds of 0 and length - 1 is queried. Queries out of bounds will panic as
 	with a conventional slice.
-
-	The SparseArray contains a creationVersion field which is initialised when a new header is
-	created, and a currentVersion which is incremented whenever an element is updated.
 */
-type SparseArray struct {
-	elements					arrayHash
-	length						int
-	creationVersion		int
-	currentVersion		int
-	defaultValue			*arrayElement
-	*SparseArray
+type SparseSlice struct {
+	elements					sliceHash				"versioned elements"
+	length						int							"total number of elements in the array"
+	creationVersion		int							"the version number for which this header was created"
+	currentVersion		int							"the version number of the most recent change"
+	defaultValue			*versionedValue	"the default value for unset elements in the array"
+	*SparseSlice											"the SparseSlice from which the current header is derived"
 }
 
 /*
-	NewSparseArray returns a SparseArray initialized with a default value and a minimum number
-	of elements. If optional arrayHash parameters are provided these will result in values being
-	assigned to cells and if necessary the length of the SparseArray adjusted to reflect this.
+	NewSparseSlice returns a SparseSlice initialized with a default value and a minimum number
+	of elements. If optional sliceHash parameters are provided these will result in values being
+	assigned to cells and if necessary the length of the SparseSlice adjusted to reflect this.
 */
-func NewSparseArray(n int, d interface{}, items ...arrayHash) (r *SparseArray) {
-	r = &SparseArray{ elements: make(arrayHash), length: n, defaultValue: &arrayElement{ data: d } }
+func NewSparseSlice(n int, d interface{}, items ...sliceHash) (r *SparseSlice) {
+	r = &SparseSlice{ elements: make(sliceHash), length: n, defaultValue: &versionedValue{ data: d } }
 	for _, cells := range items {
 		for k, v := range cells {
 			if r.length <= k {
@@ -39,39 +39,39 @@ func NewSparseArray(n int, d interface{}, items ...arrayHash) (r *SparseArray) {
 	return
 }
 
-func (s *SparseArray) copyHeader() (r *SparseArray) {
+func (s *SparseSlice) copyHeader() (r *SparseSlice) {
 	if s != nil {
-		r = &SparseArray{ s.elements, s.length, s.creationVersion, s.currentVersion, s.defaultValue, s.SparseArray }
+		r = &SparseSlice{ s.elements, s.length, s.creationVersion, s.currentVersion, s.defaultValue, s.SparseSlice }
 	}
 	return
 }
 
-func (s *SparseArray) newHeader() (r *SparseArray) {
+func (s *SparseSlice) newHeader() (r *SparseSlice) {
 	if s != nil {
 		creationVersion := s.currentVersion + 1
-		r = &SparseArray{ s.elements, s.length, creationVersion, creationVersion, s.defaultValue, s }
+		r = &SparseSlice{ s.elements, s.length, creationVersion, creationVersion, s.defaultValue, s }
 	}
 	return
 }
 
 /*
-func (s *SparseArray) String() (r string) {
+func (s *SparseSlice) String() (r string) {
 	return
 }
 */
 
-func (s *SparseArray) Len() (r int) {
+func (s *SparseSlice) Len() (r int) {
 	if s != nil {
 		r = s.length
 	}
 	return
 }
 
-func (s *SparseArray) Equal(o interface{}) (r bool) {
+func (s *SparseSlice) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case SparseArray:
+	case SparseSlice:
 		r = s.Equal(&o)
-	case *SparseArray:
+	case *SparseSlice:
 		switch {
 		case s == nil && o == nil:
 			r = true
@@ -128,22 +128,22 @@ func (s *SparseArray) Equal(o interface{}) (r bool) {
 	return
 }
 
-func (s *SparseArray) Default() (r interface{}) {
+func (s *SparseSlice) Default() (r interface{}) {
 	if s != nil {
 		r = s.defaultValue.data
 	}
 	return
 }
 
-func (s *SparseArray) SetDefault(v interface{}) (r *SparseArray) {
+func (s *SparseSlice) SetDefault(v interface{}) (r *SparseSlice) {
 	if s != nil {
 		r = s.newHeader()
-		r.defaultValue = &arrayElement{ data: v, version: r.currentVersion, arrayElement: s.defaultValue }
+		r.defaultValue = &versionedValue{ data: v, version: r.currentVersion, versionedValue: s.defaultValue }
 	}
 	return
 }
 
-func (s *SparseArray) At(i int) (r interface{}) {
+func (s *SparseSlice) At(i int) (r interface{}) {
 	if s == nil || i < 0 || i >= s.length {
 		panic(ARGUMENT_OUT_OF_BOUNDS)
 	}
@@ -159,12 +159,12 @@ func (s *SparseArray) At(i int) (r interface{}) {
 /*
 	For Set() operations we preserve the array header so long as the length of the array doesn't change.
 */
-func (s *SparseArray) Set(i int, v interface{}) (r *SparseArray) {
+func (s *SparseSlice) Set(i int, v interface{}) (r *SparseSlice) {
 	switch {
 	case i < 0:
 		panic(ARGUMENT_OUT_OF_BOUNDS)
 	case s == nil:
-		r = NewSparseArray(0, nil)
+		r = NewSparseSlice(0, nil)
 	default:
 		switch {
 		case i >= s.length:
@@ -177,9 +177,9 @@ func (s *SparseArray) Set(i int, v interface{}) (r *SparseArray) {
 	}
 
 	if e, ok := r.elements[i]; ok {
-		r.elements[i] = &arrayElement{ data: v, version: r.currentVersion, arrayElement: e }
+		r.elements[i] = &versionedValue{ data: v, version: r.currentVersion, versionedValue: e }
 	} else {
-		r.elements[i] = &arrayElement{ data: v, version: r.currentVersion }
+		r.elements[i] = &versionedValue{ data: v, version: r.currentVersion }
 	}
 	if i >= r.length {
 		r.length = i + 1
@@ -199,7 +199,7 @@ func rescueOutOfBounds() {
 /*
 	Iterate through all cells in order, applying the supplied closure.
 */
-func (s *SparseArray) Each(f interface{}) {
+func (s *SparseSlice) Each(f interface{}) {
 	defer rescueOutOfBounds()
 	var i	int
 
@@ -226,7 +226,7 @@ func (s *SparseArray) Each(f interface{}) {
 	}
 }
 
-func (s *SparseArray) Move(x, y, n int) (r *SparseArray) {
+func (s *SparseSlice) Move(x, y, n int) (r *SparseSlice) {
 	if s != nil {
 		r = s.copyHeader()
 		if y + n >= r.length {
@@ -241,9 +241,9 @@ func (s *SparseArray) Move(x, y, n int) (r *SparseArray) {
 	return
 }
 
-func (s *SparseArray) Insert(i int, items... interface{}) (r *SparseArray) {
+func (s *SparseSlice) Insert(i int, items... interface{}) (r *SparseSlice) {
 	/*
-		Inserting elements means creating a new SparseArray header and copying the
+		Inserting elements means creating a new SparseSlice header and copying the
 		current elements across with those from the insertion point onwards shifted
 		to their new index
 
@@ -257,12 +257,12 @@ func (s *SparseArray) Insert(i int, items... interface{}) (r *SparseArray) {
 	n := len(items)
 
 	if s == nil {
-		r = NewSparseArray(i + n, nil)		
+		r = NewSparseSlice(i + n, nil)		
 	} else {
 		if i < s.length {
-			r = NewSparseArray(s.length + n, s.Default())
+			r = NewSparseSlice(s.length + n, s.Default())
 		} else {
-			r = NewSparseArray(i + n, s.Default())
+			r = NewSparseSlice(i + n, s.Default())
 		}
 		r.creationVersion = s.currentVersion + 1
 		r.currentVersion = r.creationVersion
@@ -277,12 +277,12 @@ func (s *SparseArray) Insert(i int, items... interface{}) (r *SparseArray) {
 	}
 
 	for k, v := range items {
-		r.elements[i + k] = &arrayElement{ data: v, version: r.currentVersion }
+		r.elements[i + k] = &versionedValue{ data: v, version: r.currentVersion }
 	}
 	return
 }
 
-func (s *SparseArray) Delete(i int, params ...int) (r *SparseArray) {
+func (s *SparseSlice) Delete(i int, params ...int) (r *SparseSlice) {
 	if i < 0 {
 		panic(ARGUMENT_NEGATIVE_INDEX)
 	}
@@ -302,7 +302,7 @@ func (s *SparseArray) Delete(i int, params ...int) (r *SparseArray) {
 			n = s.length - i
 		}
 		if n > 0 {
-			r = &SparseArray{ elements: make(arrayHash), currentVersion: s.currentVersion + 1, defaultValue: s.defaultValue, length: s.length - n }
+			r = &SparseSlice{ elements: make(sliceHash), currentVersion: s.currentVersion + 1, defaultValue: s.defaultValue, length: s.length - n }
 			last := i + n - 1
 			for k, v := range s.elements {
 				switch {
@@ -318,22 +318,22 @@ func (s *SparseArray) Delete(i int, params ...int) (r *SparseArray) {
 	return
 }
 
-func (s *SparseArray) Copy() (r *SparseArray) {
+func (s *SparseSlice) Copy() (r *SparseSlice) {
 	if s != nil {
-		r = NewSparseArray(s.length, s.defaultValue)	// { elements: make(arrayHash), length: s.length, defaultValue: s.defaultValue }
+		r = NewSparseSlice(s.length, s.defaultValue)	// { elements: make(sliceHash), length: s.length, defaultValue: s.defaultValue }
 		for k, v := range s.elements {
-			r.elements[k] = &arrayElement{ data: v.data }
+			r.elements[k] = &versionedValue{ data: v.data }
 		}
 	}
 	return
 }
 
 /*
-	Commit creates a new SparseArray which is identical to the current state of a give SparseArray
+	Commit creates a new SparseSlice which is identical to the current state of a give SparseSlice
 */
-func (s *SparseArray) Commit() (r *SparseArray) {
+func (s *SparseSlice) Commit() (r *SparseSlice) {
 	if s != nil {
-		r = NewSparseArray(s.length, s.Default())
+		r = NewSparseSlice(s.length, s.Default())
 		for k, v := range s.elements {
 			r.elements[k] = v.Commit()
 		}
@@ -342,24 +342,24 @@ func (s *SparseArray) Commit() (r *SparseArray) {
 }
 
 /*
-	Undo returns the previous state of a given SparseArray
+	Undo returns the previous state of a given SparseSlice
 */
-func (s *SparseArray) Undo() (r *SparseArray) {
+func (s *SparseSlice) Undo() (r *SparseSlice) {
 	return
 }
 
 /*
-	Return a valid header for the state of the SparseArray at a given version point.
+	Return a valid header for the state of the SparseSlice at a given version point.
 */
-func (s *SparseArray) Rollback(version int) (r *SparseArray) {
+func (s *SparseSlice) Rollback(version int) (r *SparseSlice) {
 	if version < 0 {
 		panic(ARGUMENT_OUT_OF_BOUNDS)
 	}
 
-	for ; s != nil && s.creationVersion > version; s = s.SparseArray {}
+	for ; s != nil && s.creationVersion > version; s = s.SparseSlice {}
 
 	if s != nil {
-		r = &SparseArray{ elements: make(arrayHash), defaultValue: s.defaultValue, creationVersion: version, currentVersion: version }
+		r = &SparseSlice{ elements: make(sliceHash), defaultValue: s.defaultValue, creationVersion: version, currentVersion: version }
 		for k, v := range s.elements {
 			if x := v.AtVersion(version); x != nil {
 				if x.data != s.defaultValue {

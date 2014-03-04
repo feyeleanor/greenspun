@@ -1,14 +1,14 @@
 package greenspun
 
-type arrayElement struct {
-	data					interface{}
-	version				int
-	*arrayElement
+type versionedValue struct {
+	data					interface{}		"current value"
+	version				int						"version count for this value"
+	*versionedValue							"previous value"
 }
 
-func (a *arrayElement) Equal(o interface{}) (r bool) {
+func (a *versionedValue) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case *arrayElement:
+	case *versionedValue:
 		if a == nil {
 			r = o == nil || o.data == nil
 		} else if o == nil {
@@ -34,17 +34,17 @@ func (a *arrayElement) Equal(o interface{}) (r bool) {
 	return
 }
 
-//	Commit returns a new arrayElement containing the data in the current array element.
-func (a *arrayElement) Commit() (r *arrayElement) {
+//	Commit returns a new versionedValue containing the data in the current array element.
+func (a *versionedValue) Commit() (r *versionedValue) {
 	if a != nil {
-		r = &arrayElement{ data: a.data }
+		r = &versionedValue{ data: a.data }
 	}
 	return
 }
 
 //	AtVersion returns the value of the element when the given version number was current.
-func (a *arrayElement) AtVersion(v int) (r *arrayElement) {
-	for ; a != nil; a = a.arrayElement {
+func (a *versionedValue) AtVersion(v int) (r *versionedValue) {
+	for ; a != nil; a = a.versionedValue {
 		if a.version <= v {
 			return a
 		}
@@ -55,11 +55,11 @@ func (a *arrayElement) AtVersion(v int) (r *arrayElement) {
 //	Undo returns the previous value for the current array element.
 //	When the end of the chain is reached it returns nil if the version is greater than
 //	zero, otherwise it returns the cell which has version zero.
-func (a *arrayElement) Undo() (r *arrayElement) {
+func (a *versionedValue) Undo() (r *versionedValue) {
 	if a != nil {
 		switch {
-		case a.arrayElement != nil:
-			r = a.arrayElement
+		case a.versionedValue != nil:
+			r = a.versionedValue
 		case a.version == 0:
 			r = a
 		}
@@ -70,7 +70,7 @@ func (a *arrayElement) Undo() (r *arrayElement) {
 //	Rollback returns the original value for the array element.
 //	If the last element of the chain has version > 0 a nil is returned, otherwise the
 //	last element is returned.
-func (a *arrayElement) Rollback() (r *arrayElement) {
-	for r = a ; r != nil && r.version > 0; r = r.arrayElement {}
+func (a *versionedValue) Rollback() (r *versionedValue) {
+	for r = a ; r != nil && r.version > 0; r = r.versionedValue {}
 	return
 }

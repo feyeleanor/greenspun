@@ -1,18 +1,18 @@
 package greenspun
 
-type arrayHash	map[int] *arrayElement
+type sliceHash	map[int] *versionedValue
 
-func denseArrayHash(values ...interface{}) (r arrayHash) {
-	r = make(arrayHash)
+func denseSliceHash(values ...interface{}) (r sliceHash) {
+	r = make(sliceHash)
 	for i, v := range values {
-		r[i] = &arrayElement{ data: v }
+		r[i] = &versionedValue{ data: v }
 	}
 	return
 }
 
-func (s arrayHash) Equal(o interface{}) (r bool) {
+func (s sliceHash) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
-	case arrayHash:
+	case sliceHash:
 		if len(s) == len(o) {
 			for k, vo := range o {
 				if va, ok := s[k]; ok {
