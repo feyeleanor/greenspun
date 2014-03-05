@@ -14,10 +14,10 @@ package greenspun
 */
 type SparseSlice struct {
 	elements					sliceHash				"versioned elements"
-	length						int							"total number of elements in the array"
+	length						int							"total number of elements in the slice"
 	creationVersion		int							"the version number for which this header was created"
 	currentVersion		int							"the version number of the most recent change"
-	defaultValue			*versionedValue	"the default value for unset elements in the array"
+	defaultValue			*versionedValue	"the default value for unset elements in the slice"
 	*SparseSlice											"the SparseSlice from which the current header is derived"
 }
 
@@ -60,6 +60,9 @@ func (s *SparseSlice) String() (r string) {
 }
 */
 
+/*
+	Return the current length of the slice.
+*/
 func (s *SparseSlice) Len() (r int) {
 	if s != nil {
 		r = s.length
@@ -67,6 +70,9 @@ func (s *SparseSlice) Len() (r int) {
 	return
 }
 
+/*
+	Determine if a passed value is equivalent to the current slice.
+*/
 func (s *SparseSlice) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
 	case SparseSlice:
@@ -128,6 +134,9 @@ func (s *SparseSlice) Equal(o interface{}) (r bool) {
 	return
 }
 
+/*
+	Return the default value for the slice.
+*/
 func (s *SparseSlice) Default() (r interface{}) {
 	if s != nil {
 		r = s.defaultValue.data
@@ -135,14 +144,22 @@ func (s *SparseSlice) Default() (r interface{}) {
 	return
 }
 
+/*
+	Assign a new default value for the slice.
+*/
 func (s *SparseSlice) SetDefault(v interface{}) (r *SparseSlice) {
 	if s != nil {
-		r = s.newHeader()
+		r.currentVersion++
 		r.defaultValue = &versionedValue{ data: v, version: r.currentVersion, versionedValue: s.defaultValue }
 	}
 	return
 }
 
+/*
+	At returns the value stored at a particular location in the slice, which may be the default value or
+	else a value which has been explicitly set. In the event that the location is not within the bounds
+	specified by the slice a panic is raised with ARGUMENT_OUT_OF_BOUNDS.
+*/
 func (s *SparseSlice) At(i int) (r interface{}) {
 	if s == nil || i < 0 || i >= s.length {
 		panic(ARGUMENT_OUT_OF_BOUNDS)
@@ -157,7 +174,7 @@ func (s *SparseSlice) At(i int) (r interface{}) {
 }
 
 /*
-	For Set() operations we preserve the array header so long as the length of the array doesn't change.
+	For Set() operations we preserve the slice header so long as the length of the slice doesn't change.
 */
 func (s *SparseSlice) Set(i int, v interface{}) (r *SparseSlice) {
 	switch {
@@ -187,6 +204,9 @@ func (s *SparseSlice) Set(i int, v interface{}) (r *SparseSlice) {
 	return
 }
 
+/*
+	Ignore OutOfBounds errors.
+*/
 func rescueOutOfBounds() {
 	switch x := recover(); x {
 	case nil, ARGUMENT_OUT_OF_BOUNDS:
@@ -197,7 +217,7 @@ func rescueOutOfBounds() {
 }
 
 /*
-	Iterate through all cells in order, applying the supplied closure.
+	Iterate through all cells in order, applying the supplied closure to the current cell value.
 */
 func (s *SparseSlice) Each(f interface{}) {
 	defer rescueOutOfBounds()
@@ -226,6 +246,10 @@ func (s *SparseSlice) Each(f interface{}) {
 	}
 }
 
+/*
+	Return a new header in which the specified range of cells has been moved to the specified
+	target locations.
+*/
 func (s *SparseSlice) Move(x, y, n int) (r *SparseSlice) {
 	if s != nil {
 		r = s.copyHeader()
@@ -241,15 +265,15 @@ func (s *SparseSlice) Move(x, y, n int) (r *SparseSlice) {
 	return
 }
 
+/*
+	Create a new SparseSlice header referencing the cells in the existing SparseSlice but with
+	the specified items inserted.
+
+	If an existing cell currently contains the default value, we don't bother to reference this
+	in the new SparseSlice. Likewise if one of the values to be inserted is the same as the
+	default value then we don't bother creating a SparseSlice entry.
+*/
 func (s *SparseSlice) Insert(i int, items... interface{}) (r *SparseSlice) {
-	/*
-		Inserting elements means creating a new SparseSlice header and copying the
-		current elements across with those from the insertion point onwards shifted
-		to their new index
-
-		TO DO:	allow insertion before start of array?
-	*/
-
 	if i < 0 {
 		panic(ARGUMENT_NEGATIVE_INDEX)
 	}
@@ -268,20 +292,32 @@ func (s *SparseSlice) Insert(i int, items... interface{}) (r *SparseSlice) {
 		r.currentVersion = r.creationVersion
 
 		for k, v := range s.elements {
-			if k >= i {
+			switch {
+			case v.data == s.defaultValue:
+				continue
+			case k >= i:
 				r.elements[k + n] = v
-			} else {
+			default:
 				r.elements[k] = v
 			}
 		}
 	}
 
 	for k, v := range items {
-		r.elements[i + k] = &versionedValue{ data: v, version: r.currentVersion }
+		if v != r.defaultValue {
+			r.elements[i + k] = &versionedValue{ data: v, version: r.currentVersion }
+		}
 	}
 	return
 }
 
+/*
+	Return a new SparseSlice header referencing the cells in the existing SparseSlice but with
+	one or more cells removed.
+
+	If an existing cell currently contains the default value, we don't bother to reference this
+	in the new SparseSlice.
+*/
 func (s *SparseSlice) Delete(i int, params ...int) (r *SparseSlice) {
 	if i < 0 {
 		panic(ARGUMENT_NEGATIVE_INDEX)
@@ -306,6 +342,8 @@ func (s *SparseSlice) Delete(i int, params ...int) (r *SparseSlice) {
 			last := i + n - 1
 			for k, v := range s.elements {
 				switch {
+				case v == r.defaultValue:
+					continue
 				case k < i:
 					r.elements[k] = v
 				case k > last:
@@ -318,38 +356,62 @@ func (s *SparseSlice) Delete(i int, params ...int) (r *SparseSlice) {
 	return
 }
 
+/*
+	Return a new SparseSlice header referencing the cells in the existing SparseSlice.
+
+	If an existing cell currently contains the default value, we don't bother to reference this
+	in the new SparseSlice.
+*/
 func (s *SparseSlice) Copy() (r *SparseSlice) {
 	if s != nil {
-		r = NewSparseSlice(s.length, s.defaultValue)	// { elements: make(sliceHash), length: s.length, defaultValue: s.defaultValue }
+		r = NewSparseSlice(s.length, s.defaultValue)
 		for k, v := range s.elements {
-			r.elements[k] = &versionedValue{ data: v.data }
+			if v.data != r.defaultValue {
+				r.elements[k] = &versionedValue{ data: v.data }
+			}
 		}
 	}
 	return
 }
 
 /*
-	Commit creates a new SparseSlice which is identical to the current state of a give SparseSlice
+	Commit creates a new SparseSlice which is identical to the current state of a given SparseSlice.
 */
 func (s *SparseSlice) Commit() (r *SparseSlice) {
 	if s != nil {
 		r = NewSparseSlice(s.length, s.Default())
 		for k, v := range s.elements {
-			r.elements[k] = v.Commit()
+			if v.data != r.defaultValue {
+				r.elements[k] = v.Commit()
+			}
 		}
 	}
 	return
 }
 
 /*
-	Undo returns the previous state of a given SparseSlice
+	Return a new SparseSlice header for the previous state of a given SparseSlice relative to its
+	current state.
+
+	If an existing cell currently contains the default value, we don't bother to reference this
+	in the new SparseSlice.
 */
-func (s *SparseSlice) Undo() (r *SparseSlice) {
+func (s *SparseSlice) Undo(steps int) (r *SparseSlice) {
+	if steps < 0 {
+		panic(ARGUMENT_OUT_OF_BOUNDS)
+	}
+
+	if s != nil {
+		r = s.Rollback(s.currentVersion - steps)
+	}
 	return
 }
 
 /*
-	Return a valid header for the state of the SparseSlice at a given version point.
+	Return a new SparseSlice header for the state of the SparseSlice at a given version point.
+
+	If an existing cell currently contains the default value, we don't bother to reference this
+	in the new SparseSlice.
 */
 func (s *SparseSlice) Rollback(version int) (r *SparseSlice) {
 	if version < 0 {

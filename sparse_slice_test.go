@@ -416,7 +416,26 @@ func TestSparseSliceCommit(t *testing.T) {
 }
 
 func TestSparseSliceUndo(t *testing.T) {
-	t.Fatalf("implement tests")
+	ConfirmUndo := func(l *SparseSlice, steps int, r *SparseSlice) {
+		if x := l.Undo(steps); !r.Equal(x) {
+			t.Fatalf("%v.Undo() should be %v but is %v", l, r, x)
+		}
+	}
+
+	ConfirmUndo(nil, 0, nil)
+	ConfirmUndo(NewSparseSlice(5, 0), 0, NewSparseSlice(5, 0, denseSliceHash(0, 0, 0, 0, 0)))
+	ConfirmUndo(NewSparseSlice(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 0, NewSparseSlice(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4))
+	ConfirmUndo(NewSparseSlice(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 1, NewSparseSlice(0, 0).Set(1, 1).Set(2, 2).Set(3, 3))
+
+	ConfirmUndo(NewSparseSlice(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 0, NewSparseSlice(0, 0, denseSliceHash(0, 1, 2, 3, 4)))
+	ConfirmUndo(NewSparseSlice(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 1, NewSparseSlice(0, 0, denseSliceHash(0, 1, 2, 3)))
+	ConfirmUndo(NewSparseSlice(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 2, NewSparseSlice(0, 0, denseSliceHash(0, 1, 2)))
+	ConfirmUndo(NewSparseSlice(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 3, NewSparseSlice(0, 0, denseSliceHash(0, 1)))
+	ConfirmUndo(NewSparseSlice(0, 0).Set(1, 1).Set(2, 2).Set(3, 3).Set(4, 4), 4, NewSparseSlice(0, 0))
+
+	ConfirmUndo(NewSparseSlice(5, 0).Set(1, 1).Set(2, 2), 2, NewSparseSlice(0, 0, denseSliceHash(0, 0, 0, 0, 0)))
+	ConfirmUndo(NewSparseSlice(5, 0).Set(1, 1).Set(2, 2), 1, NewSparseSlice(0, 0, denseSliceHash(0, 1, 0, 0, 0)))
+	ConfirmUndo(NewSparseSlice(5, 0).Set(1, 1).Set(2, 2), 0, NewSparseSlice(0, 0, denseSliceHash(0, 1, 2, 0, 0)))
 }
 
 func TestSparseSliceRollback(t *testing.T) {
@@ -425,7 +444,7 @@ func TestSparseSliceRollback(t *testing.T) {
 		case !r.Equal(x):
 			t.Fatalf("%v.Rollback() should be %v but is %v", l, r, x)
 		case x != nil && x.currentVersion != v:
-			t.Fatalf("%v.Rollback(%:[1]v) currentVersion should be %:[1]v but is %v", l, v, x.currentVersion)
+			t.Fatalf("%[1]v.Rollback(%[2]v) currentVersion should be %[2]v but is %[3]v", l, v, x.currentVersion)
 		}
 	}
 
