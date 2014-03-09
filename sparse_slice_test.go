@@ -3,136 +3,140 @@ package greenspun
 import "testing"
 
 func TestNewSparseSlice(t *testing.T) {
-	ConfirmNewArray := func(n int, d interface{}, v []sliceHash, r *SparseSlice) {
+	ConfirmNewSlice := func(n int, d interface{}, v []sliceHash, r *SparseSlice) {
 		if x := NewSparseSlice(n, d, v...); !x.Equal(r) {
 			t.Fatalf("NewSparseSlice(%v, %v, %v) should be %v but is %v", n, d, v, r, x)
 		}
 	}
 
-	ConfirmNewArray(0, nil, []sliceHash{}, &SparseSlice{ elements: make(sliceHash), length: 0, currentVersion: 0, defaultValue: nil })
+	ConfirmNewSlice(0, nil, nil, &SparseSlice{ elements: make(sliceHash), length: 0, currentVersion: 0, defaultValue: nil })
 
-	ConfirmNewArray(0, nil, []sliceHash{ sliceHash{ 0: &versionedValue{ data: 0 } } },
+	ConfirmNewSlice(0, nil, []sliceHash{ sliceHash{ 0: &versionedValue{ data: 0 } } },
 									&SparseSlice{ elements: sliceHash{ 0: &versionedValue{ data: 0 } }, length: 1, currentVersion: 0, defaultValue: nil })
 
-	ConfirmNewArray(0, 10, []sliceHash{ sliceHash{ 0: &versionedValue{ data: 0 }, 3: &versionedValue{ data: 0 } } },
+	ConfirmNewSlice(0, 10, []sliceHash{ sliceHash{ 0: &versionedValue{ data: 0 }, 3: &versionedValue{ data: 0 } } },
 									&SparseSlice{ elements: sliceHash{ 0: &versionedValue{ data: 0 }, 3: &versionedValue{ data: 0 } }, length: 4, currentVersion: 0, defaultValue: &versionedValue{ data: 10 } })
 
-	ConfirmNewArray(0, 10, []sliceHash{ sliceHash{ 0: &versionedValue{ data: 0 }, 3: &versionedValue{ data: 0 } }, sliceHash{ 0: &versionedValue{ data: 1 }, 9: &versionedValue{ data: 0 } } },
+	ConfirmNewSlice(0, 10, []sliceHash{ sliceHash{ 0: &versionedValue{ data: 0 }, 3: &versionedValue{ data: 0 } }, sliceHash{ 0: &versionedValue{ data: 1 }, 9: &versionedValue{ data: 0 } } },
 									&SparseSlice{ elements: sliceHash{ 0: &versionedValue{ data: 1 }, 3: &versionedValue{ data: 0 }, 9: &versionedValue{ data: 0 } }, length: 10, currentVersion: 0, defaultValue: &versionedValue{ data: 10 } })
 }
 
 func TestSparseSliceString(t *testing.T) {
+	t.Fatalf("implement String()")
 }
 
 func TestSparseSliceLen(t *testing.T) {
-}
-
-func TestSparseSliceEqual(t *testing.T) {
-	ConfirmEqual := func(l *SparseSlice, v interface{}, r bool) {
-		if x := l.Equal(v); x != r {
-			t.Fatalf("%v.Equal(%v) should be %v but is %v", l, v, r, x)
+	ConfirmLen := func(l *SparseSlice, r int) {
+		if x := l.Len(); x != r {
+			t.Fatalf("%v.Len() should be %v but is %v", l, r, x)
 		}
 	}
 
-	ConfirmEqual(nil, nil, true)
-	ConfirmEqual(nil, new(SparseSlice), false)
-	ConfirmEqual(new(SparseSlice), nil, false)
-	ConfirmEqual(new(SparseSlice), new(SparseSlice), true)
-	ConfirmEqual(&SparseSlice{}, new(SparseSlice), true)
-	ConfirmEqual(new(SparseSlice), &SparseSlice{}, true)
+	ConfirmLen(NewSparseSlice(0, 0), 0)
+	ConfirmLen(NewSparseSlice(0, 0, sliceHash{ 0: &versionedValue{ data: 0 } }), 1)
+	ConfirmLen(NewSparseSlice(0, 0, sliceHash{ 0: &versionedValue{ data: 0 }, 3: &versionedValue{ data: 0 } }), 4)
+}
 
-	ConfirmEqual(&SparseSlice{ length: 1, defaultValue: &versionedValue{ data: 0 } }, &SparseSlice{ length: 1, defaultValue: &versionedValue{ data: 0 } }, true)
-	ConfirmEqual(&SparseSlice{ length: 1, defaultValue: &versionedValue{ data: 0 } }, &SparseSlice{ length: 1, defaultValue: &versionedValue{ data: 1 } }, false)
+func TestSparseSliceEqual(t *testing.T) {
+	ConfirmEqual := func(l *SparseSlice, v interface{}) {
+		if x := l.Equal(v); !x {
+			t.Fatalf("%v.Equal(%v) should be true", l, v)
+		}
+	}
 
-	ConfirmEqual(&SparseSlice{ length: 2, defaultValue: &versionedValue{ data: 0 } }, &SparseSlice{ length: 2, defaultValue: &versionedValue{ data: 0 } }, true)
-	ConfirmEqual(&SparseSlice{ length: 2, defaultValue: &versionedValue{ data: 0 } }, &SparseSlice{ length: 2, defaultValue: &versionedValue{ data: 1 } }, false)
+	RefuteEqual := func(l *SparseSlice, v interface{}) {
+		if x := l.Equal(v); x {
+			t.Fatalf("%v.Equal(%v) should be false", l, v)
+		}
+	}
 
-	ConfirmEqual(&SparseSlice{ length: 3, defaultValue: &versionedValue{ data: 0 } }, &SparseSlice{ length: 3, defaultValue: &versionedValue{ data: 0 } }, true)
-	ConfirmEqual(&SparseSlice{ length: 3, defaultValue: &versionedValue{ data: 0 } }, &SparseSlice{ length: 3, defaultValue: &versionedValue{ data: 1 } }, false)
+	ConfirmEqual(nil, nil)
+	RefuteEqual(nil, new(SparseSlice))
+	RefuteEqual(new(SparseSlice), nil)
+	ConfirmEqual(new(SparseSlice), new(SparseSlice))
+	ConfirmEqual(&SparseSlice{}, new(SparseSlice))
+	ConfirmEqual(new(SparseSlice), &SparseSlice{})
 
-	ConfirmEqual(	&SparseSlice{	length: 1, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
-								&SparseSlice{	length: 1, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
-								true )
+	ConfirmEqual(	&SparseSlice{ length: 1, defaultValue: &versionedValue{ data: 0 } },
+								&SparseSlice{ length: 1, defaultValue: &versionedValue{ data: 0 } })
 
-	ConfirmEqual(	&SparseSlice{	length: 1, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
-								&SparseSlice{	length: 1, elements: sliceHash{ 0: &versionedValue{ data: 1 } } },
-								false )
+	RefuteEqual(	&SparseSlice{ length: 1, defaultValue: &versionedValue{ data: 0 } },
+								&SparseSlice{ length: 1, defaultValue: &versionedValue{ data: 1 } })
 
-	ConfirmEqual(	&SparseSlice{	length: 1, elements: sliceHash{ 0: &versionedValue{ data: 1 } } },
-								&SparseSlice{	length: 1, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
-								false )
+	ConfirmEqual(	&SparseSlice{ length: 2, defaultValue: &versionedValue{ data: 0 } },
+								&SparseSlice{ length: 2, defaultValue: &versionedValue{ data: 0 } })
 
-	ConfirmEqual(	&SparseSlice{	length: 1, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
-								&SparseSlice{	length: 0 },
-								false )
+	RefuteEqual(	&SparseSlice{ length: 2, defaultValue: &versionedValue{ data: 0 } },
+								&SparseSlice{ length: 2, defaultValue: &versionedValue{ data: 1 } })
 
-	ConfirmEqual(	&SparseSlice{	length: 0 },
-								&SparseSlice{	length: 1, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
-								false )
+	ConfirmEqual(	&SparseSlice{ length: 3, defaultValue: &versionedValue{ data: 0 } },
+								&SparseSlice{ length: 3, defaultValue: &versionedValue{ data: 0 } })
+
+	RefuteEqual(	&SparseSlice{ length: 3, defaultValue: &versionedValue{ data: 0 } },
+								&SparseSlice{ length: 3, defaultValue: &versionedValue{ data: 1 } })
+
+	ConfirmEqual(	&SparseSlice{ length: 1, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
+								&SparseSlice{ length: 1, elements: sliceHash{ 0: &versionedValue{ data: 0 } } })
+
+	RefuteEqual(	&SparseSlice{	length: 1, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
+								&SparseSlice{ length: 1, elements: sliceHash{ 0: &versionedValue{ data: 1 } } })
+
+	RefuteEqual(	&SparseSlice{	length: 1, elements: sliceHash{ 0: &versionedValue{ data: 1 } } },
+								&SparseSlice{ length: 1, elements: sliceHash{ 0: &versionedValue{ data: 0 } } })
+
+	RefuteEqual(	&SparseSlice{	length: 1, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
+								&SparseSlice{ length: 0 })
+
+	RefuteEqual(	&SparseSlice{	length: 0 },
+								&SparseSlice{	length: 1, elements: sliceHash{ 0: &versionedValue{ data: 0 } } })
+
+	ConfirmEqual(	&SparseSlice{ length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } },
+								&SparseSlice{ length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } })
+
+	RefuteEqual(	&SparseSlice{ length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } },
+								&SparseSlice{ length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 3 } } })
+
+	RefuteEqual(	&SparseSlice{ length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 3 } } },
+								&SparseSlice{ length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } })
 
 	ConfirmEqual(	&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } },
-								&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } },
-								true )
-
-	ConfirmEqual(	&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } },
-								&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 3 } } },
-								false )
-
-	ConfirmEqual(	&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 3 } } },
-								&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } },
-								false )
-
-	ConfirmEqual(	&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } },
-								&SparseSlice{	length: 2, defaultValue: &versionedValue{ data: 1 }, elements:	sliceHash{ 0: &versionedValue{ data: 0 } } },
-								true )
+								&SparseSlice{	length: 2, defaultValue: &versionedValue{ data: 1 }, elements:	sliceHash{ 0: &versionedValue{ data: 0 } } })
 
 	ConfirmEqual(	&SparseSlice{	length: 2, defaultValue: &versionedValue{ data: 1 }, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
-								&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } },
-								true )
+								&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } })
 
-	ConfirmEqual(	&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } },
-								&SparseSlice{	length: 2, defaultValue: &versionedValue{ data: 2 }, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
-								false )
+	RefuteEqual(	&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } },
+								&SparseSlice{	length: 2, defaultValue: &versionedValue{ data: 2 }, elements: sliceHash{ 0: &versionedValue{ data: 0 } } })
 
-	ConfirmEqual(	&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 2 } } },
-								&SparseSlice{	length: 2, defaultValue: &versionedValue{ data: 1 }, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
-								false )
+	RefuteEqual(	&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 2 } } },
+								&SparseSlice{	length: 2, defaultValue: &versionedValue{ data: 1 }, elements: sliceHash{ 0: &versionedValue{ data: 0 } } })
 
-	ConfirmEqual(	&SparseSlice{	length: 2, defaultValue: &versionedValue{ data: 2 }, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
-								&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } },
-								false )
+	RefuteEqual(	&SparseSlice{	length: 2, defaultValue: &versionedValue{ data: 2 }, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
+								&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } })
 
-	ConfirmEqual(	&SparseSlice{	length: 2, defaultValue: &versionedValue{ data: 1 }, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
-								&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 2 } } },
-								false )
+	RefuteEqual(	&SparseSlice{	length: 2, defaultValue: &versionedValue{ data: 1 }, elements: sliceHash{ 0: &versionedValue{ data: 0 } } },
+								&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 2 } } })
 
-	ConfirmEqual(	&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } },
-								&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 3 } } },
-								false )
+	RefuteEqual(	&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } },
+								&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 3 } } })
 
-	ConfirmEqual(	&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 3 } } },
-								&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } },
-								false )
+	RefuteEqual(	&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 3 } } },
+								&SparseSlice{	length: 2, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 } } })
 
 	ConfirmEqual(	&SparseSlice{	length: 3, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 }, 2: &versionedValue{ data: 2 } } },
-								&SparseSlice{	length: 3, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 }, 2: &versionedValue{ data: 2 } } },
-								true )
+								&SparseSlice{	length: 3, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 }, 2: &versionedValue{ data: 2 } } })
 
 	ConfirmEqual(	&SparseSlice{	length: 3, defaultValue: &versionedValue{ data: 1 }, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 2: &versionedValue{ data: 2 } } },
-								&SparseSlice{	length: 3, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 }, 2: &versionedValue{ data: 2 } } },
-								true )
+								&SparseSlice{	length: 3, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 }, 2: &versionedValue{ data: 2 } } })
 
-	ConfirmEqual(	&SparseSlice{	length: 3, defaultValue: &versionedValue{ data: 2 }, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 2: &versionedValue{ data: 2 } } },
-								&SparseSlice{	length: 3, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 }, 2: &versionedValue{ data: 2 } } },
-								false )
+	RefuteEqual(	&SparseSlice{	length: 3, defaultValue: &versionedValue{ data: 2 }, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 2: &versionedValue{ data: 2 } } },
+								&SparseSlice{	length: 3, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 }, 2: &versionedValue{ data: 2 } } })
 
 	ConfirmEqual(	&SparseSlice{	length: 3, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 }, 2: &versionedValue{ data: 2 } } },
-								&SparseSlice{	length: 3, defaultValue: &versionedValue{ data: 1 }, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 2: &versionedValue{ data: 2 } } },
-								true )
+								&SparseSlice{	length: 3, defaultValue: &versionedValue{ data: 1 }, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 2: &versionedValue{ data: 2 } } })
 
-	ConfirmEqual(	&SparseSlice{	length: 3, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 }, 2: &versionedValue{ data: 2 } } },
-								&SparseSlice{	length: 3, defaultValue: &versionedValue{ data: 2 }, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 2: &versionedValue{ data: 2 } } },
-								false )
+	RefuteEqual(	&SparseSlice{	length: 3, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 1: &versionedValue{ data: 1 }, 2: &versionedValue{ data: 2 } } },
+								&SparseSlice{	length: 3, defaultValue: &versionedValue{ data: 2 }, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 2: &versionedValue{ data: 2 } } })
 }
 
 func TestSparseSliceAt(t *testing.T) {

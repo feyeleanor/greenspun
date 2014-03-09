@@ -205,22 +205,10 @@ func (s *SparseSlice) Set(i int, v interface{}) (r *SparseSlice) {
 }
 
 /*
-	Ignore OutOfBounds errors.
-*/
-func rescueOutOfBounds() {
-	switch x := recover(); x {
-	case nil, ARGUMENT_OUT_OF_BOUNDS:
-		return
-	default:
-		panic(x)
-	}
-}
-
-/*
 	Iterate through all cells in order, applying the supplied closure to the current cell value.
 */
 func (s *SparseSlice) Each(f interface{}) {
-	defer rescueOutOfBounds()
+	defer RescueOutOfBounds()
 	var i	int
 
 	switch f := f.(type) {

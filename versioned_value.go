@@ -1,9 +1,20 @@
 package greenspun
 
+import "fmt"
+
 type versionedValue struct {
 	data					interface{}		"current value"
 	version				int						"version count for this value"
 	*versionedValue							"previous value"
+}
+
+func (a *versionedValue) String() (r string) {
+	if a == nil {
+		r = "nil"
+	} else {
+		r = fmt.Sprintf("%v", a.data)
+	}
+	return
 }
 
 func (a *versionedValue) Equal(o interface{}) (r bool) {

@@ -2,7 +2,20 @@ package greenspun
 
 import "testing"
 
-func TestArrayElementEqual(t *testing.T) {
+func TestVersionedValueString(t *testing.T) {
+	ConfirmString := func(a *versionedValue, r string) {
+		if x := a.String(); x != r {
+			t.Fatalf("%v.String() should be %v", a, r)
+		}
+	}
+
+	ConfirmString(nil, "nil")
+	ConfirmString(&versionedValue{ data: nil }, "<nil>")
+	ConfirmString(&versionedValue{ data: 0 }, "0")
+	ConfirmString(&versionedValue{ data: 1, version: 1, versionedValue: &versionedValue{ data: 0 } }, "1")
+}
+
+func TestVersionedValueEqual(t *testing.T) {
 	ConfirmEqual := func(a *versionedValue, v interface{}, r bool) {
 		if x := a.Equal(v); x != r {
 			t.Fatalf("%v.Equal(%v) should be %v but is %v", a, v, r, x)
@@ -31,7 +44,7 @@ func TestArrayElementEqual(t *testing.T) {
 	ConfirmEqual(&versionedValue{ data: stack(0, 1) }, &versionedValue{ data: stack(0, 1) }, true)
 }
 
-func TestArrayElementCommit(t *testing.T) {
+func TestVersionedValueCommit(t *testing.T) {
 	ConfirmCommit := func(a, r *versionedValue) {
 		if a == nil {
 			if x := a.Commit(); x != nil {
@@ -56,7 +69,7 @@ func TestArrayElementCommit(t *testing.T) {
 	ConfirmCommit(&versionedValue{ data: 1, version: 1, versionedValue: &versionedValue{ data: 0 } }, &versionedValue{ data: 1 })
 }
 
-func TestArrayElementAtVersion(t *testing.T) {
+func TestVersionedValueAtVersion(t *testing.T) {
 	ConfirmAtVersion := func(a *versionedValue, v int, r *versionedValue) {
 		if x := a.AtVersion(v); !x.Equal(r) {
 			t.Fatalf("%v.AtVersion(%v) should be %v but is %v", a, v, r, x)
@@ -82,7 +95,7 @@ func TestArrayElementAtVersion(t *testing.T) {
 	ConfirmAtVersion(&versionedValue{ data: 1, version: 1, versionedValue: &versionedValue{ data: 0, version: 0 } }, 1, &versionedValue{ data: 1, version: 1, versionedValue: &versionedValue{ data: 0, version: 0 } })
 }
 
-func TestArrayElementUndo(t *testing.T) {
+func TestVersionedValueUndo(t *testing.T) {
 	ConfirmUndo := func(a, r *versionedValue) {
 		switch x := a.Undo(); {
 		case a == nil:
@@ -99,7 +112,7 @@ func TestArrayElementUndo(t *testing.T) {
 	ConfirmUndo(&versionedValue{ data: 1, versionedValue: &versionedValue{ data: 0 } }, &versionedValue{ data: 0 })
 }
 
-func TestArrayElementRollback(t *testing.T) {
+func TestVersionedValueRollback(t *testing.T) {
 	ConfirmRollback := func(a, r *versionedValue) {
 		switch x := a.Rollback(); {
 		case a == nil:
