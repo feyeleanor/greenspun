@@ -5,17 +5,14 @@ import (
 	"strings"
 )
 
-/*
-	This is a wrapper for a functional queue data structure implemented as a pair of stackCells. It's
-	inspired by Chris Okasaki's non-lazy functional queue and Go's SliceHeader and StringHeader types.
-
-	When an item is appended to the queue, it's pushed onto the tail stack.
-	When an item is popped from the queue, it's popped from the head stack.
-	When the head stack is empty, the tail stack is reversed and assigned as the head stack.
-	We also maintain a cached length for the queue which is incremented on append & decremented on pop.
-*/
-
-
+//	This is a wrapper for a functional queue data structure implemented as a pair of stackCells. It's
+//	inspired by Chris Okasaki's non-lazy functional queue and Go's SliceHeader and StringHeader types.
+//
+//	When an item is appended to the queue, it's pushed onto the tail stack.
+//	When an item is popped from the queue, it's popped from the head stack.
+//	When the head stack is empty, the tail stack is reversed and assigned as the head stack.
+//	We also maintain a cached length for the queue which is incremented on append & decremented on pop.
+//
 type Fifo struct {
 	head			*stackCell		"a list of items stored at the front of the Fifo"
 	tail			*stackCell		"a list of items stored at the rear of the Fifo"
@@ -41,17 +38,16 @@ func (s *Fifo) copyHeader() (r *Fifo) {
 	return
 }
 
-/*
-	A functional queue contains two stacks representing the front and back of the queue.
-	reverseTail() is an optimisation used when the front stack is empty to reverse the back
-	stack elements and create a new front stack.
-
-	This is a destructive operation and uses the header mutex. This is an optimisation to
-	minimise the number of reversal operations.
-
-	Normally when a reversal occurs it's associated with an operation which will create a new
-	header, therefore we return a copy of the modified queue header as a convenience.
-*/
+//	A functional queue contains two stacks representing the front and back of the queue.
+//	reverseTail() is an optimisation used when the front stack is empty to reverse the back
+//	stack elements and create a new front stack.
+//
+//	This is a destructive operation and uses the header mutex. This is an optimisation to
+//	minimise the number of reversal operations.
+//
+//	Normally when a reversal occurs it's associated with an operation which will create a new
+//	header, therefore we return a copy of the modified queue header as a convenience.
+//
 func (s *Fifo) reverseTail() *Fifo {
 	if s == nil {
 		panic(LIST_UNINITIALIZED)
@@ -70,17 +66,16 @@ func (s *Fifo) reverseTail() *Fifo {
 	return s.copyHeader()
 }
 
-/*
-	A functional queue contains two stacks representing the front and back of the queue.
-	balance() is an optimisation used when the front or rear stack is empty to reverse the
-	tail half of the complementary stack elements and create a new stack header.
-
-	This is a destructive operation and uses the header mutex. This is an optimisation to
-	minimise the number of balance operations.
-
-	Normally when a balance occurs it's associated with an operation which will create a new
-	header, therefore we return a copy of the modified queue header as a convenience.
-*/
+//	A functional queue contains two stacks representing the front and back of the queue.
+//	balance() is an optimisation used when the front or rear stack is empty to reverse the
+//	tail half of the complementary stack elements and create a new stack header.
+//
+//	This is a destructive operation and uses the header mutex. This is an optimisation to
+//	minimise the number of balance operations.
+//
+//	Normally when a balance occurs it's associated with an operation which will create a new
+//	header, therefore we return a copy of the modified queue header as a convenience.
+//
 func (s *Fifo) balance() (r *Fifo) {
 	switch {
 	case s == nil:
@@ -268,12 +263,11 @@ func (s *Fifo) Swap() (r *Fifo) {
 	return
 }
 
-/*
-	Make a new queue containing n cells where each cell contains the same value as is stored at the same depth
-	in the existing queue.
-
-	If the queue is shorter than n we copy the entire queue.
-*/
+//	Make a new queue containing n cells where each cell contains the same value as is stored at the same depth
+//	in the existing queue.
+//
+//	If the queue is shorter than n we copy the entire queue.
+//
 func (s *Fifo) Copy(n int) (r *Fifo) {
 	if s != nil {
 		if n > s.length {
@@ -289,9 +283,8 @@ func (s *Fifo) Copy(n int) (r *Fifo) {
  	return
 }
 
-/*
-	Make a new queue in which the elements in the source queue are reversed.
-*/
+//	Make a new queue in which the elements in the source queue are reversed.
+//
 func (s *Fifo) Reverse() *Fifo {
 	if s == nil {
 		panic(LIST_UNINITIALIZED)
@@ -299,9 +292,8 @@ func (s *Fifo) Reverse() *Fifo {
 	return &Fifo{ head: s.tail.Clone(), tail: s.head.Clone(), length: s.length }
 }
 
-/*
-	Move to the Nth cell from the start of the queue, or return nil if there are fewer than N cells.
-*/
+//	Move to the Nth cell from the start of the queue, or return nil if there are fewer than N cells.
+//
 func (s *Fifo) Move(n int) (r *Fifo) {
 	switch {
 	case s == nil, n >= s.length:
@@ -314,9 +306,8 @@ func (s *Fifo) Move(n int) (r *Fifo) {
 	return
 }
 
-/*
-	Move to the Nth cell from the front of the queue and create a new cell with the same value which is appended to the queue.
-*/
+//	Move to the Nth cell from the front of the queue and create a new cell with the same value which is appended to the queue.
+//
 func (s *Fifo) Pick(n int) (r *Fifo) {
 	switch {
 	case s == nil, n >= s.length:
@@ -328,10 +319,9 @@ func (s *Fifo) Pick(n int) (r *Fifo) {
 	return
 }
 
-/*
-	Move to the Nth cell from the front of the queue and copy its value, then make a new queue in which this is the first element
-	and the succeeding elements are the section 0..N-1 followed by N+1 onwards.
-*/
+//	Move to the Nth cell from the front of the queue and copy its value, then make a new queue in which this is the first element
+//	and the succeeding elements are the section 0..N-1 followed by N+1 onwards.
+//
 func (s *Fifo) Roll(n int) (r *Fifo) {
 	switch {
 	case s == nil, n >= s.length, n == 0:

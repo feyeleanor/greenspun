@@ -59,9 +59,8 @@ var argErrText = map[ArgumentError] string {
 	ARGUMENT_OUT_OF_BOUNDS:		"index lies outside allowed range",
 }
 
-/*
-	Ignore OutOfBounds errors.
-*/
+//	Ignore OutOfBounds errors.
+//
 func RescueOutOfBounds() {
 	switch x := recover(); x {
 	case nil, ARGUMENT_OUT_OF_BOUNDS:

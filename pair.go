@@ -5,13 +5,11 @@ import (
 	"strings"
 )
 
-/*
-	This is an implementation of the traditional Lisp dotted pair, storing a data item in the head, and either
-	a data item or a pointer to another dotted pair in the tail.
-
-			cf:			http://en.wikipedia.org/wiki/Cons
-*/
-
+//	This is an implementation of the traditional Lisp dotted pair, storing a data item in the head, and either
+//	a data item or a pointer to another dotted pair in the tail.
+//
+//			cf:			http://en.wikipedia.org/wiki/Cons
+//
 type Pair struct {
 	head		interface{}		"data contained in the current cell"
 	tail		interface{}		"the next cell or a second item contained in the current cell"
@@ -107,10 +105,9 @@ func (c *Pair) Push(v interface{}) (r *Pair) {
 	return
 }
 
-/*
-	Return the data item stored in the current pair, or a nil if the stack is empty.
-	If the current cell is nil then panic.
-*/
+//	Return the data item stored in the current pair, or a nil if the stack is empty.
+//	If the current cell is nil then panic.
+//
 func (c *Pair) Peek() interface{} {
 	if c == nil {
 		panic(PAIR_EMPTY)
@@ -118,11 +115,10 @@ func (c *Pair) Peek() interface{} {
 	return c.head
 }
 
-/*
-	Return the data item stored in the current Pair, along with a reference to the succeeding cell in the stack.
-
-	If the current cell is nil then panic.
-*/
+//	Return the data item stored in the current Pair, along with a reference to the succeeding cell in the stack.
+//
+//	If the current cell is nil then panic.
+//
 func (c *Pair) Pop() (v interface{}, r *Pair) {
 	return c.Car(), c.NextPair()
 }

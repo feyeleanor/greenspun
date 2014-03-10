@@ -2,16 +2,14 @@ package greenspun
 
 //import "fmt"
 
-/*
-	This is a wrapper for a spaghetti stack data structure as implemented by the stackCell type. It's
-	inspired by Go's SliceHeader and StringHeader types.
-
-	Whilst bare spaghetti stack structures are immutable containers, the Lifo implements Lisp's
-	Rplaca and Rplacd functions and allows stack elements to be modified in situ.
-
-	TODO: consider ditching mutability and making methods return new lifo headers
-*/
-
+//	This is a wrapper for a spaghetti stack data structure as implemented by the stackCell type. It's
+//	inspired by Go's SliceHeader and StringHeader types.
+//
+//	Whilst bare spaghetti stack structures are immutable containers, the Lifo implements Lisp's
+//	Rplaca and Rplacd functions and allows stack elements to be modified in situ.
+//
+//	TODO: consider ditching mutability and making methods return new lifo headers
+//
 type Lifo struct {
 	depth		int		"the number of items contained in the Lifo"
 	*stackCell		"the first data item in the Lifo"
@@ -126,12 +124,11 @@ func (s *Lifo) Swap() {
 	s.stackCell = s.stackCell.Swap()
 }
 
-/*
-	Make a new stack containing n cells where each cell contains the same value as is stored at the same depth
-	in the existing stack.
-
-	If the stack is shorter than n we copy the entire stack.
-*/
+//	Make a new stack containing n cells where each cell contains the same value as is stored at the same depth
+//	in the existing stack.
+//
+//	If the stack is shorter than n we copy the entire stack.
+//
 func (s *Lifo) Copy(n int) (r *Lifo) {
 	if s != nil {
 		if n > s.depth {
@@ -142,9 +139,8 @@ func (s *Lifo) Copy(n int) (r *Lifo) {
  	return
 }
 
-/*
-	Move to the Nth cell from the top of the stack, or return an error if there are fewer than N cells.
-*/
+//	Move to the Nth cell from the top of the stack, or return an error if there are fewer than N cells.
+//
 func (s *Lifo) Move(n int) {
 	if s == nil {
 		panic(LIST_UNINITIALIZED)
@@ -153,10 +149,9 @@ func (s *Lifo) Move(n int) {
 	s.depth -= n
 }
 
-/*
-	Move to the Nth cell from the top of the stack and create a new cell with the same value and pointing to the
-	top of the current stack.
-*/
+//	Move to the Nth cell from the top of the stack and create a new cell with the same value and pointing to the
+//	top of the current stack.
+//
 func (s *Lifo) Pick(n int) {
 	if s == nil {
 		panic(LIST_UNINITIALIZED)
@@ -165,11 +160,10 @@ func (s *Lifo) Pick(n int) {
 	s.depth++
 }
 
-/*
-	Create a new stack common with the current stack from the Nth+1 element. The Nth item of the current stack becames
-	the first item of the new stack and then successive elements are filled with corresponding values starting with
-	that at the top of the current stack.
-*/
+//	Create a new stack common with the current stack from the Nth+1 element. The Nth item of the current stack becames
+//	the first item of the new stack and then successive elements are filled with corresponding values starting with
+//	that at the top of the current stack.
+//
 func (s *Lifo) Roll(n int) {
 	if s == nil {
 		panic(LIST_UNINITIALIZED)
@@ -177,9 +171,8 @@ func (s *Lifo) Roll(n int) {
 	s.stackCell = s.stackCell.Roll(n)
 }
 
-/*
-	Replace the data item stored in the cell at the top of the stack.
-*/
+//	Replace the data item stored in the cell at the top of the stack.
+//
 func (s *Lifo) Rplaca(item interface{}) {
 	if s == nil {
 		panic(LIST_UNINITIALIZED)
@@ -187,9 +180,8 @@ func (s *Lifo) Rplaca(item interface{}) {
 	s.stackCell.data = item
 }
 
-/*
-	Change the stack pointed to by the top of the stack.
-*/
+//	Change the stack pointed to by the top of the stack.
+//
 func (s *Lifo) Rplacd(tail interface{}) {
 	switch {
 	case s == nil:

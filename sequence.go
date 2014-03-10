@@ -5,10 +5,8 @@ type Sequence interface {
 	Next() Sequence
 }
 
-
-/*
-	Check the equality of two cells based upon their contents
-*/
+//	Check the equality of two cells based upon their contents
+//
 func MatchValue(lhs, rhs Sequence) (r bool) {
 	switch {
 	case lhs == nil && rhs == nil:

@@ -22,7 +22,17 @@ func TestNewDenseSlice(t *testing.T) {
 }
 
 func TestDenseSliceString(t *testing.T) {
-	t.Fatalf("implement String()")
+	ConfirmString := func(l *DenseSlice, r string) {
+		if x := l.String(); x != r {
+			t.Fatalf("%v.String() should be %v", x, r)
+		}
+	}
+
+	ConfirmString(nil, "<nil>")
+	ConfirmString(NewDenseSlice(0), "[]")
+	ConfirmString(NewDenseSlice(0, 0), "[0]")
+	ConfirmString(NewDenseSlice(0, 0, 1), "[0 1]")
+	ConfirmString(NewDenseSlice(0, 0, 1, 2), "[0 1 2]")
 }
 
 func TestDenseSliceLen(t *testing.T) {
@@ -34,6 +44,7 @@ func TestDenseSliceLen(t *testing.T) {
 
 	ConfirmLen(NewDenseSlice(0), 0)
 	ConfirmLen(NewDenseSlice(0, 0), 1)
+	ConfirmLen(NewDenseSlice(0, 0, 1, 2), 3)
 	ConfirmLen(NewDenseSlice(0, 0, 1, 2, 3), 4)
 }
 

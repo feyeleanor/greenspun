@@ -1,14 +1,15 @@
 package greenspun
 
-/*
-	The DenseSlice is a persistent integer-indexed data store. Internally elements are slice
-	which provides uniform access, and each access is represented by a stack of versioned values.
+import "fmt"
 
-	The DenseSlice contains a creationVersion field which is initialised when a new header is
-	created, and a currentVersion which is incremented whenever an element is modified.
-
-	Queries out of bounds will panic as with a conventional slice.
-*/
+//	The DenseSlice is a persistent integer-indexed data store. Internally elements are slice
+//	which provides uniform access, and each access is represented by a stack of versioned values.
+//
+//	The DenseSlice contains a creationVersion field which is initialised when a new header is
+//	created, and a currentVersion which is incremented whenever an element is modified.
+//
+//	Queries out of bounds will panic as with a conventional slice.
+//
 type DenseSlice struct {
 	elements					sliceSlice			"versioned elements"
 	creationVersion		int							"the version number for which this header was created"
@@ -16,10 +17,9 @@ type DenseSlice struct {
 	*DenseSlice												"the DenseSlice from which the current header is derived"
 }
 
-/*
-	NewDenseSlice returns a DenseSlice. If optional parameters are provided these will result in values being
-	assigned to the initial cells and if necessary the length of the DenseSlice adjusted to reflect this.
-*/
+//	NewDenseSlice returns a DenseSlice. If optional parameters are provided these will result in values being
+//	assigned to the initial cells and if necessary the length of the DenseSlice adjusted to reflect this.
+//
 func NewDenseSlice(n int, items ...interface{}) (r *DenseSlice) {
 	if n < len(items) {
 		n = len(items)
@@ -38,7 +38,7 @@ func (s *DenseSlice) copyHeader() (r *DenseSlice) {
 	return
 }
 
-func (s *DenseSlice) newHeader() (r *DenseSlice) {
+func (s *DenseSlice) newVersion() (r *DenseSlice) {
 	if s != nil {
 		creationVersion := s.currentVersion + 1
 		r = &DenseSlice{ s.elements, creationVersion, creationVersion, s }
@@ -46,15 +46,17 @@ func (s *DenseSlice) newHeader() (r *DenseSlice) {
 	return
 }
 
-/*
 func (s *DenseSlice) String() (r string) {
-	return
+	if s != nil {
+		r = fmt.Sprintf("%v", s.elements)
+	} else {
+		r = fmt.Sprintf("%v", nil)
+	}
+	return 
 }
-*/
 
-/*
-	Return the current length of the slice.
-*/
+//	Return the current length of the slice.
+//
 func (s *DenseSlice) Len() (r int) {
 	if s != nil {
 		r = len(s.elements)
@@ -62,9 +64,8 @@ func (s *DenseSlice) Len() (r int) {
 	return
 }
 
-/*
-	Determine if a passed value is equivalent to the current slice.
-*/
+//	Determine if a passed value is equivalent to the current slice.
+//
 func (s *DenseSlice) Equal(o interface{}) (r bool) {
 	switch o := o.(type) {
 	case DenseSlice:
@@ -92,11 +93,10 @@ func (s *DenseSlice) Equal(o interface{}) (r bool) {
 	return
 }
 
-/*
-	At returns the value stored at a particular location in the slice, which may be the default value or
-	else a value which has been explicitly set. In the event that the location is not within the bounds
-	specified by the slice a panic is raised with ARGUMENT_OUT_OF_BOUNDS.
-*/
+//	At returns the value stored at a particular location in the slice, which may be the default value or
+//	else a value which has been explicitly set. In the event that the location is not within the bounds
+//	specified by the slice a panic is raised with ARGUMENT_OUT_OF_BOUNDS.
+//
 func (s *DenseSlice) At(i int) (r interface{}) {
 	if s == nil || i < 0 || i >= len(s.elements) {
 		panic(ARGUMENT_OUT_OF_BOUNDS)
@@ -108,9 +108,8 @@ func (s *DenseSlice) At(i int) (r interface{}) {
 	return
 }
 
-/*
-	For Set() operations we preserve the slice header so long as the length of the slice doesn't change.
-*/
+//	For Set() operations we preserve the slice header so long as the length of the slice doesn't change.
+//
 func (s *DenseSlice) Set(i int, v interface{}) (r *DenseSlice) {
 	switch {
 	case i < 0:
@@ -120,7 +119,7 @@ func (s *DenseSlice) Set(i int, v interface{}) (r *DenseSlice) {
 	default:
 		switch {
 		case i >= len(s.elements):
-			r = s.newHeader()
+			r = s.newVersion()
 			e := make(sliceSlice, i)
 			copy(e, r.elements)
 			r.elements = e
@@ -134,9 +133,8 @@ func (s *DenseSlice) Set(i int, v interface{}) (r *DenseSlice) {
 	return
 }
 
-/*
-	Iterate through all cells in order, applying the supplied closure to the current cell value.
-*/
+//	Iterate through all cells in order, applying the supplied closure to the current cell value.
+//
 func (s *DenseSlice) Each(f interface{}) {
 	defer RescueOutOfBounds()
 	var i	int
@@ -164,10 +162,9 @@ func (s *DenseSlice) Each(f interface{}) {
 	}
 }
 
-/*
-	Return a new header in which the specified range of cells has been moved to the specified
-	target locations.
-*/
+//	Return a new header in which the specified range of cells has been moved to the specified
+//	target locations.
+//
 func (s *DenseSlice) Move(x, y, n int) (r *DenseSlice) {
 	if s != nil {
 		r = s.copyHeader()
@@ -180,14 +177,13 @@ func (s *DenseSlice) Move(x, y, n int) (r *DenseSlice) {
 	return
 }
 
-/*
-	Create a new DenseSlice header referencing the cells in the existing DenseSlice but with
-	the specified items inserted.
-
-	If an existing cell currently contains the default value, we don't bother to reference this
-	in the new DenseSlice. Likewise if one of the values to be inserted is the same as the
-	default value then we don't bother creating a DenseSlice entry.
-*/
+//	Create a new DenseSlice header referencing the cells in the existing DenseSlice but with
+//	the specified items inserted.
+//
+//	If an existing cell currently contains the default value, we don't bother to reference this
+//	in the new DenseSlice. Likewise if one of the values to be inserted is the same as the
+//	default value then we don't bother creating a DenseSlice entry.
+//
 func (s *DenseSlice) Insert(i int, items... interface{}) (r *DenseSlice) {
 	if i < 0 {
 		panic(ARGUMENT_NEGATIVE_INDEX)
@@ -216,13 +212,12 @@ func (s *DenseSlice) Insert(i int, items... interface{}) (r *DenseSlice) {
 	return
 }
 
-/*
-	Return a new DenseSlice header referencing the cells in the existing DenseSlice but with
-	one or more cells removed.
-
-	If an existing cell currently contains the default value, we don't bother to reference this
-	in the new DenseSlice.
-*/
+//	Return a new DenseSlice header referencing the cells in the existing DenseSlice but with
+//	one or more cells removed.
+//
+//	If an existing cell currently contains the default value, we don't bother to reference this
+//	in the new DenseSlice.
+//
 func (s *DenseSlice) Delete(i int, params ...int) (r *DenseSlice) {
 	if i < 0 {
 		panic(ARGUMENT_NEGATIVE_INDEX)
@@ -251,12 +246,11 @@ func (s *DenseSlice) Delete(i int, params ...int) (r *DenseSlice) {
 	return
 }
 
-/*
-	Return a new DenseSlice header referencing the cells in the existing DenseSlice.
-
-	If an existing cell currently contains the default value, we don't bother to reference this
-	in the new DenseSlice.
-*/
+//	Return a new DenseSlice header referencing the cells in the existing DenseSlice.
+//
+//	If an existing cell currently contains the default value, we don't bother to reference this
+//	in the new DenseSlice.
+//
 func (s *DenseSlice) Copy() (r *DenseSlice) {
 	if s != nil {
 		r = NewDenseSlice(len(s.elements))
@@ -265,9 +259,8 @@ func (s *DenseSlice) Copy() (r *DenseSlice) {
 	return
 }
 
-/*
-	Commit creates a new DenseSlice which is identical to the current state of a given DenseSlice.
-*/
+//	Commit creates a new DenseSlice which is identical to the current state of a given DenseSlice.
+//
 func (s *DenseSlice) Commit() (r *DenseSlice) {
 	if s != nil {
 		r = NewDenseSlice(len(s.elements))
@@ -278,13 +271,12 @@ func (s *DenseSlice) Commit() (r *DenseSlice) {
 	return
 }
 
-/*
-	Return a new DenseSlice header for the previous state of a given DenseSlice relative to its
-	current state.
-
-	If an existing cell currently contains the default value, we don't bother to reference this
-	in the new DenseSlice.
-*/
+//	Return a new DenseSlice header for the previous state of a given DenseSlice relative to its
+//	current state.
+//
+//	If an existing cell currently contains the default value, we don't bother to reference this
+//	in the new DenseSlice.
+//
 func (s *DenseSlice) Undo(steps int) (r *DenseSlice) {
 	if steps < 0 {
 		panic(ARGUMENT_OUT_OF_BOUNDS)
@@ -296,12 +288,11 @@ func (s *DenseSlice) Undo(steps int) (r *DenseSlice) {
 	return
 }
 
-/*
-	Return a new DenseSlice header for the state of the DenseSlice at a given version point.
-
-	If an existing cell currently contains the default value, we don't bother to reference this
-	in the new DenseSlice.
-*/
+//	Return a new DenseSlice header for the state of the DenseSlice at a given version point.
+//
+//	If an existing cell currently contains the default value, we don't bother to reference this
+//	in the new DenseSlice.
+//
 func (s *DenseSlice) Rollback(version int) (r *DenseSlice) {
 	if version < 0 {
 		panic(ARGUMENT_OUT_OF_BOUNDS)
