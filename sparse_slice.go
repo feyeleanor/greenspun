@@ -1,5 +1,7 @@
 package greenspun
 
+import "fmt"
+
 //	The SparseSlice is a sparse, persistent integer-indexed data store. Internally elements are
 //	stored in a hash table which provides uniform access, and each access is represented by a
 //	stack of versioned values.
@@ -57,11 +59,21 @@ func (s *SparseSlice) newVersion() (r *SparseSlice) {
 	return
 }
 
-/*
 func (s *SparseSlice) String() (r string) {
+	if s != nil {
+		r = "["
+		for i := 0; i < s.length; i++ {
+			r = fmt.Sprintf("%v%v ", r, s.At(i))
+		}
+		if l := len(r); l > 1 {
+			r = r[:l - 1]
+		}
+		r += "]"
+	} else {
+		r = fmt.Sprintf("%v", nil)
+	}
 	return
 }
-*/
 
 //	Return the current length of the slice.
 //

@@ -22,7 +22,23 @@ func TestNewSparseSlice(t *testing.T) {
 }
 
 func TestSparseSliceString(t *testing.T) {
-	t.Fatalf("implement String()")
+	ConfirmString := func(l *SparseSlice, r string) {
+		if x := l.String(); x != r {
+			t.Fatalf("%v.String() should be %v", x, r)
+		}
+	}
+
+	ConfirmString(nil, "<nil>")
+	ConfirmString(NewSparseSlice(0, 0), "[]")
+	ConfirmString(NewSparseSlice(1, 0), "[0]")
+	ConfirmString(NewSparseSlice(2, 0), "[0 0]")
+	ConfirmString(NewSparseSlice(3, 0), "[0 0 0]")
+	ConfirmString(NewSparseSlice(4, 0), "[0 0 0 0]")
+
+	ConfirmString(NewSparseSlice(4, 0, denseSliceHash(1)), "[1 0 0 0]")
+	ConfirmString(NewSparseSlice(4, 0, denseSliceHash(1, 2)), "[1 2 0 0]")
+	ConfirmString(NewSparseSlice(4, 0, denseSliceHash(1, 2, 3)), "[1 2 3 0]")
+	ConfirmString(NewSparseSlice(4, 0, denseSliceHash(1, 2, 3, 4)), "[1 2 3 4]")
 }
 
 func TestSparseSliceLen(t *testing.T) {
