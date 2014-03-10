@@ -81,16 +81,16 @@ func (s *SparseSlice) Equal(o interface{}) (r bool) {
 		switch {
 		case s == nil && o == nil:
 			r = true
-		case s != nil && o == nil, s == nil && o != nil:
+		case s == nil, o == nil:
 			r = false
 		case s.length != o.length:
 			r = false
 		case s.length == 0:
 			r = true
 		default:
-			concrete_keys := make(map[int] bool)
+			instantiated_keys := make(map[int] bool)
 
-			if s.length == o.length && len(s.elements) != s.length && len(o.elements) != o.length {
+			if len(s.elements) != s.length && len(o.elements) != o.length {
 				if r = Equal(s.Default(), o.Default()); !r {
 					return
 				}
@@ -98,7 +98,7 @@ func (s *SparseSlice) Equal(o interface{}) (r bool) {
 
 			for k, vo := range o.elements {
 				if vs, ok := s.elements[k]; ok {
-					concrete_keys[k] = true
+					instantiated_keys[k] = true
 					r = vo.Equal(vs)
 				} else {
 					r = Equal(vo, s.Default())
@@ -109,24 +109,18 @@ func (s *SparseSlice) Equal(o interface{}) (r bool) {
 			}
 
 			for k, vs := range s.elements {
-				if _, ok := concrete_keys[k]; !ok {
+				if _, ok := instantiated_keys[k]; !ok {
 					if vo, ok := o.elements[k]; ok {
-						concrete_keys[k] = true
 						r = vs.Equal(vo)
 					} else {
 						r = Equal(vs, o.Default())
 					}
-				} else {
-					delete(concrete_keys, k)
 				}
 				if !r {
 					return
 				}
 			}
-
-			if len(concrete_keys) > 0 {
-				r = Equal(s.Default(), o.Default())
-			}
+			r = true
 		}
 	case nil:
 		r = s == nil
