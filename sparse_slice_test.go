@@ -155,6 +155,14 @@ func TestSparseSliceEqual(t *testing.T) {
 								&SparseSlice{	length: 3, defaultValue: &versionedValue{ data: 2 }, elements: sliceHash{ 0: &versionedValue{ data: 0 }, 2: &versionedValue{ data: 2 } } })
 }
 
+func TestSparseSliceDefault(t *testing.T) {
+	t.Fatalf("implement tests")
+}
+
+func TestSparseSliceSetDefault(t *testing.T) {
+	t.Fatalf("implement tests")
+}
+
 func TestSparseSliceAt(t *testing.T) {
 	ConfirmOutOfBounds := func(l *SparseSlice, i int, r bool) {
 		defer func() {

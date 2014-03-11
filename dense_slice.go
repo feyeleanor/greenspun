@@ -17,14 +17,23 @@ type DenseSlice struct {
 	*DenseSlice												"the DenseSlice from which the current header is derived"
 }
 
+//	MakeDenseSlice returns a new DenseSlice of specified length and capacity.
+//
+func MakeDenseSlice(l int, c ...int) (r *DenseSlice) {
+	r = new(DenseSlice)
+	if len(c) > 0 {
+		r.elements = make(sliceSlice, l, c[0])
+	} else {
+		r.elements = make(sliceSlice, l)
+	}
+	return
+}
+
 //	NewDenseSlice returns a DenseSlice. If optional parameters are provided these will result in values being
 //	assigned to the initial cells and if necessary the length of the DenseSlice adjusted to reflect this.
 //
-func NewDenseSlice(n int, items ...interface{}) (r *DenseSlice) {
-	if n < len(items) {
-		n = len(items)
-	}
-	r = &DenseSlice{ elements: make(sliceSlice, n) }
+func NewDenseSlice(items ...interface{}) (r *DenseSlice) {
+	r = &DenseSlice{ elements: make(sliceSlice, len(items)) }
 	for i, v := range items {
 		r.elements[i] = &versionedValue{ data: v }
 	}

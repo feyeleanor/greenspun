@@ -2,22 +2,39 @@ package greenspun
 
 import "testing"
 
-func TestNewDenseSlice(t *testing.T) {
-	ConfirmNewSlice := func(n int, v []interface{}, r *DenseSlice) {
-		if x := NewDenseSlice(n, v...); !x.Equal(r) {
-			t.Fatalf("NewDenseSlice(%v, %v) should be %v but is %v", n, v, r, x)
+func TestMakeDenseSlice(t *testing.T) {
+	ConfirmNewSlice := func(n, c int) {
+		switch x := MakeDenseSlice(n, c).elements; {
+		case len(x) != n:
+			t.Fatalf("MakeDenseSlice(%[1]v, %[2]v) should have %[1]v elements but has %[3]v elements", n, c, len(x))
+		case cap(x) != c:
+			t.Fatalf("MakeDenseSlice(%[1]v, %[2]v) should have %[2]v capacity but has %[3]v capacity", n, c, c, cap(x))
 		}
 	}
 
-	ConfirmNewSlice(0, nil, &DenseSlice{ elements: make(sliceSlice, 0), currentVersion: 0 })
+	ConfirmNewSlice(0, 0)
+	ConfirmNewSlice(0, 1)
+	ConfirmNewSlice(0, 2)
+	ConfirmNewSlice(1, 1)
+	ConfirmNewSlice(1, 2)
+}
 
-	ConfirmNewSlice(0, []interface{}{ &versionedValue{ data: 0 } },
+func TestNewDenseSlice(t *testing.T) {
+	ConfirmNewSlice := func(v []interface{}, r *DenseSlice) {
+		if x := NewDenseSlice(v...); !x.Equal(r) {
+			t.Fatalf("NewDenseSlice(%v) should be %v but is %v", v, r, x)
+		}
+	}
+
+	ConfirmNewSlice(nil, &DenseSlice{ elements: make(sliceSlice, 0), currentVersion: 0 })
+
+	ConfirmNewSlice([]interface{}{ &versionedValue{ data: 0 } },
 									&DenseSlice{ elements: sliceSlice{ 0: &versionedValue{ data: 0 } }, currentVersion: 0 })
 
-	ConfirmNewSlice(0, []interface{}{ &versionedValue{ data: 0 }, nil, nil, 3: &versionedValue{ data: 0 } },
+	ConfirmNewSlice([]interface{}{ &versionedValue{ data: 0 }, nil, nil, 3: &versionedValue{ data: 0 } },
 									&DenseSlice{ elements: sliceSlice{ 0: &versionedValue{ data: 0 }, 3: &versionedValue{ data: 0 } }, currentVersion: 0 })
 
-	ConfirmNewSlice(0, []interface{}{ 0, nil, nil, 1, nil, nil, nil, nil, nil, 0 },
+	ConfirmNewSlice([]interface{}{ 0, nil, nil, 1, nil, nil, nil, nil, nil, 0 },
 									&DenseSlice{ elements: sliceSlice{ 0: &versionedValue{ data: 0 }, 3: &versionedValue{ data: 1 }, 9: &versionedValue{ data: 0 } }, currentVersion: 0 })
 }
 
@@ -29,10 +46,10 @@ func TestDenseSliceString(t *testing.T) {
 	}
 
 	ConfirmString(nil, "<nil>")
-	ConfirmString(NewDenseSlice(0), "[]")
-	ConfirmString(NewDenseSlice(0, 0), "[0]")
-	ConfirmString(NewDenseSlice(0, 0, 1), "[0 1]")
-	ConfirmString(NewDenseSlice(0, 0, 1, 2), "[0 1 2]")
+	ConfirmString(NewDenseSlice(), "[]")
+	ConfirmString(NewDenseSlice(0), "[0]")
+	ConfirmString(NewDenseSlice(0, 1), "[0 1]")
+	ConfirmString(NewDenseSlice(0, 1, 2), "[0 1 2]")
 }
 
 func TestDenseSliceLen(t *testing.T) {
@@ -42,50 +59,10 @@ func TestDenseSliceLen(t *testing.T) {
 		}
 	}
 
-	ConfirmLen(NewDenseSlice(0), 0)
-	ConfirmLen(NewDenseSlice(0, 0), 1)
-	ConfirmLen(NewDenseSlice(0, 0, 1, 2), 3)
-	ConfirmLen(NewDenseSlice(0, 0, 1, 2, 3), 4)
-}
-
-func TestDenseSliceAppend(t *testing.T) {
-	ConfirmAppend := func(l *DenseSlice, v []interface{}, r *DenseSlice) {
-		if x := l.Append(v...); !x.Equal(r){
-			t.Fatalf("%v.Append(%v) should be %v but is %v", l, v, r, x)
-		}
-	}
-
-	RefuteAppend := func(l *DenseSlice, v []interface{}, r *DenseSlice) {
-		if x := l.Append(v...); x.Equal(r){
-			t.Fatalf("%v.Append(%v) should be %v but is %v", l, v, r, x)
-		}
-	}
-
-	ConfirmAppend(nil, nil, NewDenseSlice(0))
-	RefuteAppend(nil, nil, NewDenseSlice(1))
-
-	RefuteAppend(nil, []interface{}{ 0 }, NewDenseSlice(0))
-	ConfirmAppend(nil, []interface{}{ 0 }, NewDenseSlice(0, 0))
-	ConfirmAppend(nil, []interface{}{ 0 }, NewDenseSlice(1, 0))
-	RefuteAppend(nil, []interface{}{ 0 }, NewDenseSlice(2, 0))
-	RefuteAppend(nil, []interface{}{ 0 }, NewDenseSlice(2, 0, 0))
-
-	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(0))
-	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(0, 0))
-	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(1, 0))
-	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(2, 0))
-	ConfirmAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(2, 0, 0))
-	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(3, 0))
-	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(3, 0, 0))
-	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(3, 0, 0, 0))
-
-	ConfirmAppend(NewDenseSlice(0), []interface{}{ 0 }, NewDenseSlice(0, 0))
-	ConfirmAppend(NewDenseSlice(0, 1), []interface{}{ 0 }, NewDenseSlice(0, 1, 0))
-	ConfirmAppend(NewDenseSlice(0, 1), []interface{}{ 0, 1 }, NewDenseSlice(0, 1, 0, 1))
-	ConfirmAppend(NewDenseSlice(0, 1), []interface{}{ 0, 1, 2 }, NewDenseSlice(0, 1, 0, 1, 2))
-	ConfirmAppend(NewDenseSlice(0, 1, 2), []interface{}{ 0 }, NewDenseSlice(0, 1, 2, 0))
-	ConfirmAppend(NewDenseSlice(0, 1, 2), []interface{}{ 0, 1 }, NewDenseSlice(0, 1, 2, 0, 1))
-	ConfirmAppend(NewDenseSlice(0, 1, 2), []interface{}{ 0, 1, 2 }, NewDenseSlice(0, 1, 2, 0, 1, 2))
+	ConfirmLen(NewDenseSlice(), 0)
+	ConfirmLen(NewDenseSlice(0), 1)
+	ConfirmLen(NewDenseSlice(0, 1, 2), 3)
+	ConfirmLen(NewDenseSlice(0, 1, 2, 3), 4)
 }
 
 func TestDenseSliceEqual(t *testing.T) {
@@ -112,34 +89,35 @@ func TestDenseSliceEqual(t *testing.T) {
 	RefuteEqual(&DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 1 } } }, &DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 0 } } })
 	RefuteEqual(&DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 0 } } }, &DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 1 } } })
 
-	ConfirmEqual(NewDenseSlice(1, 0), NewDenseSlice(1, 0))
-	RefuteEqual(NewDenseSlice(1, 1), NewDenseSlice(1, 0))
-	RefuteEqual(NewDenseSlice(1, 0), NewDenseSlice(1, 1))
+	ConfirmEqual(NewDenseSlice(0), NewDenseSlice(0))
+	RefuteEqual(NewDenseSlice(1), NewDenseSlice(0))
+	RefuteEqual(NewDenseSlice(0), NewDenseSlice(1))
+	ConfirmEqual(NewDenseSlice(1), NewDenseSlice(1))
 
 	ConfirmEqual(&DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 0 }, &versionedValue{ data: 0 } } }, &DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 0 }, &versionedValue{ data: 0 } } })
 	RefuteEqual(&DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 0 }, &versionedValue{ data: 0 } } }, &DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 0 }, &versionedValue{ data: 1 } } })
 	RefuteEqual(&DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 0 }, &versionedValue{ data: 0 } } }, &DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 1 }, &versionedValue{ data: 0 } } })
 	RefuteEqual(&DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 0 }, &versionedValue{ data: 0 } } }, &DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 1 }, &versionedValue{ data: 1 } } })
 
-	ConfirmEqual(NewDenseSlice(2, 0, 0), NewDenseSlice(2, 0, 0))
-	RefuteEqual(NewDenseSlice(2, 0, 0), NewDenseSlice(2, 0, 1))
-	RefuteEqual(NewDenseSlice(2, 0, 0), NewDenseSlice(2, 1, 0))
-	RefuteEqual(NewDenseSlice(2, 0, 0), NewDenseSlice(2, 1, 1))
+	ConfirmEqual(NewDenseSlice(0, 0), NewDenseSlice(0, 0))
+	RefuteEqual(NewDenseSlice(0, 0), NewDenseSlice(0, 1))
+	RefuteEqual(NewDenseSlice(0, 0), NewDenseSlice(1, 0))
+	RefuteEqual(NewDenseSlice(0, 0), NewDenseSlice(1, 1))
 
-	RefuteEqual(NewDenseSlice(2, 0, 1), NewDenseSlice(2, 0, 0))
-	ConfirmEqual(NewDenseSlice(2, 0, 1), NewDenseSlice(2, 0, 1))
-	RefuteEqual(NewDenseSlice(2, 0, 1), NewDenseSlice(2, 1, 0))
-	RefuteEqual(NewDenseSlice(2, 0, 1), NewDenseSlice(2, 1, 1))
+	RefuteEqual(NewDenseSlice(0, 1), NewDenseSlice(0, 0))
+	ConfirmEqual(NewDenseSlice(0, 1), NewDenseSlice(0, 1))
+	RefuteEqual(NewDenseSlice(0, 1), NewDenseSlice(1, 0))
+	RefuteEqual(NewDenseSlice(0, 1), NewDenseSlice(1, 1))
 
-	RefuteEqual(NewDenseSlice(2, 1, 0), NewDenseSlice(2, 0, 0))
-	RefuteEqual(NewDenseSlice(2, 1, 0), NewDenseSlice(2, 0, 1))
-	ConfirmEqual(NewDenseSlice(2, 1, 0), NewDenseSlice(2, 1, 0))
-	RefuteEqual(NewDenseSlice(2, 1, 0), NewDenseSlice(2, 1, 1))
+	RefuteEqual(NewDenseSlice(1, 0), NewDenseSlice(0, 0))
+	RefuteEqual(NewDenseSlice(1, 0), NewDenseSlice(0, 1))
+	ConfirmEqual(NewDenseSlice(1, 0), NewDenseSlice(1, 0))
+	RefuteEqual(NewDenseSlice(1, 0), NewDenseSlice(1, 1))
 
-	RefuteEqual(NewDenseSlice(2, 1, 1), NewDenseSlice(2, 0, 0))
-	RefuteEqual(NewDenseSlice(2, 1, 1), NewDenseSlice(2, 0, 1))
-	RefuteEqual(NewDenseSlice(2, 1, 1), NewDenseSlice(2, 1, 0))
-	ConfirmEqual(NewDenseSlice(2, 1, 1), NewDenseSlice(2, 1, 1))
+	RefuteEqual(NewDenseSlice(1, 1), NewDenseSlice(0, 0))
+	RefuteEqual(NewDenseSlice(1, 1), NewDenseSlice(0, 1))
+	RefuteEqual(NewDenseSlice(1, 1), NewDenseSlice(1, 0))
+	ConfirmEqual(NewDenseSlice(1, 1), NewDenseSlice(1, 1))
 }
 
 func TestDenseSliceAt(t *testing.T) {
@@ -155,35 +133,146 @@ func TestDenseSliceAt(t *testing.T) {
 	ConfirmOutOfBounds(nil, -1, true)
 	ConfirmOutOfBounds(nil, 0, true)
 	ConfirmOutOfBounds(nil, 1, true)
-	ConfirmOutOfBounds(NewDenseSlice(3), -1, true)
-	ConfirmOutOfBounds(NewDenseSlice(3), 0, false)
-	ConfirmOutOfBounds(NewDenseSlice(3), 1, false)
-	ConfirmOutOfBounds(NewDenseSlice(3), 2, false)
-	ConfirmOutOfBounds(NewDenseSlice(3), 3, true)
+
+	elements := NewDenseSlice(0, 1, 2)
+	ConfirmOutOfBounds(elements, -1, true)
+	ConfirmOutOfBounds(elements, 0, false)
+	ConfirmOutOfBounds(elements, 1, false)
+	ConfirmOutOfBounds(elements, 2, false)
+	ConfirmOutOfBounds(elements, 3, true)
 
 	ConfirmAt := func(l *DenseSlice, i int, r interface{}) {
 		if x := l.At(i); x != r {
 			t.Fatalf("%v.At(%v) should be %v but is %v", l, i, r, x)
 		}
 	}
-	ConfirmAt(NewDenseSlice(3), 0, nil)
-	ConfirmAt(NewDenseSlice(3), 1, nil)
-	ConfirmAt(NewDenseSlice(3), 2, nil)
 
-	ConfirmAt(NewDenseSlice(3, 1), 0, 1)
-	ConfirmAt(NewDenseSlice(3, 1), 1, nil)
-	ConfirmAt(NewDenseSlice(3, 1), 2, nil)
+	elements = NewDenseSlice([]interface{}{ 0, 1, 2, nil, nil }...)
+	ConfirmAt(elements, 0, 0)
+	ConfirmAt(elements, 1, 1)
+	ConfirmAt(elements, 2, 2)
+	ConfirmAt(elements, 3, nil)
+	ConfirmAt(elements, 4, nil)
 
-	ConfirmAt(NewDenseSlice(5, 0, 1, 2), 0, 0)
-	ConfirmAt(NewDenseSlice(5, 0, 1, 2), 1, 1)
-	ConfirmAt(NewDenseSlice(5, 0, 1, 2), 2, 2)
-	ConfirmAt(NewDenseSlice(5, 0, 1, 2), 3, nil)
-	ConfirmAt(NewDenseSlice(5, 0, 1, 2), 4, nil)
+	elements = NewDenseSlice([]interface{}{ 0: 0, 4: 1 }...)
+	ConfirmAt(elements, 0, 0)
+	ConfirmAt(elements, 1, nil)
+	ConfirmAt(elements, 2, nil)
+	ConfirmAt(elements, 3, nil)
+	ConfirmAt(elements, 4, 1)
+}
 
-	elements := []interface{}{ 0: 2, 1: 0, 3: 1 }
-	ConfirmAt(NewDenseSlice(5, elements...), 0, 2)
-	ConfirmAt(NewDenseSlice(5, elements...), 1, 0)
-	ConfirmAt(NewDenseSlice(5, elements...), 2, nil)
-	ConfirmAt(NewDenseSlice(5, elements...), 3, 1)
-	ConfirmAt(NewDenseSlice(5, elements...), 4, nil)
+func TestDenseSliceSet(t *testing.T) {
+	ConfirmOutOfBounds := func(l *DenseSlice, i int, r bool) {
+		defer func() {
+			if x := recover() == ARGUMENT_OUT_OF_BOUNDS; x != r {
+				t.Fatalf("%v.Set(%v, <nil>) out of bounds should be %v but is %v", l, i, r, x)
+			}
+		}()
+		l.Set(i, nil)
+	}
+
+	ConfirmOutOfBounds(nil, -1, true)
+	ConfirmOutOfBounds(nil, 0, false)
+	ConfirmOutOfBounds(nil, 1, false)
+	ConfirmOutOfBounds(NewDenseSlice(0, 1, 2), -1, true)
+	ConfirmOutOfBounds(NewDenseSlice(0, 1, 2), 0, false)
+	ConfirmOutOfBounds(NewDenseSlice(0, 1, 2), 1, false)
+	ConfirmOutOfBounds(NewDenseSlice(0, 1, 2), 2, false)
+	ConfirmOutOfBounds(NewDenseSlice(0, 1, 2), 3, false)
+
+	ConfirmSet := func(l *DenseSlice, i int, v interface{}, r *DenseSlice) {
+		if x := l.Set(i, v); !x.Equal(r) {
+			t.Fatalf("%v.Set(%v, %v) should be %v but is %v", l, i, v, r, x)
+		}
+	}
+	ConfirmSet(MakeDenseSlice(3, 3), 0, -1, NewDenseSlice(-1, nil, nil))
+	ConfirmSet(MakeDenseSlice(3, 3), 1, -1, NewDenseSlice(nil, -1, nil))
+	ConfirmSet(MakeDenseSlice(3, 3), 2, -1, NewDenseSlice(nil, nil, -1))
+}
+
+func TestDenseSliceAppend(t *testing.T) {
+	ConfirmAppend := func(l *DenseSlice, v []interface{}, r *DenseSlice) {
+		if x := l.Append(v...); !x.Equal(r){
+			t.Fatalf("%v.Append(%v) should be %v but is %v", l, v, r, x)
+		}
+	}
+
+	RefuteAppend := func(l *DenseSlice, v []interface{}, r *DenseSlice) {
+		if x := l.Append(v...); x.Equal(r){
+			t.Fatalf("%v.Append(%v) should be %v but is %v", l, v, r, x)
+		}
+	}
+
+	ConfirmAppend(nil, nil, NewDenseSlice())
+	RefuteAppend(nil, nil, NewDenseSlice(0))
+
+	RefuteAppend(nil, []interface{}{ 0 }, NewDenseSlice())
+	ConfirmAppend(nil, []interface{}{ 0 }, NewDenseSlice(0))
+	RefuteAppend(nil, []interface{}{ 0 }, NewDenseSlice(0, 0))
+
+	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice())
+	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(0))
+	ConfirmAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(0, 0))
+	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(0, 0, 0))
+
+	ConfirmAppend(NewDenseSlice(0), []interface{}{ 0 }, NewDenseSlice(0, 0))
+	ConfirmAppend(NewDenseSlice(0, 1), []interface{}{ 0 }, NewDenseSlice(0, 1, 0))
+	ConfirmAppend(NewDenseSlice(0, 1), []interface{}{ 0, 1 }, NewDenseSlice(0, 1, 0, 1))
+	ConfirmAppend(NewDenseSlice(0, 1), []interface{}{ 0, 1, 2 }, NewDenseSlice(0, 1, 0, 1, 2))
+	ConfirmAppend(NewDenseSlice(0, 1, 2), []interface{}{ 0 }, NewDenseSlice(0, 1, 2, 0))
+	ConfirmAppend(NewDenseSlice(0, 1, 2), []interface{}{ 0, 1 }, NewDenseSlice(0, 1, 2, 0, 1))
+	ConfirmAppend(NewDenseSlice(0, 1, 2), []interface{}{ 0, 1, 2 }, NewDenseSlice(0, 1, 2, 0, 1, 2))
+}
+
+func TestDenseSliceEach(t *testing.T) {
+	s := NewDenseSlice(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+	count := 0
+
+	ConfirmEach := func(c *DenseSlice, f interface{}) {
+		count = 0
+		c.Each(f)
+		if l := c.Len(); l != count {
+			t.Fatalf("%v.Each() should have iterated %v times not %v times", c, l, count)
+		}
+	}
+
+	ConfirmEach(s, func() { count++ })
+
+	ConfirmEach(s, func(i interface{}) {
+		if i != count {
+			t.Fatalf("1: %v.Each() element %v erroneously reported as %v", s, count, i)
+		}
+		count++
+	})
+
+	ConfirmEach(s, func(index int, i interface{}) {
+		if i != index {
+			t.Fatalf("2: %v.Each() element %v erroneously reported as %v", s, index, i)
+		}
+		count++
+	})
+
+	ConfirmEach(s, func(key, i interface{}) {
+		if i.(int) != key.(int) {
+			t.Fatalf("3: %v.Each() element %v erroneously reported as %v", s, key, i)
+		}
+		count++
+	})
+
+	s = &DenseSlice{}
+	ConfirmEach(s, func(i interface{}) {
+		if i != count {
+			t.Fatalf("4: %v.Each() element %v erroneously reported as %v", s, count, i)
+		}
+		count++
+	})
+
+	s = nil
+	ConfirmEach(s, func(i interface{}) {
+		if i != count {
+			t.Fatalf("5: %v.Each() element %v erroneously reported as %v", s, count, i)
+		}
+		count++
+	})
 }
