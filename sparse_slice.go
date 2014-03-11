@@ -207,6 +207,21 @@ func (s *SparseSlice) Set(i int, v interface{}) (r *SparseSlice) {
 	return
 }
 
+//	Append values to the SparseSlice.
+//
+func (s *SparseSlice) Append(values ...interface{}) (r *SparseSlice) {
+	if r = s.newVersion(); r == nil {
+		r = NewSparseSlice(0, nil)
+	}
+	for _, v := range values {
+		if v != r.defaultValue {
+			r.elements[r.length] = &versionedValue{ data: v }
+		}
+		r.length++
+	}
+	return
+}
+
 //	Iterate through all cells in order, applying the supplied closure to the current cell value.
 //
 func (s *SparseSlice) Each(f interface{}) {

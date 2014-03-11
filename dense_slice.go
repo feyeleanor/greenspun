@@ -133,6 +133,24 @@ func (s *DenseSlice) Set(i int, v interface{}) (r *DenseSlice) {
 	return
 }
 
+//	Append values to the DenseSlice.
+//
+func (s *DenseSlice) Append(values ...interface{}) (r *DenseSlice) {
+	if r = s.newVersion(); r == nil {
+		r = NewDenseSlice(len(values))
+		r.elements = r.elements[:0]
+	} else {
+		l := len(r.elements)
+		e := make(sliceSlice, l, l + len(values))
+		copy(e, r.elements)
+		r.elements = e
+	}
+	for _, v := range values {
+		r.elements = append(r.elements, &versionedValue{ data: v, version: r.currentVersion })
+	}
+	return
+}
+
 //	Iterate through all cells in order, applying the supplied closure to the current cell value.
 //
 func (s *DenseSlice) Each(f interface{}) {

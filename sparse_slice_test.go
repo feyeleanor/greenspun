@@ -234,6 +234,35 @@ func TestSparseSliceSet(t *testing.T) {
 	ConfirmSet(NewSparseSlice(3, nil), 4, nil, NewSparseSlice(5, nil))
 }
 
+func TestSparseSliceAppend(t *testing.T) {
+	ConfirmAppend := func(l *SparseSlice, v []interface{}, r *SparseSlice) {
+		if x := l.Append(v...); !x.Equal(r){
+			t.Fatalf("%v.Append(%v) should be %v but is %v", l, v, r, x)
+		}
+	}
+
+	RefuteAppend := func(l *SparseSlice, v []interface{}, r *SparseSlice) {
+		if x := l.Append(v...); x.Equal(r){
+			t.Fatalf("%v.Append(%v) should be %v but is %v", l, v, r, x)
+		}
+	}
+
+	ConfirmAppend(nil, nil, NewSparseSlice(0, nil))
+	RefuteAppend(nil, nil, NewSparseSlice(1, nil))
+
+	RefuteAppend(nil, []interface{}{ 0 }, NewSparseSlice(0, nil))
+	RefuteAppend(nil, []interface{}{ 0 }, NewSparseSlice(0, 0))
+	ConfirmAppend(nil, []interface{}{ 0 }, NewSparseSlice(1, 0))
+	RefuteAppend(nil, []interface{}{ 0 }, NewSparseSlice(2, nil))
+	RefuteAppend(nil, []interface{}{ 0 }, NewSparseSlice(2, 0))
+
+	RefuteAppend(nil, []interface{}{ 0, 0 }, NewSparseSlice(0, nil))
+	RefuteAppend(nil, []interface{}{ 0, 0 }, NewSparseSlice(0, 0))
+	RefuteAppend(nil, []interface{}{ 0, 0 }, NewSparseSlice(1, 0))
+	ConfirmAppend(nil, []interface{}{ 0, 0 }, NewSparseSlice(2, 0))
+	RefuteAppend(nil, []interface{}{ 0, 0 }, NewSparseSlice(3, 0))
+}
+
 func TestSparseSliceEach(t *testing.T) {
 	s := NewSparseSlice(10, nil, denseSliceHash(0, 1, 2, 3, 4, 5, 6, 7, 8, 9))
 	count := 0

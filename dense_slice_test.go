@@ -48,6 +48,46 @@ func TestDenseSliceLen(t *testing.T) {
 	ConfirmLen(NewDenseSlice(0, 0, 1, 2, 3), 4)
 }
 
+func TestDenseSliceAppend(t *testing.T) {
+	ConfirmAppend := func(l *DenseSlice, v []interface{}, r *DenseSlice) {
+		if x := l.Append(v...); !x.Equal(r){
+			t.Fatalf("%v.Append(%v) should be %v but is %v", l, v, r, x)
+		}
+	}
+
+	RefuteAppend := func(l *DenseSlice, v []interface{}, r *DenseSlice) {
+		if x := l.Append(v...); x.Equal(r){
+			t.Fatalf("%v.Append(%v) should be %v but is %v", l, v, r, x)
+		}
+	}
+
+	ConfirmAppend(nil, nil, NewDenseSlice(0))
+	RefuteAppend(nil, nil, NewDenseSlice(1))
+
+	RefuteAppend(nil, []interface{}{ 0 }, NewDenseSlice(0))
+	ConfirmAppend(nil, []interface{}{ 0 }, NewDenseSlice(0, 0))
+	ConfirmAppend(nil, []interface{}{ 0 }, NewDenseSlice(1, 0))
+	RefuteAppend(nil, []interface{}{ 0 }, NewDenseSlice(2, 0))
+	RefuteAppend(nil, []interface{}{ 0 }, NewDenseSlice(2, 0, 0))
+
+	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(0))
+	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(0, 0))
+	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(1, 0))
+	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(2, 0))
+	ConfirmAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(2, 0, 0))
+	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(3, 0))
+	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(3, 0, 0))
+	RefuteAppend(nil, []interface{}{ 0, 0 }, NewDenseSlice(3, 0, 0, 0))
+
+	ConfirmAppend(NewDenseSlice(0), []interface{}{ 0 }, NewDenseSlice(0, 0))
+	ConfirmAppend(NewDenseSlice(0, 1), []interface{}{ 0 }, NewDenseSlice(0, 1, 0))
+	ConfirmAppend(NewDenseSlice(0, 1), []interface{}{ 0, 1 }, NewDenseSlice(0, 1, 0, 1))
+	ConfirmAppend(NewDenseSlice(0, 1), []interface{}{ 0, 1, 2 }, NewDenseSlice(0, 1, 0, 1, 2))
+	ConfirmAppend(NewDenseSlice(0, 1, 2), []interface{}{ 0 }, NewDenseSlice(0, 1, 2, 0))
+	ConfirmAppend(NewDenseSlice(0, 1, 2), []interface{}{ 0, 1 }, NewDenseSlice(0, 1, 2, 0, 1))
+	ConfirmAppend(NewDenseSlice(0, 1, 2), []interface{}{ 0, 1, 2 }, NewDenseSlice(0, 1, 2, 0, 1, 2))
+}
+
 func TestDenseSliceEqual(t *testing.T) {
 	ConfirmEqual := func(l *DenseSlice, v interface{}) {
 		if x := l.Equal(v); !x {
