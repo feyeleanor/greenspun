@@ -86,8 +86,11 @@ func TestDenseSliceEqual(t *testing.T) {
 	ConfirmEqual(new(DenseSlice), &DenseSlice{})
 
 	ConfirmEqual(&DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 0 } } }, &DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 0 } } })
+	ConfirmEqual(&DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 0 } } }, NewDenseSlice(0))
 	RefuteEqual(&DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 1 } } }, &DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 0 } } })
+	RefuteEqual(&DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 1 } } }, NewDenseSlice(0))
 	RefuteEqual(&DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 0 } } }, &DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 1 } } })
+	RefuteEqual(&DenseSlice{ elements: sliceSlice{ &versionedValue{ data: 0 } } }, NewDenseSlice(1))
 
 	ConfirmEqual(NewDenseSlice(0), NewDenseSlice(0))
 	RefuteEqual(NewDenseSlice(1), NewDenseSlice(0))
