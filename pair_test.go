@@ -1,6 +1,6 @@
 package greenspun
 
-import(
+import (
 	"fmt"
 	"testing"
 )
@@ -36,49 +36,49 @@ func TestPairEqual(t *testing.T) {
 		}
 	}
 
-	ConfirmEqual(&Pair{ &Pair{ 1, 1 }, nil }, &Pair{ nil, nil }, false)
-	ConfirmEqual(&Pair{ nil, &Pair{ 1, 1 } }, &Pair{ nil, nil }, false)
-	ConfirmEqual(&Pair{ nil, nil }, &Pair{ &Pair{ 1, 1 }, nil }, false)
-	ConfirmEqual(&Pair{ nil, nil }, &Pair{ nil, &Pair{ 1, 1 } }, false)
-	ConfirmEqual(&Pair{ &Pair{ 1, 1 }, nil }, &Pair{ &Pair{ 1, 1 }, nil }, true)
-	ConfirmEqual(&Pair{ nil, &Pair{ 1, 1 } }, &Pair{ nil, &Pair{ 1, 1 } }, true)
-	ConfirmEqual(&Pair{ &Pair{ 1, 1 }, &Pair{ 1, 1 } }, &Pair{ &Pair{ 1, 1 }, &Pair{ 1, 1 } }, true)
+	ConfirmEqual(&Pair{&Pair{1, 1}, nil}, &Pair{nil, nil}, false)
+	ConfirmEqual(&Pair{nil, &Pair{1, 1}}, &Pair{nil, nil}, false)
+	ConfirmEqual(&Pair{nil, nil}, &Pair{&Pair{1, 1}, nil}, false)
+	ConfirmEqual(&Pair{nil, nil}, &Pair{nil, &Pair{1, 1}}, false)
+	ConfirmEqual(&Pair{&Pair{1, 1}, nil}, &Pair{&Pair{1, 1}, nil}, true)
+	ConfirmEqual(&Pair{nil, &Pair{1, 1}}, &Pair{nil, &Pair{1, 1}}, true)
+	ConfirmEqual(&Pair{&Pair{1, 1}, &Pair{1, 1}}, &Pair{&Pair{1, 1}, &Pair{1, 1}}, true)
 
-	ConfirmEqual(Cons(nil, nil), Pair{ nil, nil }, true)
-	ConfirmEqual(Cons(nil, nil), &Pair{ nil, nil }, true)
+	ConfirmEqual(Cons(nil, nil), Pair{nil, nil}, true)
+	ConfirmEqual(Cons(nil, nil), &Pair{nil, nil}, true)
 	ConfirmEqual(Cons(nil, nil), Cons(nil, nil), true)
 
-	ConfirmEqual(Cons(1, nil), Pair{ 1, nil }, true)
-	ConfirmEqual(Cons(1, nil), &Pair{ 1, nil }, true)
+	ConfirmEqual(Cons(1, nil), Pair{1, nil}, true)
+	ConfirmEqual(Cons(1, nil), &Pair{1, nil}, true)
 	ConfirmEqual(Cons(1, nil), Cons(1, nil), true)
 
-	ConfirmEqual(Cons(nil, 1), Pair{ nil, 1 }, true)
-	ConfirmEqual(Cons(nil, 1), &Pair{ nil, 1 }, true)
+	ConfirmEqual(Cons(nil, 1), Pair{nil, 1}, true)
+	ConfirmEqual(Cons(nil, 1), &Pair{nil, 1}, true)
 	ConfirmEqual(Cons(nil, 1), Cons(nil, 1), true)
 
-	ConfirmEqual(Cons(1, nil), Pair{ nil, nil }, false)
-	ConfirmEqual(Cons(1, nil), &Pair{ nil, nil }, false)
+	ConfirmEqual(Cons(1, nil), Pair{nil, nil}, false)
+	ConfirmEqual(Cons(1, nil), &Pair{nil, nil}, false)
 	ConfirmEqual(Cons(1, nil), Cons(nil, nil), false)
 
-	ConfirmEqual(Cons(nil, 1), Pair{ nil, nil }, false)
-	ConfirmEqual(Cons(nil, 1), &Pair{ nil, nil }, false)
+	ConfirmEqual(Cons(nil, 1), Pair{nil, nil}, false)
+	ConfirmEqual(Cons(nil, 1), &Pair{nil, nil}, false)
 	ConfirmEqual(Cons(nil, 1), Cons(nil, nil), false)
 
-	ConfirmEqual(Cons(nil, 1), Pair{ 1, nil }, false)
-	ConfirmEqual(Cons(nil, 1), &Pair{ 1, nil }, false)
+	ConfirmEqual(Cons(nil, 1), Pair{1, nil}, false)
+	ConfirmEqual(Cons(nil, 1), &Pair{1, nil}, false)
 	ConfirmEqual(Cons(nil, 1), Cons(1, nil), false)
 
-	ConfirmEqual(Cons(1, nil), Pair{ nil, 1 }, false)
-	ConfirmEqual(Cons(1, nil), &Pair{ nil, 1 }, false)
+	ConfirmEqual(Cons(1, nil), Pair{nil, 1}, false)
+	ConfirmEqual(Cons(1, nil), &Pair{nil, 1}, false)
 	ConfirmEqual(Cons(1, nil), Cons(nil, 1), false)
 
-	ConfirmEqual(Cons(nil, 1), Pair{ nil, 1 }, true)
-	ConfirmEqual(Cons(nil, 1), &Pair{ nil, 1 }, true)
+	ConfirmEqual(Cons(nil, 1), Pair{nil, 1}, true)
+	ConfirmEqual(Cons(nil, 1), &Pair{nil, 1}, true)
 	ConfirmEqual(Cons(nil, 1), Cons(nil, 1), true)
 
-	ConfirmEqual(Cons(Cons(0, 1), 2), Pair{ &Pair{ 0, 1 }, 2 }, true)
-	ConfirmEqual(Cons(Cons(0, 1), 2), &Pair{ &Pair{ 0, 1 }, 2 }, true)
-	ConfirmEqual(Cons(Cons(0, 1), 2), Cons( &Pair{ 0, 1 }, 2 ), true)
+	ConfirmEqual(Cons(Cons(0, 1), 2), Pair{&Pair{0, 1}, 2}, true)
+	ConfirmEqual(Cons(Cons(0, 1), 2), &Pair{&Pair{0, 1}, 2}, true)
+	ConfirmEqual(Cons(Cons(0, 1), 2), Cons(&Pair{0, 1}, 2), true)
 
 	ConfirmEqual(Cons(Cons(1, 1), nil), Cons(nil, nil), false)
 	ConfirmEqual(Cons(nil, Cons(1, 1)), Cons(nil, nil), false)
@@ -88,38 +88,37 @@ func TestPairEqual(t *testing.T) {
 	ConfirmEqual(Cons(nil, Cons(1, 1)), Cons(nil, Cons(1, 1)), true)
 	ConfirmEqual(Cons(Cons(1, 1), Cons(1, 1)), Cons(Cons(1, 1), Cons(1, 1)), true)
 
-	ConfirmEqual(List(1), &Pair{ nil, nil }, false)
-	ConfirmEqual(List(1), &Pair{ 1, nil }, true)
+	ConfirmEqual(List(1), &Pair{nil, nil}, false)
+	ConfirmEqual(List(1), &Pair{1, nil}, true)
 	ConfirmEqual(List(1), Cons(1, nil), true)
 
 	ConfirmEqual(List(1), List(), false)
 	ConfirmEqual(List(1), nil, false)
 	ConfirmEqual(List(1), Cons(nil, nil), false)
 
-	ConfirmEqual(List(nil, 1), &Pair{ nil, &Pair{ 1, nil } }, true)
+	ConfirmEqual(List(nil, 1), &Pair{nil, &Pair{1, nil}}, true)
 	ConfirmEqual(List(nil, 1), Cons(nil, Cons(1, nil)), true)
 
-	ConfirmEqual(List(nil, 1), &Pair{ nil, nil }, false)
+	ConfirmEqual(List(nil, 1), &Pair{nil, nil}, false)
 	ConfirmEqual(List(nil, 1), Cons(nil, nil), false)
 
-	ConfirmEqual(List(Cons(0, 1), 2), &Pair{ &Pair{ 0, 1 }, 2 }, false)
-	ConfirmEqual(List(Cons(0, 1), 2), Cons(&Pair{ 0, 1 }, 2), false)
+	ConfirmEqual(List(Cons(0, 1), 2), &Pair{&Pair{0, 1}, 2}, false)
+	ConfirmEqual(List(Cons(0, 1), 2), Cons(&Pair{0, 1}, 2), false)
 	ConfirmEqual(List(Cons(0, 1), 2), Cons(Cons(0, 1), 2), false)
 	ConfirmEqual(List(Cons(0, 1), 2), List(Cons(0, 1), 2), true)
 	ConfirmEqual(List(Cons(0, 1), 2), Cons(Cons(0, 1), Cons(2, nil)), true)
 
-
-	ConfirmEqual(List(nil, 1), &Pair{ 1, nil }, false)
-	ConfirmEqual(List(nil, 1), &Pair{ nil, 1 }, false)
+	ConfirmEqual(List(nil, 1), &Pair{1, nil}, false)
+	ConfirmEqual(List(nil, 1), &Pair{nil, 1}, false)
 	ConfirmEqual(List(nil, 1), Cons(nil, 1), false)
-	ConfirmEqual(List(nil, 1), &Pair{ nil, &Pair{ 1, nil} }, true)
+	ConfirmEqual(List(nil, 1), &Pair{nil, &Pair{1, nil}}, true)
 
-	ConfirmEqual(List(nil, 1), &Pair{ nil, 1 }, false)
-	ConfirmEqual(List(nil, 1), &Pair{ nil, &Pair{ 1, nil } }, true)
-	ConfirmEqual(List(nil, 1), &Pair{ nil, &Pair{ 1, nil } }, true)
+	ConfirmEqual(List(nil, 1), &Pair{nil, 1}, false)
+	ConfirmEqual(List(nil, 1), &Pair{nil, &Pair{1, nil}}, true)
+	ConfirmEqual(List(nil, 1), &Pair{nil, &Pair{1, nil}}, true)
 
-	ConfirmEqual(List(nil, 1), &Pair{ nil, &Pair{ 1, nil } }, true)
-	ConfirmEqual(List(1, 1), &Pair{ 1, &Pair{ 1, nil } }, true)
+	ConfirmEqual(List(nil, 1), &Pair{nil, &Pair{1, nil}}, true)
+	ConfirmEqual(List(1, 1), &Pair{1, &Pair{1, nil}}, true)
 }
 
 func TestPairLen(t *testing.T) {
@@ -534,7 +533,7 @@ func TestPairAppend(t *testing.T) {
 	ConfirmAppend(List(1), List(2), List(1, 2))
 	ConfirmAppend(List(1), List(2, 3), List(1, 2, 3))
 
-	ConfirmMultipleAppend := func(c *Pair, r interface{}, v... interface{}) {
+	ConfirmMultipleAppend := func(c *Pair, r interface{}, v ...interface{}) {
 		call := fmt.Sprintf("%v.Append(%v)", c, v)
 		if x := c.Append(v...); !x.Equal(r) {
 			t.Fatalf("%v should be %v but is %v", call, r, x)
@@ -599,7 +598,6 @@ func TestPairEach(t *testing.T) {
 		count++
 	})
 }
-
 
 func TestPairStep(t *testing.T) {
 	list := List(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
@@ -686,7 +684,7 @@ func TestPairReduce(t *testing.T) {
 				t.Fatalf("%v.Reduce() should be %v but is %v", c, r, x)
 			}
 		}
-		
+
 	}
 
 	ConfirmReduce(List(1, 2, 3), 6, 1, func(seed, value interface{}) interface{} {
@@ -773,12 +771,11 @@ func TestPairPartition(t *testing.T) {
 	}
 
 	ConfirmPartition := func(l *Pair, offset int, x, y *Pair) {
-		ls := fmt.Sprintf("%v", l)
 		switch c1, c2 := l.Partition(offset); {
 		case !c1.Equal(x):
-			t.Fatalf("1: %v.Partition(%v) should be (%v, %v) but is (%v, %v)", ls, offset, x, y, c1, c2)
-		case !c2.Equal(c2):
-			t.Fatalf("2: %v.Partition(%v) should be (%v, %v) but is (%v, %v)", ls, offset, x, y, c1, c2)
+			t.Fatalf("1: %v.Partition(%v) should be (%v, %v) but is (%v, %v)", l, offset, x, y, c1, c2)
+		case !c2.Equal(y):
+			t.Fatalf("2: %v.Partition(%v) should be (%v, %v) but is (%v, %v)", l, offset, x, y, c1, c2)
 		}
 	}
 

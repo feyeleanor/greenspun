@@ -11,15 +11,15 @@ import (
 //			cf:			http://en.wikipedia.org/wiki/Cons
 //
 type Pair struct {
-	head		interface{}		"data contained in the current cell"
-	tail		interface{}		"the next cell or a second item contained in the current cell"
+	head interface{} "data contained in the current cell"
+	tail interface{} "the next cell or a second item contained in the current cell"
 }
 
 func Cons(head, tail interface{}) (c *Pair) {
-	return &Pair{ head, tail }
+	return &Pair{head, tail}
 }
 
-func List(items... interface{}) (c *Pair) {
+func List(items ...interface{}) (c *Pair) {
 	switch len(items) {
 	case 0:
 		return nil
@@ -34,7 +34,7 @@ func List(items... interface{}) (c *Pair) {
 func (c *Pair) String() string {
 	terms := make([]string, 0)
 	if c != nil {
-		var head	string
+		var head string
 		c.Each(func(i int, v *Pair) {
 			switch v.head {
 			case nil, false:
@@ -98,9 +98,9 @@ func (c *Pair) IsNil() (r bool) {
 
 func (c *Pair) Push(v interface{}) (r *Pair) {
 	if c == nil {
-		r = &Pair{ head: v, tail: nil }
+		r = &Pair{head: v, tail: nil}
 	} else {
-		r = &Pair{ head: v, tail: c }
+		r = &Pair{head: v, tail: c}
 	}
 	return
 }
@@ -236,12 +236,12 @@ func (c *Pair) valueAppend(v interface{}) (r *Pair) {
 		r = x.End()
 	} else {
 		c.Rplacd(Cons(v, nil))
-		r = c.Cdr().(*Pair)				
+		r = c.Cdr().(*Pair)
 	}
 	return
 }
 
-func (c *Pair) Append(v... interface{}) (r *Pair) {
+func (c *Pair) Append(v ...interface{}) (r *Pair) {
 	var head *Pair
 
 	if len(v) > 0 {
@@ -266,7 +266,7 @@ func (c *Pair) Append(v... interface{}) (r *Pair) {
 }
 
 func (c *Pair) Each(f interface{}) {
-	var i		int
+	var i int
 
 	switch f := f.(type) {
 	case func(interface{}):
@@ -415,13 +415,13 @@ func (c *Pair) While(condition bool, f interface{}) (i int) {
 
 func (c *Pair) Partition(offset int) (x, y *Pair) {
 	defer func() {
-		switch x := recover(); x {
-		case PAIR_EMPTY, PAIR_LIST_TOO_SHALLOW:
+		switch r := recover(); r {
+		case nil, PAIR_EMPTY, PAIR_LIST_TOO_SHALLOW:
 			//	An empty or shallow pair indicates that the list has terminated before the partition has been reached. In this particular case this is not an error so recover cleanly.
-			y = nil
+			x = c
 		default:
 			//	Any other panic occurring during step iteration should be propagated to the caller.
-			panic(x)
+			panic(r)
 		}
 	}()
 

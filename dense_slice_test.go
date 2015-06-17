@@ -279,3 +279,31 @@ func TestDenseSliceEach(t *testing.T) {
 		count++
 	})
 }
+
+func TestDenseSliceMove(t *testing.T) {
+	t.Fatalf("implement tests")
+}
+
+func TestDenseSliceInsert(t *testing.T) {
+	t.Fatalf("implement tests")
+}
+
+func TestDenseSliceDelete(t *testing.T) {
+	t.Fatalf("implement tests")
+}
+
+func TestDenseSliceCopy(t *testing.T) {
+	t.Fatalf("implement tests")
+}
+
+func TestDenseSliceCommit(t *testing.T) {
+	t.Fatalf("implement tests")
+}
+
+func TestDenseSliceUndo(t *testing.T) {
+	t.Fatalf("implement tests")
+}
+
+func TestDenseSliceRollback(t *testing.T) {
+	t.Fatalf("implement tests")
+}
